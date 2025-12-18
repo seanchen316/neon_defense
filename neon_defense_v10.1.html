@@ -880,6 +880,7 @@ function distToSegment(x, y, x1, y1, x2, y2) {
 
 // --- DRAW HELPERS ---
 function drawBackground() {
+    ctx.shadowBlur = 5; ctx.shadowColor = '#0ff';
     ctx.strokeStyle = 'rgba(20, 30, 40, 0.4)'; ctx.lineWidth = 1; ctx.beginPath();
     const gridSize = 40;
     for(let x=0; x<width; x+=gridSize) { ctx.moveTo(x,0); ctx.lineTo(x,height); }
@@ -911,7 +912,7 @@ function drawUIOverlay() {
         const info = TOWER_TYPES[dragState.type];
         // SMART OFFSET LOGIC
         let towerY = useDragOffset ? dragState.y - 60 : dragState.y;
-        if (useDragOffset && dragState.y < safeZone.top + 60) towerY = dragState.y + 60;
+        //if (useDragOffset && dragState.y < safeZone.top + 60) towerY = dragState.y + 60;
 
         const inSafeY = towerY > safeZone.top && towerY < safeZone.bottom;
         const hitPath = pathPoints.some((p, i) => i%3===0 && Math.hypot(p.x-dragState.x, p.y-towerY) < 20); 
@@ -962,7 +963,7 @@ document.querySelectorAll('.tower-drag-item').forEach(el => {
         dragState.active = true; dragState.type = el.dataset.type; 
         
         let tx = x, ty = y;
-        if (useDragOffset) { tx -= 40; ty -= 60; }
+        if (useDragOffset) { tx -= 0; ty -= 60; }
         dragState.x = tx; dragState.y = ty;
     };
     el.addEventListener('mousedown', e => start(e.clientX, e.clientY));
@@ -972,7 +973,7 @@ document.querySelectorAll('.tower-drag-item').forEach(el => {
 const move = (x, y) => {
     if (dragState.active) {
         let tx = x, ty = y;
-        if (useDragOffset) { tx -= 40; ty -= 60; }
+        if (useDragOffset) { tx -= 0; ty -= 60; }
         
         dragState.x = tx; dragState.y = ty;
         const info = TOWER_TYPES[dragState.type];
