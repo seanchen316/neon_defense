@@ -99,13 +99,13 @@
 <body>
 
 <div id="top-bar">
-    <div id="btn-fx" class="top-btn active" onclick="toggleFX()">FX: ON</div>
+    <div id="btn-fx" class="top-btn active">FX: ON</div>
     <div class="stat-group">
         <span class="stat-cash">$<span id="ui-cash">120</span></span>
         <span class="stat-score">SC <span id="ui-score">0</span></span>
         <span class="stat-wave">WV <span id="ui-wave">1</span></span>
     </div>
-    <div id="btn-speed" class="top-btn" onclick="toggleSpeed()">1x</div>
+    <div id="btn-speed" class="top-btn">1x</div>
 </div>
 
 <div id="game-container">
@@ -128,7 +128,7 @@
     <div class="tower-card" data-type="purple" style="border-color:#505"><canvas class="t-canvas" id="icon-purple"></canvas><span class="t-cost">$120</span></div>
     <div class="tower-card" data-type="yellow" style="border-color:#550"><canvas class="t-canvas" id="icon-yellow"></canvas><span class="t-cost">$60</span></div>
     <div class="tower-card" data-type="orange" style="border-color:#530"><canvas class="t-canvas" id="icon-orange"></canvas><span class="t-cost">$100</span></div>
-    <div id="btn-pause" onclick="togglePause()">||</div>
+    <div id="btn-pause">||</div>
 </div>
 
 //<div id="overlay" onclick="startGame()">
@@ -184,6 +184,7 @@ bindTouch('overlay', startGame);
 bindTouch('btn-pause', togglePause);
 bindTouch('btn-speed', toggleSpeed);
 bindTouch('btn-wave', forceNextWave);
+bindTouch('btn-fx', toggleFX);
 
 function startGame() {
     initAudio(); document.getElementById('overlay').style.display='none';
@@ -405,7 +406,7 @@ function spawnEnemy() {
     let hpMult = Math.pow(1.25, G.wave); let baseHp = 25 * hpMult; let shape = 'circle'; let spd = 1.2 + (G.wave*0.05);
     if(G.wave % 5 === 0) shape = 'pentagon'; else if(G.wave > 6 && Math.random()>0.7) shape = 'square'; else if(G.wave > 3 && Math.random()>0.7) shape = 'triangle'; 
     let e = { x:G.start.x, y:G.start.y, pi:0, slow:0, hp:baseHp, max:baseHp, spd:spd, val: 5+Math.floor(G.wave/2), shape: shape, color: `hsl(${(G.wave*25)%360},100%,60%)`, angle: 0, ox: (Math.random()-0.5)*(G.hexR*0.8), oy: (Math.random()-0.5)*(G.hexR*0.8) };
-    if(shape==='triangle') { e.spd*=1.4; e.hp*=0.6; } if(shape==='square') { e.spd*=0.7; e.hp*=2.5; e.size=12; } if(shape==='pentagon') { e.spd*=0.5; e.hp*=8; e.size=15; e.val*=5; }
+    if(shape==='triangle') { e.spd*=1.4; e.hp*=0.6; } if(shape==='square') { e.spd*=0.7; e.hp*=2.5; e.size=10; } if(shape==='pentagon') { e.spd*=0.5; e.hp*=8; e.size=12; e.val*=5; }
     G.enemies.push(e);
 }
 
