@@ -149,6 +149,10 @@ function playSound(type) {
     else if(type==='boom') { osc.type='sawtooth'; osc.frequency.setValueAtTime(60,t); osc.frequency.exponentialRampToValueAtTime(10,t+0.4); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.01,t+0.4); osc.start(t); osc.stop(t+0.4); if(G.enableFX) G.shake=8; }
     else if(type==='place') { osc.type='sine'; osc.frequency.setValueAtTime(400,t); osc.frequency.linearRampToValueAtTime(800,t+0.15); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.15); osc.start(t); osc.stop(t+0.15); }
 }
+function bindTouch(id, fn) {
+    const el = document.getElementById(id);
+    if(el) { el.addEventListener('touchstart', (e)=>{e.preventDefault();e.stopPropagation();fn();}, {passive:false}); el.addEventListener('click', (e)=>{fn();}); }
+}
 
 const TOWER_DATA = {
     green:  { name: "BLASTER", cost: 15, range: 100, dmg: 8, rate: 12, color: '#0f0', type:'bolt' },
@@ -173,6 +177,11 @@ const ctx = canvas.getContext('2d', { alpha: false });
 const container = document.getElementById('game-container');
 
 // --- System ---
+bindTouch('overlay', startGame);
+bindTouch('btn-pause', togglePause);
+bindTouch('btn-speed', toggleSpeed);
+bindTouch('btn-wave', forceNextWave);
+
 function startGame() {
     initAudio(); document.getElementById('overlay').style.display='none';
     G.active=true; resize(); renderTowerIcons(); setTimer(5); loop();
