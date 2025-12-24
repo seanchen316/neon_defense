@@ -406,7 +406,7 @@ function spawnEnemy() {
     let hpMult = Math.pow(1.25, G.wave); let baseHp = 25 * hpMult; let shape = 'circle'; let spd = 1.2 + (G.wave*0.05);
     if(G.wave % 5 === 0) shape = 'pentagon'; else if(G.wave > 6 && Math.random()>0.7) shape = 'square'; else if(G.wave > 3 && Math.random()>0.7) shape = 'triangle'; 
     let e = { x:G.start.x, y:G.start.y, pi:0, slow:0, hp:baseHp, max:baseHp, spd:spd, val: 5+Math.floor(G.wave/2), shape: shape, color: `hsl(${(G.wave*25)%360},100%,60%)`, angle: 0, ox: (Math.random()-0.5)*(G.hexR*0.8), oy: (Math.random()-0.5)*(G.hexR*0.8) };
-    if(shape==='triangle') { e.spd*=1.4; e.hp*=0.6; } if(shape==='square') { e.spd*=0.7; e.hp*=2.5; e.size=10; } if(shape==='pentagon') { e.spd*=0.5; e.hp*=8; e.size=12; e.val*=5; }
+    if(shape==='triangle') { e.spd*=1.4; e.hp*=0.6; } if(shape==='square') { e.spd*=0.7; e.hp*=2.5; e.size=8; } if(shape==='pentagon') { e.spd*=0.5; e.hp*=8; e.size=10; e.val*=5; }
     G.enemies.push(e);
 }
 
