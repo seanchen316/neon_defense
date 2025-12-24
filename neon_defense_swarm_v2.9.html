@@ -413,7 +413,7 @@ function spawnEnemy() {
 // --- Draw ---
 function draw() {
     ctx.save();
-    if(G.enableFX && G.shake > 0) ctx.translate(Math.random()*G.shake - G.shake/2, Math.random()*G.shake - G.shake/2);
+    //if(G.enableFX && G.shake > 0) ctx.translate(Math.random()*G.shake - G.shake/2, Math.random()*G.shake - G.shake/2);
     ctx.fillStyle = '#050505'; ctx.fillRect(0,0,G.w,G.h);
     
     // Fix: Teal Grid
