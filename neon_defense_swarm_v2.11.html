@@ -455,11 +455,16 @@ function updateMenuUI() {
     if(!G.selected) return; let t = G.selected;
     let isMax = t.lvl >= 6; let cost = Math.floor(t.cost * t.lvl * 0.7); let sell = Math.floor(t.cost * 0.5 * t.lvl);
     document.getElementById('m-info').innerText = `${t.name} LVL ${t.lvl}`;
+    bindTouch('m-upg', () => { if(!isMax && G.cash >= cost) { G.cash -= cost; t.lvl++; t.dmg *= 1.35; playSound('place'); fx(t.x,t.y,t.color,10); updateUI(); selectTower(t); } else playSound('boom'); });
+    bindTouch('m-sell', () => { G.cash += sell; G.grid.find(g=>g.q===t.q && g.r===t.r).occ = false; G.towers = G.towers.filter(to => to !== t); G.shake = 5; calcPath(); updateUI(); closeMenu(); });
     let btnUp = document.getElementById('m-upg');
     btnUp.innerText = isMax ? "MAX" : `UPGRADE $${cost}`; btnUp.style.opacity = (isMax || G.cash < cost) ? 0.5 : 1;
     document.getElementById('m-sell').innerText = `SELL $${sell}`;
     let btnLock = document.getElementById('m-lock');
-    if(t.type === 'laser') { btnLock.style.display = 'block'; btnLock.innerText = (t.lockedAngle != null) ? "UNLOCK" : "LOCK"; } else btnLock.style.display = 'none';
+    if(t.type === 'laser') {
+        btnLock.style.display = 'block'; btnLock.innerText = (t.lockedAngle != null) ? "UNLOCK" : "LOCK";
+        bindTouch('m-lock', () => { t.lockedAngle = (t.lockedAngle!=null) ? null : t.angle; selectTower(t); });
+    } else btnLock.style.display = 'none';
 }
 
 function setTimer(s) { G.nextWaveTime = Date.now() + s*1000; }
@@ -578,7 +583,7 @@ function draw() {
     ctx.globalCompositeOperation = 'source-over'; ctx.shadowBlur=0;
 }
 
-// --- Utils & Audio ---
+// --- Interaction ---
 const drags = document.querySelectorAll('.tower-card');
 drags.forEach(d => { d.addEventListener('touchstart', e => startDrag(e, d.dataset.type), {passive:false}); d.addEventListener('mousedown', e => startDrag(e, d.dataset.type)); });
 window.addEventListener('touchmove', moveDrag, {passive:false}); window.addEventListener('mousemove', moveDrag);
