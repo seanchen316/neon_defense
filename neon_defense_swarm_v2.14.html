@@ -622,6 +622,32 @@ function updateMenuUI() {
     document.getElementById('m-sell').innerText = `SELL $${sell}`;
     let btnLock = document.getElementById('m-lock');
     if(t.type === 'laser') { btnLock.style.display = 'block'; btnLock.innerText = (t.lockedAngle != null) ? "UNLOCK" : "LOCK"; } else btnLock.style.display = 'none';
+    // Tower Upgrade Buttons (Bound ONCE here to prevent multi-trigger bug)
+    bindTouch('m-upg', () => {
+        if(!G.selected) return;
+        let t = G.selected; let isMax = t.lvl >= 6;
+        let cost = Math.floor(t.cost * t.lvl * 0.7);
+        if(!isMax && G.cash >= cost) {
+            G.cash -= cost; t.lvl++; t.dmg *= 1.35; 
+            playSound('place'); fxHalo(t.x,t.y,t.color); updateUI(); updateMenuUI();
+        } else playSound('boom');
+    });
+
+    bindTouch('m-sell', () => {
+        if(!G.selected) return;
+        let t = G.selected; let sell = Math.floor(t.cost * 0.5 * t.lvl);
+        G.cash += sell; 
+        let cell = G.grid.find(g=>g.q===t.q && g.r===t.r);
+        if(cell) cell.occ = false;
+        G.towers = G.towers.filter(to => to !== t);
+        calcPath(); updateUI(); closeMenu();
+    });
+
+    bindTouch('m-lock', () => {
+        if(!G.selected || G.selected.type !== 'laser') return;
+        G.selected.lockedAngle = (G.selected.lockedAngle !== null) ? null : G.selected.angle;
+        updateMenuUI();
+    });
 }
 function selectTower(t) {
     G.selected = t;
