@@ -91,17 +91,24 @@
         }
 
         .tower-drag-item {
-            width: 55px; height: 65px;
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px;
-            background: rgba(20, 20, 20, 0.9);
+            width: 58px; height: 68px;
+            border: 1px solid rgba(0, 255, 255, 0.3); 
+            background: radial-gradient(circle at center, #111822 0%, #05080c 100%);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             cursor: grab; position: relative;
             touch-action: none;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0,255,255,0.05), 0 0 6px rgba(0,0,0,0.8);
+            transition: all 0.15s ease;
+        }
+        .tower-drag-item:hover {
+            border-color: rgba(0, 255, 255, 0.7);
+            box-shadow: inset 0 0 15px rgba(0,255,255,0.15), 0 0 10px rgba(0,255,255,0.3);
         }
         .tower-drag-item:active { border-color: #fff; transform: scale(0.95); }
-        .tower-icon { width: 26px; height: 26px; margin-bottom: 3px; }
-        .tower-cost { font-size: 10px; color: #aaa; font-weight: bold; }
+        .tower-icon { width: 30px; height: 30px; margin-bottom: 2px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .tower-cost { font-size: 10px; color: #0ff; font-family: monospace; font-weight: bold; text-shadow: 0 0 4px rgba(0,255,255,0.5); }
 
         /* Upgrade Panel */
         #upgradePanel {
@@ -144,11 +151,54 @@
         #btnLock.locked { background: #0cf; color: #000; }
 
         /* Icons */
-        .icon-blaster { border: 2px solid #0f0; border-radius: 50%; box-shadow: 0 0 4px #0f0; }
-        .icon-sniper { width: 3px; height: 24px; background: #f00; box-shadow: 0 0 4px #f00; transform: rotate(45deg); }
-        .icon-missile { width: 16px; height: 16px; border: 2px solid #fa0; border-radius: 2px; box-shadow: 0 0 4px #fa0; }
-        .icon-slower { border: 2px solid #0cf; border-radius: 50%; border-style: double; box-shadow: 0 0 4px #0cf; }
-        .icon-energy { width: 16px; height: 16px; border: 2px solid #a0f; transform: rotate(45deg); box-shadow: 0 0 4px #a0f; }
+        .icon-blaster {
+            width: 22px; height: 22px; border: 2px solid #0f0; border-radius: 50%;
+            box-shadow: 0 0 8px #0f0, inset 0 0 4px #0f0;
+            background: rgba(0, 255, 0, 0.15);
+            position: relative;
+        }
+        .icon-blaster::after {
+            content: ''; position: absolute; right: -5px; top: 8px; width: 7px; height: 3px; background: #0f0; box-shadow: 0 0 4px #0f0;
+        }
+
+        .icon-sniper {
+            width: 22px; height: 22px; border: 1px solid #f00; border-radius: 2px;
+            box-shadow: 0 0 8px #f00, inset 0 0 4px #f00;
+            background: rgba(255, 0, 0, 0.15);
+            position: relative;
+            transform: rotate(45deg);
+        }
+        .icon-sniper::after {
+            content: ''; position: absolute; left: 3px; top: 9px; width: 16px; height: 2px; background: #fff; box-shadow: 0 0 4px #f00;
+            transform: rotate(-45deg);
+        }
+
+        .icon-missile {
+            width: 22px; height: 22px; border: 2px solid #fa0; border-radius: 4px;
+            box-shadow: 0 0 8px #fa0, inset 0 0 4px #fa0;
+            background: rgba(255, 170, 0, 0.15);
+            position: relative;
+        }
+        .icon-missile::after {
+            content: ''; position: absolute; width: 8px; height: 8px; border: 1px solid #fff; top: 5px; left: 5px; box-shadow: 0 0 4px #fa0;
+        }
+
+        .icon-slower {
+            width: 22px; height: 22px; border: 2px solid #0cf; border-radius: 50%; border-style: double;
+            box-shadow: 0 0 8px #0cf, inset 0 0 4px #0cf;
+            background: rgba(0, 207, 255, 0.15);
+        }
+
+        .icon-energy {
+            width: 22px; height: 22px; border: 2px solid #a0f; border-radius: 3px;
+            box-shadow: 0 0 8px #a0f, inset 0 0 4px #a0f;
+            background: rgba(160, 0, 255, 0.15);
+            transform: rotate(45deg);
+            position: relative;
+        }
+        .icon-energy::after {
+            content: ''; position: absolute; width: 6px; height: 6px; background: #fff; top: 6px; left: 6px; box-shadow: 0 0 6px #a0f;
+        }
         .disabled { opacity: 0.3; filter: grayscale(1); pointer-events: none; }
 
         /* Modal */
@@ -160,10 +210,10 @@
             pointer-events: auto; z-index: 200;
         }
         
-        .diff-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .diff-container { display: flex; flex-direction: column; gap: 8px; width: 260px; margin-bottom: 20px; }
         .diff-btn {
-            padding: 12px 15px; background: transparent; border: 1px solid #555; color: #888;
-            cursor: pointer; font-family: monospace; font-weight: bold; transition: 0.2s; min-width: 100px;
+            padding: 10px 15px; background: transparent; border: 1px solid #555; color: #888;
+            cursor: pointer; font-family: monospace; font-weight: bold; transition: 0.2s; width: 100%; text-align: center;
         }
         .diff-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
         .diff-btn.selected { border-color: #0f0; color: #fff; background: rgba(0,255,0,0.15); box-shadow: 0 0 15px #0f0; }
@@ -201,11 +251,11 @@
 
         <div class="bottom-area" id="bottomBar">
             <div id="buildPanel">
-                <div class="tower-drag-item" data-type="blaster"><div class="tower-icon icon-blaster"></div><div class="tower-cost">$15</div></div>
-                <div class="tower-drag-item" data-type="sniper"><div class="tower-icon icon-sniper"></div><div class="tower-cost">$40</div></div>
-                <div class="tower-drag-item" data-type="missile"><div class="tower-icon icon-missile"></div><div class="tower-cost">$70</div></div>
-                <div class="tower-drag-item" data-type="slower"><div class="tower-icon icon-slower"></div><div class="tower-cost">$50</div></div>
-                <div class="tower-drag-item" data-type="energy"><div class="tower-icon icon-energy"></div><div class="tower-cost">$100</div></div>
+                <div class="tower-drag-item" data-type="blaster"><canvas class="tower-canvas" data-type="blaster" width="36" height="36"></canvas><div class="tower-cost">$15</div></div>
+                <div class="tower-drag-item" data-type="sniper"><canvas class="tower-canvas" data-type="sniper" width="36" height="36"></canvas><div class="tower-cost">$40</div></div>
+                <div class="tower-drag-item" data-type="missile"><canvas class="tower-canvas" data-type="missile" width="36" height="36"></canvas><div class="tower-cost">$70</div></div>
+                <div class="tower-drag-item" data-type="slower"><canvas class="tower-canvas" data-type="slower" width="36" height="36"></canvas><div class="tower-cost">$50</div></div>
+                <div class="tower-drag-item" data-type="energy"><canvas class="tower-canvas" data-type="energy" width="36" height="36"></canvas><div class="tower-cost">$100</div></div>
                 <button id="pauseBtn" class="ctrl-btn">II</button>
             </div>
 
@@ -225,10 +275,10 @@
         <h1 style="color:#0f0; text-shadow:0 0 20px #0f0; margin-bottom:10px; font-size:32px; letter-spacing:4px; text-align:center;">NEON DEFENSE</h1>
         
         <div class="diff-container">
-            <button class="diff-btn" onclick="selectDiff('EASY')">EASY<br><span style="font-size:10px">100% KEEP</span></button>
-            <button class="diff-btn selected" onclick="selectDiff('NORMAL')">NORMAL<br><span style="font-size:10px">50% KEEP</span></button>
-            <button class="diff-btn" onclick="selectDiff('HARD')">HARD<br><span style="font-size:10px">25% KEEP</span></button>
-            <button class="diff-btn" onclick="selectDiff('HELL')">HELL<br><span style="font-size:10px">0% KEEP</span></button>
+            <button class="diff-btn selected" onclick="selectDiff('EASY')">EASY &nbsp; <span style="font-size:10px; color:#888;">(100% KEEP)</span></button>
+            <button class="diff-btn" onclick="selectDiff('NORMAL')">NORMAL &nbsp; <span style="font-size:10px; color:#888;">(50% KEEP)</span></button>
+            <button class="diff-btn" onclick="selectDiff('HARD')">HARD &nbsp; <span style="font-size:10px; color:#888;">(25% KEEP)</span></button>
+            <button class="diff-btn" onclick="selectDiff('HELL')">HELL &nbsp; <span style="font-size:10px; color:#888;">(0% KEEP)</span></button>
         </div>
 
         <div class="options">
@@ -258,7 +308,7 @@ const DIFFICULTY = {
     HARD:   { name:'HARD',   money:200, hp:20, keep:0.25 },
     HELL:   { name:'HELL',   money:150, hp:1,  keep:0.00 }
 };
-let currentDiff = 'NORMAL';
+let currentDiff = 'EASY';
 let useDragOffset = false;
 let particlesEnabled = true;
 
@@ -335,6 +385,75 @@ const TOWER_TYPES = {
     energy: { name: 'Collector', cost: 100, range: 110, damage: 0, cooldown: 0, color: '#a0f', type: 'collector' }
 };
 
+function renderTowerPreviews() {
+    document.querySelectorAll('.tower-canvas').forEach(canvas => {
+        const typeKey = canvas.dataset.type;
+        const info = TOWER_TYPES[typeKey];
+        const pctx = canvas.getContext('2d');
+        pctx.clearRect(0, 0, canvas.width, canvas.height);
+        pctx.save();
+        pctx.translate(canvas.width / 2, canvas.height / 2);
+        
+        // Base pad
+        pctx.strokeStyle = info.color;
+        pctx.shadowColor = info.color;
+        pctx.shadowBlur = 4;
+        pctx.lineWidth = 1;
+        pctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
+            const r = 12;
+            const bx = Math.cos(a) * r;
+            const by = Math.sin(a) * r;
+            if (i === 0) pctx.moveTo(bx, by); else pctx.lineTo(bx, by);
+        }
+        pctx.closePath();
+        pctx.stroke();
+
+        // Turret Body (Level 1)
+        pctx.strokeStyle = info.color;
+        pctx.lineWidth = 1.5;
+        if (typeKey === 'blaster') {
+            pctx.fillStyle = 'rgba(10, 10, 10, 0.8)';
+            pctx.beginPath(); pctx.arc(0, 0, 7, 0, Math.PI*2); pctx.fill(); pctx.stroke();
+            pctx.fillStyle = info.color;
+            pctx.fillRect(6, -2, 10, 4);
+            pctx.strokeRect(6, -2, 10, 4);
+            pctx.beginPath(); pctx.arc(0, 0, 2, 0, Math.PI*2); pctx.fillStyle = '#fff'; pctx.fill();
+        } else if (typeKey === 'sniper') {
+            pctx.fillStyle = 'rgba(10, 10, 10, 0.9)';
+            pctx.beginPath(); pctx.moveTo(-6, -6); pctx.lineTo(6, -5); pctx.lineTo(6, 5); pctx.lineTo(-6, 6); pctx.closePath(); pctx.fill(); pctx.stroke();
+            pctx.fillStyle = info.color;
+            pctx.fillRect(4, -1.5, 14, 3);
+            pctx.strokeRect(4, -1.5, 14, 3);
+        } else if (typeKey === 'missile') {
+            pctx.fillStyle = 'rgba(15, 10, 5, 0.9)';
+            pctx.beginPath();
+            for (let i = 0; i < 4; i++) {
+                const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+                const rx = Math.cos(a) * 7;
+                const ry = Math.sin(a) * 7;
+                if (i === 0) pctx.moveTo(rx, ry); else pctx.lineTo(rx, ry);
+            }
+            pctx.closePath(); pctx.fill(); pctx.stroke();
+            pctx.fillStyle = info.color;
+            for(let i=0; i<2; i++) { 
+                const a = (i / 2) * Math.PI * 2 - Math.PI/4; 
+                pctx.beginPath(); pctx.arc(Math.cos(a)*4, Math.sin(a)*4, 1.5, 0, Math.PI*2); pctx.fill(); 
+            }
+        } else if (typeKey === 'slower') {
+            pctx.beginPath(); pctx.arc(0, 0, 8, 0, Math.PI*2); pctx.strokeStyle = '#0cf'; pctx.lineWidth = 1.2; pctx.stroke();
+            pctx.fillStyle = '#fff';
+            pctx.beginPath(); pctx.arc(0, 0, 3, 0, Math.PI*2); pctx.fill();
+        } else if (typeKey === 'energy') {
+            pctx.strokeRect(-6, -6, 12, 12);
+            pctx.beginPath(); pctx.arc(0, 0, 3, 0, Math.PI*2); pctx.fillStyle = '#fff'; pctx.fill();
+            pctx.shadowBlur = 10; pctx.shadowColor = '#a0f';
+        }
+        pctx.restore();
+    });
+}
+
 function init() {
     window.selectDiff = (diff) => {
         currentDiff = diff;
@@ -342,6 +461,7 @@ function init() {
         event.target.classList.add('selected');
     };
     resize();
+    renderTowerPreviews();
     if(pathPoints.length < 2) generatePath();
     requestAnimationFrame(loop);
 }
@@ -419,7 +539,34 @@ function generatePath() {
         const p1=points[i], p2=points[i+1], p3=points[i+2]; 
         const dist = Math.hypot(p2.x-p1.x, p2.y-p1.y);
         
-        if (!p3 || dist < radius * 2) {
+        // 20% chance for a clean, non-overlapping loop offset to the side
+        if (i > 0 && i < points.length - 2 && Math.random() < 0.20 && dist > 90) {
+            const loopRadius = 22;
+            const angleBase = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+            const perpAngle = angleBase + Math.PI / 2;
+            
+            const cx = p2.x + Math.cos(perpAngle) * (loopRadius + 15);
+            const cy = p2.y + Math.sin(perpAngle) * (loopRadius + 15);
+            
+            const entryAngle = -Math.PI / 2;
+            const entryX = cx + Math.cos(entryAngle) * loopRadius;
+            const entryY = cy + Math.sin(entryAngle) * loopRadius;
+            
+            addSegment(pathPoints[pathPoints.length-1], {x: entryX, y: entryY});
+            drawPathCommands.push({type:'line', x: entryX, y: entryY});
+
+            const loopSteps = 24;
+            for (let k = 1; k <= loopSteps; k++) {
+                const a = entryAngle + (k / loopSteps) * Math.PI * 2;
+                const lx = cx + Math.cos(a) * loopRadius;
+                const ly = cy + Math.sin(a) * loopRadius;
+                pathPoints.push({x: lx, y: ly});
+                drawPathCommands.push({type:'line', x: lx, y: ly});
+            }
+            
+            addSegment({x: entryX, y: entryY}, p2);
+            drawPathCommands.push({type:'line', x: p2.x, y: p2.y});
+        } else if (!p3 || dist < radius * 2) {
             addSegment(pathPoints[pathPoints.length-1], p2);
             drawPathCommands.push({type:'line', x:p2.x, y:p2.y});
         } else {
@@ -496,7 +643,14 @@ function update(dt) {
             if (e.dead) {
                 enemies.splice(i, 1);
                 if (e.finished) {
-                    lives--; sfx.play('boom'); createExplosion(e.x, e.y, '#f00', 30);
+                    lives--; sfx.play('boom'); 
+                    if(particlesEnabled) {
+                        createExplosion(e.x, e.y, '#f00', 50);
+                        createExplosion(e.x, e.y, '#fa0', 30);
+                        createHalo(e.x, e.y, '#f00');
+                        createShockwave(e.x, e.y, '#f00');
+                        createShockwave(e.x, e.y, '#fff');
+                    }
                     if (lives <= 0) gameOver();
                 } else {
                     money += e.bounty; score += e.bounty * 10;
@@ -746,39 +900,140 @@ class Tower {
     }
     draw() {
         ctx.save(); ctx.translate(this.x, this.y);
-        ctx.strokeStyle = this.info.color; ctx.shadowColor = this.info.color; ctx.shadowBlur = 10 + (this.level*3); ctx.lineWidth = 2;
+        
+        // --- GEODEFENSE STATIONARY BASE PAD ---
+        ctx.save();
+        ctx.strokeStyle = this.info.color;
+        ctx.shadowColor = this.info.color;
+        ctx.shadowBlur = 6;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
+            const r = 14 + (this.level * 1.5);
+            const bx = Math.cos(a) * r;
+            const by = Math.sin(a) * r;
+            if (i === 0) ctx.moveTo(bx, by); else ctx.lineTo(bx, by);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, 18 + (this.level * 1), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // --- ROTATING TURRET ASSEMBLY ---
+        ctx.save();
+        ctx.rotate(this.angle); 
+        ctx.strokeStyle = this.info.color; 
+        ctx.shadowColor = this.info.color; 
+        ctx.shadowBlur = 12 + (this.level * 4); 
+        ctx.lineWidth = 2;
         if (this.locked) { ctx.shadowColor = '#fff'; ctx.strokeStyle = '#fff'; }
         
-        ctx.rotate(this.angle); 
-        // --- VISUAL FIXES & UPGRADES ---
         if (this.typeKey === 'blaster') {
-            ctx.beginPath(); ctx.arc(0, 0, 8 + this.level, 0, Math.PI*2); ctx.stroke(); 
-            ctx.fillStyle = this.info.color; // FIX: Barrel fill
-            if(this.level < 3) ctx.fillRect(8, -2, 12, 4); // Single
-            else if(this.level < 5) { ctx.fillRect(8, -4, 12, 3); ctx.fillRect(8, 1, 12, 3); } // Double
-            else { 
-                ctx.rotate(frameCount*0.2); 
-                for(let i=0;i<3;i++){ ctx.rotate(Math.PI*2/3); ctx.fillRect(8,-1,14,2); } 
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.8)';
+            ctx.beginPath(); ctx.arc(0, 0, 7 + this.level, 0, Math.PI*2); ctx.fill(); ctx.stroke(); 
+            ctx.fillStyle = this.info.color;
+            if(this.level < 3) {
+                ctx.fillRect(6, -2.5, 14, 5);
+                ctx.strokeRect(6, -2.5, 14, 5);
+            } else if(this.level < 5) {
+                ctx.fillRect(6, -6, 14, 4);
+                ctx.fillRect(6, 2, 14, 4);
+                ctx.strokeRect(6, -6, 14, 4);
+                ctx.strokeRect(6, 2, 14, 4);
+            } else { 
+                ctx.rotate(frameCount * 0.25); 
+                for(let i=0; i<3; i++){ 
+                    ctx.rotate(Math.PI * 2 / 3); 
+                    ctx.fillRect(6, -1.5, 16, 3);
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(18, -1, 4, 2);
+                    ctx.fillStyle = this.info.color;
+                } 
             }
+            ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
         } else if (this.typeKey === 'sniper') {
-            ctx.strokeRect(-6, -6, 12, 12); ctx.fillStyle = this.locked ? '#fff' : this.info.color; 
-            if(this.level<3) ctx.fillRect(0, -1, 25, 2);
-            else if(this.level<5) { ctx.fillRect(0, -2, 30, 4); ctx.strokeRect(20, -5, 2, 10); }
-            else { ctx.fillRect(0, -3, 35, 6); ctx.beginPath(); ctx.moveTo(10, -8); ctx.lineTo(30, 0); ctx.lineTo(10, 8); ctx.stroke(); }
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.9)';
+            ctx.beginPath();
+            ctx.moveTo(-8, -8); ctx.lineTo(8, -6); ctx.lineTo(8, 6); ctx.lineTo(-8, 8);
+            ctx.closePath(); ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = this.locked ? '#fff' : this.info.color; 
+            if(this.level < 3) {
+                ctx.fillRect(4, -2, 28, 4);
+                ctx.strokeRect(4, -2, 28, 4);
+            } else if(this.level < 5) {
+                ctx.fillRect(4, -3, 34, 6);
+                ctx.strokeRect(24, -6, 4, 12);
+            } else { 
+                ctx.fillRect(2, -4, 40, 8); 
+                ctx.beginPath(); ctx.moveTo(12, -10); ctx.lineTo(36, 0); ctx.lineTo(12, 10); ctx.stroke(); 
+                ctx.beginPath(); ctx.arc(38, 0, 3, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+            }
         } else if (this.typeKey === 'missile') {
-            ctx.strokeRect(-8, -8, 16, 16); ctx.fillStyle = this.info.color;
-            let pods = 2; if(this.level>=3) pods=4; if(this.level>=5) pods=9;
-            if(pods===9) { for(let ix=-1;ix<=1;ix++) for(let iy=-1;iy<=1;iy++) { ctx.beginPath(); ctx.arc(ix*4, iy*4, 1, 0, Math.PI*2); ctx.fill(); } }
-            else { for(let i=0;i<pods;i++) { const a = (i/pods)*Math.PI*2; ctx.beginPath(); ctx.arc(Math.cos(a)*6, Math.sin(a)*6, 1.5, 0, Math.PI*2); ctx.fill(); } }
+            ctx.fillStyle = 'rgba(15, 10, 5, 0.9)';
+            ctx.beginPath();
+            for (let i = 0; i < 4; i++) {
+                const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+                const rx = Math.cos(a) * 9;
+                const ry = Math.sin(a) * 9;
+                if (i === 0) ctx.moveTo(rx, ry); else ctx.lineTo(rx, ry);
+            }
+            ctx.closePath(); ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = this.info.color;
+            let pods = 2; if(this.level >= 3) pods = 4; if(this.level >= 5) pods = 8;
+            if(pods === 8) { 
+                for(let i=0; i<8; i++) {
+                    const a = (i / 8) * Math.PI * 2;
+                    const px = Math.cos(a) * 7;
+                    const py = Math.sin(a) * 7;
+                    ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI*2); ctx.fill();
+                }
+            } else { 
+                for(let i=0; i<pods; i++) { 
+                    const a = (i / pods) * Math.PI * 2 - Math.PI/4; 
+                    ctx.beginPath(); ctx.arc(Math.cos(a)*6, Math.sin(a)*6, 2, 0, Math.PI*2); ctx.fill(); 
+                } 
+            }
         } else if (this.typeKey === 'slower') {
-            const r = (frameCount % 40)/40 * 15; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.stroke();
-            if(this.level>=3) { ctx.beginPath(); ctx.arc(0, 0, r+5, 0, Math.PI*2); ctx.stroke(); }
-            if(this.level>=5) { ctx.beginPath(); ctx.arc(0, 0, r+10, 0, Math.PI*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(0,20); ctx.moveTo(-20,0); ctx.lineTo(20,0); ctx.stroke(); }
+            ctx.rotate(frameCount * 0.04);
+            const r1 = 8 + ((frameCount % 30) / 30) * 10;
+            ctx.beginPath(); ctx.arc(0, 0, r1, 0, Math.PI*2); ctx.strokeStyle = '#0cf'; ctx.lineWidth = 1.5; ctx.stroke();
+            
+            if(this.level >= 3) {
+                const r2 = 14 + (((frameCount + 15) % 30) / 30) * 10;
+                ctx.beginPath(); ctx.arc(0, 0, r2, 0, Math.PI*2); ctx.strokeStyle = 'rgba(0,207,255,0.6)'; ctx.stroke();
+            }
+            if(this.level >= 5) {
+                ctx.beginPath();
+                for(let i=0; i<4; i++) {
+                    const a = (i/4)*Math.PI*2 + frameCount*0.05;
+                    ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a)*18, Math.sin(a)*18);
+                }
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fill();
         } else if (this.typeKey === 'energy') {
-            ctx.rotate(frameCount * 0.05); ctx.strokeRect(-6, -6, 12, 12);
-            if(this.level>=3) { ctx.rotate(Math.PI/4); ctx.strokeRect(-8, -8, 16, 16); }
-            if(this.level>=5) { ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill(); ctx.shadowBlur=30; ctx.shadowColor='#fff'; }
+            ctx.rotate(frameCount * 0.06);
+            ctx.strokeRect(-8, -8, 16, 16);
+            if(this.level >= 3) {
+                ctx.rotate(-frameCount * 0.12);
+                ctx.strokeRect(-11, -11, 22, 22);
+            }
+            if(this.level >= 5) {
+                ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI*2); ctx.strokeStyle = 'rgba(160,0,255,0.5)'; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
+            }
+            ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+            ctx.shadowBlur = 25; ctx.shadowColor = '#a0f';
         }
+        ctx.restore();
         ctx.restore();
 
         if(this.typeKey === 'slower' && this.affected) this.affected.forEach(e => drawLightning(ctx, this.x, this.y, e.x, e.y, '#0ff'));
@@ -838,7 +1093,51 @@ class Projectile {
             target.takeDamage(this.damage); if(particlesEnabled) createExplosion(this.x, this.y, this.color, 5);
         }
     }
-    draw() { ctx.fillStyle = this.level >= 3 ? '#fff' : this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.type==='missile'?3:2, 0, Math.PI*2); ctx.fill(); }
+    draw() {
+        ctx.save();
+        if (this.type === 'missile') {
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            ctx.strokeStyle = '#fff';
+            ctx.fillStyle = this.level >= 3 ? '#fff' : this.color;
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 8;
+            ctx.lineWidth = 1.5;
+
+            // Rocket body
+            ctx.beginPath();
+            ctx.moveTo(-6, -2.5);
+            ctx.lineTo(4, -2.5);
+            ctx.lineTo(8, 0);
+            ctx.lineTo(4, 2.5);
+            ctx.lineTo(-6, 2.5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Fins
+            ctx.beginPath();
+            ctx.moveTo(-6, -2.5); ctx.lineTo(-9, -5); ctx.lineTo(-4, -2.5);
+            ctx.moveTo(-6, 2.5);  ctx.lineTo(-9, 5);  ctx.lineTo(-4, 2.5);
+            ctx.stroke();
+
+            // Exhaust flame
+            ctx.fillStyle = '#ff0';
+            ctx.beginPath();
+            ctx.moveTo(-6, -1.5);
+            ctx.lineTo(-12, 0);
+            ctx.lineTo(-6, 1.5);
+            ctx.fill();
+        } else {
+            ctx.fillStyle = this.level >= 3 ? '#fff' : this.color;
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 6;
+            ctx.beginPath(); 
+            ctx.arc(this.x, this.y, 2.5, 0, Math.PI*2); 
+            ctx.fill();
+        }
+        ctx.restore();
+    }
 }
 
 class Enemy {
