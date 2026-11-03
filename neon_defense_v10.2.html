@@ -146,7 +146,7 @@
         }
         
         #btnSell { background: rgba(50, 0, 0, 0.5); border-color: #f00; color: #f00; }
-        //#btnSell:active { background: #f00; color: #000; }
+        /* #btnSell:active { background: #f00; color: #000; } */
         #btnLock { background: rgba(0, 50, 80, 0.5); border-color: #0cf; color: #0cf; display: none; } /* Hidden by default */
         #btnLock.locked { background: #0cf; color: #000; }
 
@@ -210,13 +210,17 @@
             pointer-events: auto; z-index: 200;
         }
         
-        .diff-container { display: flex; flex-direction: column; gap: 8px; width: 260px; margin-bottom: 20px; }
+        .diff-container { display: flex; flex-direction: column; gap: 8px; width: 280px; margin-bottom: 15px; }
         .diff-btn {
-            padding: 10px 15px; background: transparent; border: 1px solid #555; color: #888;
-            cursor: pointer; font-family: monospace; font-weight: bold; transition: 0.2s; width: 100%; text-align: center;
+            padding: 8px 12px; background: transparent; border: 1px solid #555; color: #888;
+            cursor: pointer; font-family: monospace; font-weight: bold; transition: 0.2s; width: 100%; text-align: left;
+            display: flex; flex-direction: column; gap: 2px; box-sizing: border-box;
         }
         .diff-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
         .diff-btn.selected { border-color: #0f0; color: #fff; background: rgba(0,255,0,0.15); box-shadow: 0 0 15px #0f0; }
+        .diff-row-main { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 13px; }
+        .diff-sub { font-size: 10px; color: #888; font-weight: normal; }
+        .diff-record { font-size: 10px; color: #0cf; font-weight: normal; letter-spacing: 0.5px; }
         
         .options { margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px; color: #ccc; font-size: 14px; }
         .opt-row { display: flex; align-items: center; gap: 10px; }
@@ -239,7 +243,7 @@
         <div class="top-bar" id="topBar">
             <div class="stats-group">
                 <div style="color:#0f0">$<span id="moneyDisplay" class="stat-val">250</span></div>
-                <div style="color:#fa0">PTS<span id="scoreDisplay" class="stat-val">0</span></div>
+                <div style="color:#fa0">PTS<span id="scoreDisplay" class="stat-val">0</span> <span style="font-size:10px; color:#888;">(HI:<span id="hiScoreDisplay" style="color:#fa0;">0</span>)</span></div>
             </div>
             <div class="stats-group">
                 <div style="color:#d0f">LV<span id="levelDisplay" class="stat-val">1</span></div>
@@ -275,11 +279,25 @@
         <h1 style="color:#0f0; text-shadow:0 0 20px #0f0; margin-bottom:10px; font-size:32px; letter-spacing:4px; text-align:center;">NEON DEFENSE</h1>
         
         <div class="diff-container">
-            <button class="diff-btn selected" onclick="selectDiff('EASY')">EASY &nbsp; <span style="font-size:10px; color:#888;">(100% KEEP)</span></button>
-            <button class="diff-btn" onclick="selectDiff('NORMAL')">NORMAL &nbsp; <span style="font-size:10px; color:#888;">(50% KEEP)</span></button>
-            <button class="diff-btn" onclick="selectDiff('HARD')">HARD &nbsp; <span style="font-size:10px; color:#888;">(25% KEEP)</span></button>
-            <button class="diff-btn" onclick="selectDiff('HELL')">HELL &nbsp; <span style="font-size:10px; color:#888;">(0% KEEP)</span></button>
+            <button class="diff-btn selected" onclick="selectDiff('EASY', this)">
+                <div class="diff-row-main"><span>EASY</span> <span class="diff-sub">(100% KEEP)</span></div>
+                <div class="diff-record" id="rec-EASY">BEST: LV.1 / 0 PTS</div>
+            </button>
+            <button class="diff-btn" onclick="selectDiff('NORMAL', this)">
+                <div class="diff-row-main"><span>NORMAL</span> <span class="diff-sub">(50% KEEP)</span></div>
+                <div class="diff-record" id="rec-NORMAL">BEST: LV.1 / 0 PTS</div>
+            </button>
+            <button class="diff-btn" onclick="selectDiff('HARD', this)">
+                <div class="diff-row-main"><span>HARD</span> <span class="diff-sub">(25% KEEP)</span></div>
+                <div class="diff-record" id="rec-HARD">BEST: LV.1 / 0 PTS</div>
+            </button>
+            <button class="diff-btn" onclick="selectDiff('HELL', this)">
+                <div class="diff-row-main"><span>HELL</span> <span class="diff-sub">(0% KEEP)</span></div>
+                <div class="diff-record" id="rec-HELL">BEST: LV.1 / 0 PTS</div>
+            </button>
         </div>
+
+        <div id="gameSummary" style="display:none; margin-bottom:15px; text-align:center; font-family:monospace; padding:8px 12px; border:1px solid #333; background:rgba(20,20,20,0.8); border-radius:4px; width:280px; box-sizing:border-box;"></div>
 
         <div class="options">
             <div class="opt-row"><input type="checkbox" id="offsetToggle"><label for="offsetToggle">OFFSET DRAG (防遮擋)</label></div>
@@ -311,6 +329,62 @@ const DIFFICULTY = {
 let currentDiff = 'EASY';
 let useDragOffset = false;
 let particlesEnabled = true;
+
+const STORAGE_KEY = 'neon_defense_records';
+function getRecords() {
+    try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (data) {
+            const parsed = JSON.parse(data);
+            return {
+                EASY:   { score: parsed.EASY?.score || 0,   level: parsed.EASY?.level || 1 },
+                NORMAL: { score: parsed.NORMAL?.score || 0, level: parsed.NORMAL?.level || 1 },
+                HARD:   { score: parsed.HARD?.score || 0,   level: parsed.HARD?.level || 1 },
+                HELL:   { score: parsed.HELL?.score || 0,   level: parsed.HELL?.level || 1 }
+            };
+        }
+    } catch(e) {}
+    return {
+        EASY:   { score: 0, level: 1 },
+        NORMAL: { score: 0, level: 1 },
+        HARD:   { score: 0, level: 1 },
+        HELL:   { score: 0, level: 1 }
+    };
+}
+let records = getRecords();
+
+function checkAndUpdateRecord() {
+    if (!records[currentDiff]) records[currentDiff] = { score: 0, level: 1 };
+    let isNew = false;
+    const currentIntScore = Math.floor(score);
+    if (currentIntScore > records[currentDiff].score) {
+        records[currentDiff].score = currentIntScore;
+        isNew = true;
+    }
+    if (level > records[currentDiff].level) {
+        records[currentDiff].level = level;
+        isNew = true;
+    }
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    } catch(e) {}
+    return { isNew, record: records[currentDiff] };
+}
+
+function updateRecordsUI() {
+    records = getRecords();
+    ['EASY', 'NORMAL', 'HARD', 'HELL'].forEach(diff => {
+        const el = document.getElementById(`rec-${diff}`);
+        if (el && records[diff]) {
+            el.innerText = `BEST: LV.${records[diff].level} / ${records[diff].score} PTS`;
+        }
+    });
+    const hiEl = document.getElementById('hiScoreDisplay');
+    if (hiEl) {
+        const curBest = records[currentDiff] ? Math.max(records[currentDiff].score, Math.floor(score)) : Math.floor(score);
+        hiEl.innerText = curBest;
+    }
+}
 
 
 let audioCtx = null;
@@ -455,13 +529,20 @@ function renderTowerPreviews() {
 }
 
 function init() {
-    window.selectDiff = (diff) => {
+    window.selectDiff = (diff, btn) => {
         currentDiff = diff;
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
-        event.target.classList.add('selected');
+        if (btn) {
+            btn.classList.add('selected');
+        } else if (typeof event !== 'undefined' && event && event.target) {
+            const b = event.target.closest('.diff-btn');
+            if (b) b.classList.add('selected');
+        }
+        updateRecordsUI();
     };
     resize();
     renderTowerPreviews();
+    updateRecordsUI();
     if(pathPoints.length < 2) generatePath();
     requestAnimationFrame(loop);
 }
@@ -476,9 +557,11 @@ function startGameSession() {
     gameActive = true; isPaused = false;
     money = diffData.money; lives = diffData.hp; score = 0; 
     level = 1; waveCurrent = 0;
+    waveState = { active: false, countingDown: false, timer: 0, spawnCount: 0, spawnMax: 0, spawnTimer: 0 };
     
     towers = []; enemies = []; projectiles = []; particles = []; shockwaves = []; halos = []; floatText = [];
     toggleBottomPanel(false);
+    updateRecordsUI();
     
     if(pathPoints.length < 2) generatePath();
     
@@ -654,6 +737,7 @@ function update(dt) {
                     if (lives <= 0) gameOver();
                 } else {
                     money += e.bounty; score += e.bounty * 10;
+                    checkAndUpdateRecord();
                     if(particlesEnabled) {
                         createExplosion(e.x, e.y, e.color, 15);
                         createHalo(e.x, e.y, e.color); // Death Halo
@@ -668,14 +752,19 @@ function update(dt) {
     if (particlesEnabled) {
         if (particles.length > 250) particles.splice(0, particles.length - 250);
         for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(dt); if (particles[i].life <= 0) particles.splice(i, 1); }
-        
         for (let i = shockwaves.length - 1; i >= 0; i--) { shockwaves[i].update(dt); shockwaves[i].draw(); if (shockwaves[i].life <= 0) shockwaves.splice(i, 1); }
         for (let i = halos.length - 1; i >= 0; i--) { halos[i].update(dt); halos[i].draw(); if (halos[i].life <= 0) halos.splice(i, 1); }
-    }
-    // Update Shockwaves
-    for (let i = shockwaves.length - 1; i >= 0; i--) {
-        shockwaves[i].update(dt);
-        if(shockwaves[i].life <= 0) shockwaves.splice(i, 1);
+    } else {
+        for (let i = particles.length - 1; i >= 0; i--) {
+            if (particles[i].isEnergy) {
+                particles[i].update(dt);
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            } else {
+                particles.splice(i, 1);
+            }
+        }
+        if (shockwaves.length > 0) shockwaves.length = 0;
+        if (halos.length > 0) halos.length = 0;
     }
 
     for (let i = projectiles.length - 1; i >= 0; i--) { projectiles[i].update(dt); if (projectiles[i].dead) projectiles.splice(i, 1); }
@@ -720,6 +809,8 @@ function initNextWave() {
 
 function startNextLevel() {
     gameActive = false; level++; waveCurrent = 0;
+    checkAndUpdateRecord();
+    updateRecordsUI();
     
     const diffData = DIFFICULTY[currentDiff];
     money = diffData.money + Math.floor(money * diffData.keep);
@@ -832,7 +923,7 @@ class Tower {
                 if (p.isEnergy && p.life > 0 && Math.hypot(p.x-this.x, p.y-this.y) < this.range) {
                     p.x += (this.x - p.x) * 6 * dt * gameSpeed; p.y += (this.y - p.y) * 6 * dt * gameSpeed;
                     if (Math.hypot(p.x-this.x, p.y-this.y) < 15) {
-                        p.life = 0; money += 4; score += 10; if(particlesEnabled) createExplosion(this.x, this.y, '#a0f', 3);
+                        p.life = 0; money += 4; score += 10; checkAndUpdateRecord(); if(particlesEnabled) createExplosion(this.x, this.y, '#a0f', 3);
                     }
                 }
             }); return;
@@ -1203,18 +1294,6 @@ class Particle {
     draw() { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.isEnergy?3:2, this.isEnergy?3:2); ctx.globalAlpha = 1; }
 }
 
-//class Halo {
-//    constructor(x, y, color) { this.x=x; this.y=y; this.color=color; this.r=1; this.life=0.5; }
-//    update(dt) { this.r+=150*dt; this.life-=2*dt; }
-//    draw() { if(this.life<=0)return; ctx.save(); ctx.globalAlpha=this.life; ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fill(); ctx.restore(); }
-//}
-//class Shockwave {
-//    constructor(x, y, color) { this.x=x; this.y=y; this.color=color; this.r=1; this.life=0.5; }
-//    update(dt) { this.r+=300*dt; this.life-=2*dt; }
-//    draw() { if(this.life<=0)return; ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.strokeStyle=this.color; ctx.lineWidth=3; ctx.globalAlpha=this.life; ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.stroke(); ctx.restore(); }
-//}
-//function createHalo(x, y, color) { halos.push(new Halo(x, y, color)); }
-//function createShockwave(x, y, color) { shockwaves.push(new Shockwave(x, y, color)); }
 function createExplosion(x, y, c, n) { for(let i=0; i<n; i++) particles.push(new Particle(x, y, c, 1)); }
 function spawnEnergyParticles(x, y) { for(let i=0; i<3; i++) { let p = new Particle(x, y, '#fff', 3); p.isEnergy = true; particles.push(p); } }
 function distToSegment(x, y, x1, y1, x2, y2) {
@@ -1257,19 +1336,10 @@ function drawEntities() {
 function drawUIOverlay() {
     if (dragState.active) {
         const info = TOWER_TYPES[dragState.type];
-        // SMART OFFSET LOGIC
-        let towerY = useDragOffset ? dragState.y - 60 : dragState.y;
-        //if (useDragOffset && dragState.y < safeZone.top + 60) towerY = dragState.y + 60;
-
-        const inSafeY = towerY > safeZone.top && towerY < safeZone.bottom;
-        const hitPath = pathPoints.some((p, i) => i%3===0 && Math.hypot(p.x-dragState.x, p.y-towerY) < 20); 
-        const hitTower = towers.some(t => Math.hypot(t.x-dragState.x, t.y-towerY) < 25);
-        dragState.valid = money >= info.cost && !hitTower && !hitPath && inSafeY;
-
-        ctx.beginPath(); ctx.arc(dragState.x, towerY, info.range, 0, Math.PI*2);
+        ctx.beginPath(); ctx.arc(dragState.x, dragState.y, info.range, 0, Math.PI*2);
         ctx.fillStyle = dragState.valid ? `rgba(255,255,255,0.1)` : `rgba(255,0,0,0.2)`; ctx.fill();
         ctx.strokeStyle = dragState.valid ? info.color : '#f00'; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-        ctx.fillStyle = info.color; ctx.beginPath(); ctx.arc(dragState.x, towerY, 10, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = info.color; ctx.beginPath(); ctx.arc(dragState.x, dragState.y, 10, 0, Math.PI*2); ctx.fill();
     }
     if (selectedTower) {
         ctx.beginPath(); ctx.arc(selectedTower.x, selectedTower.y, selectedTower.range, 0, Math.PI*2);
@@ -1282,6 +1352,7 @@ function drawUIOverlay() {
 let dragState = { active: false, type: null, x: 0, y: 0, valid: false };
 let selectedTower = null;
 let lastClickTime = 0;
+let lastTouchTime = 0;
 
 const buildPanel = document.getElementById('buildPanel');
 const upgradePanel = document.getElementById('upgradePanel');
@@ -1304,14 +1375,23 @@ function toggleBottomPanel(showUpgrade) {
     }
 }
 
+function updateDragState(x, y) {
+    dragState.x = x;
+    dragState.y = useDragOffset ? y - 60 : y;
+    const info = TOWER_TYPES[dragState.type];
+    if (!info) return;
+
+    const inSafeY = dragState.y > safeZone.top && dragState.y < safeZone.bottom;
+    const hitPath = pathPoints.some((p, i) => i%3===0 && Math.hypot(p.x-dragState.x, p.y-dragState.y) < 20); 
+    const hitTower = towers.some(t => Math.hypot(t.x-dragState.x, t.y-dragState.y) < 25);
+    dragState.valid = money >= info.cost && !hitTower && !hitPath && inSafeY;
+}
+
 document.querySelectorAll('.tower-drag-item').forEach(el => {
     const start = (x, y) => { 
         if(selectedTower) toggleBottomPanel(false);
         dragState.active = true; dragState.type = el.dataset.type; 
-        
-        let tx = x, ty = y;
-        if (useDragOffset) { tx -= 0; ty -= 60; }
-        dragState.x = tx; dragState.y = ty;
+        updateDragState(x, y);
     };
     el.addEventListener('mousedown', e => start(e.clientX, e.clientY));
     el.addEventListener('touchstart', e => { e.preventDefault(); start(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
@@ -1319,27 +1399,15 @@ document.querySelectorAll('.tower-drag-item').forEach(el => {
 
 const move = (x, y) => {
     if (dragState.active) {
-        let tx = x, ty = y;
-        if (useDragOffset) { tx -= 0; ty -= 60; }
-        
-        dragState.x = tx; dragState.y = ty;
-        const info = TOWER_TYPES[dragState.type];
-        
-        const inSafeY = ty > safeZone.top && ty < safeZone.bottom;
-        const hitPath = pathPoints.some((p, i) => i%3===0 && Math.hypot(p.x-tx, p.y-ty) < 20); 
-        const hitTower = towers.some(t => Math.hypot(t.x-tx, t.y-ty) < 25);
-        dragState.valid = money >= info.cost && !hitTower && !hitPath && inSafeY;
+        updateDragState(x, y);
     }
 };
 window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
 window.addEventListener('touchmove', e => { if(dragState.active) e.preventDefault(); move(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
 const end = () => {
     if (dragState.active && dragState.valid) {
-        let ty = useDragOffset ? dragState.y - 60 : dragState.y;
-        if (useDragOffset && dragState.y < safeZone.top + 60) ty = dragState.y + 60;
-
         money -= TOWER_TYPES[dragState.type].cost;
-        towers.push(new Tower(dragState.x, ty, dragState.type));
+        towers.push(new Tower(dragState.x, dragState.y, dragState.type));
         sfx.play('shoot');
     }
     dragState.active = false;
@@ -1368,8 +1436,16 @@ const handleTap = (x, y) => {
         toggleBottomPanel(false);
     }
 };
-canvas.addEventListener('mousedown', e => handleTap(e.clientX, e.clientY));
-canvas.addEventListener('touchstart', e => { if(!dragState.active) handleTap(e.touches[0].clientX, e.touches[0].clientY); });
+canvas.addEventListener('mousedown', e => {
+    if (Date.now() - lastTouchTime < 500) return; // Ignore synthetic mouse event from mobile touch
+    handleTap(e.clientX, e.clientY);
+});
+canvas.addEventListener('touchstart', e => {
+    if(!dragState.active && e.touches.length > 0) {
+        lastTouchTime = Date.now();
+        handleTap(e.touches[0].clientX, e.touches[0].clientY);
+    }
+}, {passive: true});
 
 function updateUpgradeUI() {
     if(!selectedTower) return;
@@ -1430,18 +1506,28 @@ function updateUI() {
     document.getElementById('scoreDisplay').innerText = Math.floor(score);
     document.getElementById('levelDisplay').innerText = level;
     document.getElementById('waveDisplay').innerText = `${waveCurrent}/${WAVES_PER_LEVEL}`;
+    
+    // Live update high score in HUD
+    const hiEl = document.getElementById('hiScoreDisplay');
+    if (hiEl && records[currentDiff]) {
+        hiEl.innerText = Math.max(records[currentDiff].score, Math.floor(score));
+    }
+
     document.querySelectorAll('.tower-drag-item').forEach(el => {
         if (money < TOWER_TYPES[el.dataset.type].cost) el.classList.add('disabled'); else el.classList.remove('disabled');
     });
     // Live update upgrade button state
     if(selectedTower) updateUpgradeUI();
 }
-document.getElementById('startBtn').onclick = () => {
+function onStartGame() {
     document.getElementById('modal').style.display = 'none';
+    const summary = document.getElementById('gameSummary');
+    if (summary) summary.style.display = 'none';
     createNoiseBuffer();
     startGameSession();
-    audioCtx.resume();
-};
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+document.getElementById('startBtn').onclick = onStartGame;
 document.getElementById('speedBtn').onclick = (e) => {
     gameSpeed = gameSpeed === 1 ? 2 : 1; e.target.innerText = `x${gameSpeed}`;
 };
@@ -1450,13 +1536,35 @@ document.getElementById('pauseBtn').onclick = (e) => {
 };
 function resetGame() {
     document.getElementById('modal').style.display = 'none';
+    document.querySelector('#modal h1').innerText = "NEON DEFENSE";
+    const summary = document.getElementById('gameSummary');
+    if (summary) summary.style.display = 'none';
+    const btn = document.getElementById('startBtn');
+    btn.innerText = "INITIALIZE";
+    btn.onclick = onStartGame;
     startGameSession();
 }
 function gameOver() {
     gameActive = false;
+    const recResult = checkAndUpdateRecord();
+    updateRecordsUI();
+
     document.getElementById('modal').style.display = 'flex';
     document.querySelector('#modal h1').innerText = "SYSTEM FAILURE";
-    const btn = document.getElementById('startBtn'); btn.innerText = "REBOOT SYSTEM"; btn.onclick = resetGame;
+    
+    const summary = document.getElementById('gameSummary');
+    if (summary) {
+        summary.style.display = 'block';
+        summary.innerHTML = `
+            <div style="font-size:14px; color:#ff4444; margin-bottom:4px; font-weight:bold;">SECTOR COLLAPSED</div>
+            <div style="font-size:12px; color:#ccc; margin-bottom:4px;">DIFF: <span style="color:#0f0;">${currentDiff}</span> | LV: <span style="color:#d0f;">${level}</span> | PTS: <span style="color:#fa0;">${Math.floor(score)}</span></div>
+            ${recResult.isNew ? '<div style="font-size:12px; color:#0f0; text-shadow:0 0 10px #0f0; font-weight:bold;">🏆 NEW RECORD SET!</div>' : `<div style="font-size:11px; color:#0cf;">BEST: LV.${recResult.record.level} / ${recResult.record.score} PTS</div>`}
+        `;
+    }
+
+    const btn = document.getElementById('startBtn');
+    btn.innerText = "REBOOT SYSTEM";
+    btn.onclick = resetGame;
 }
 
 // 1. Force Resize & Render
