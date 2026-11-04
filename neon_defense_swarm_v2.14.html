@@ -193,9 +193,9 @@ let G = {
     difficulty: 'normal',
     hp:20, cash:120, wave:0, score:0, // wave is incremented when a wave starts, so the first one is wave 1
     grid:[], path:[], towers:[], enemies:[], projs:[], parts:[], shocks:[],
-    start:null, end:null, selected:null,
+    start:null, end:null, warpIn:null, warpOut:null, selected:null,
     dragType:null, dragPos:{x:0,y:0},
-    waveTimer:0, spawning:false, spawnQ:0, frame:0, shake: 0,
+    waveTimer:0, spawning:false, spawnQ:0, frame:0, shake: 0, endHit: 0,
     view:{s:1, ox:0, oy:0}, // map-to-screen scale/offset (for resize/rotation)
     overAt:0 // time of game over (0 = still playing)
 };
@@ -218,8 +218,8 @@ function renderBgCache() {
     bgCtx.lineWidth = 1;
 
     G.grid.forEach(c => {
-        if(c.type === 'obs') {
-            if(c.wall) {
+        if(c.wall || c.type === 'wall' || c.type === 'obs') {
+            if(c.wall || c.type === 'wall') {
                 // Outer perimeter wall: Solid boundary hex (0.92R)
                 bgCtx.fillStyle = '#021808';
                 bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.92, bgCtx); bgCtx.fill();
@@ -287,6 +287,227 @@ function renderBgCache() {
     }
 }
 
+function drawSpecialObstacles(c) {
+    let hr = G.hexR;
+    if(!hr || !G.grid.length) return;
+
+    // 1. Quantum Warp Gates (Alpha -> Omega)
+    if(G.warpIn && G.warpOut) {
+        // Quantum entanglement tether line
+        c.save();
+        c.strokeStyle = '#00ffff';
+        c.lineWidth = 1;
+        c.globalAlpha = 0.25 + Math.sin(G.frame * 0.08) * 0.12;
+        c.setLineDash([4, 6]);
+        c.beginPath();
+        c.moveTo(G.warpIn.x, G.warpIn.y);
+        c.lineTo(G.warpOut.x, G.warpOut.y);
+        c.stroke();
+        c.setLineDash([]);
+        c.restore();
+
+        // Warp In (Alpha singularity entrance)
+        let wi = G.warpIn;
+        drawHexSolid(wi.x, wi.y, hr * 0.88, '#00ffff', 0.12, c);
+        c.save(); c.translate(wi.x, wi.y);
+        c.strokeStyle = '#00ffff'; c.lineWidth = 1.8;
+        c.beginPath(); hexPath(0, 0, hr * 0.88, c); c.stroke();
+        // Rotating 3-arm accretion vortex
+        let wSpin = G.frame * 0.06;
+        for(let k = 0; k < 3; k++) {
+            let a = wSpin + k * (Math.PI * 2 / 3);
+            c.beginPath();
+            c.moveTo(Math.cos(a)*hr*0.72, Math.sin(a)*hr*0.72);
+            c.quadraticCurveTo(Math.cos(a + 0.8)*hr*0.45, Math.sin(a + 0.8)*hr*0.45, 0, 0);
+            c.strokeStyle = '#00ffff'; c.lineWidth = 1.4; c.stroke();
+        }
+        // Black hole center
+        c.beginPath(); c.arc(0, 0, hr * 0.22, 0, 6.28);
+        c.fillStyle = '#001a1a'; c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 1; c.stroke();
+        c.fillStyle = '#00ffff'; c.font = "bold 8px Courier New"; c.textAlign = 'center';
+        c.fillText("WARP IN", 0, hr * 0.55);
+        c.restore();
+
+        // Warp Out (Omega exit portal)
+        let wo = G.warpOut;
+        drawHexSolid(wo.x, wo.y, hr * 0.88, '#ff00ff', 0.12, c);
+        c.save(); c.translate(wo.x, wo.y);
+        c.strokeStyle = '#ff00ff'; c.lineWidth = 1.8;
+        c.beginPath(); hexPath(0, 0, hr * 0.88, c); c.stroke();
+        // Expanding outward shockwave ring
+        let oRing = (G.frame * 0.6) % (hr * 0.72);
+        c.beginPath(); c.arc(0, 0, oRing, 0, 6.28);
+        c.strokeStyle = 'rgba(255, 0, 255, ' + Math.max(0, 1 - oRing/(hr*0.72)) + ')';
+        c.lineWidth = 1.5; c.stroke();
+        // Radiating star emitter
+        for(let k = 0; k < 4; k++) {
+            let a = -wSpin + k * (Math.PI / 2);
+            c.beginPath();
+            c.moveTo(0, 0); c.lineTo(Math.cos(a)*hr*0.6, Math.sin(a)*hr*0.6);
+            c.strokeStyle = '#ffffff'; c.lineWidth = 1.2; c.stroke();
+        }
+        // White core
+        c.beginPath(); c.arc(0, 0, hr * 0.2, 0, 6.28);
+        c.fillStyle = '#ffffff'; c.fill();
+        c.fillStyle = '#ff00ff'; c.font = "bold 8px Courier New"; c.textAlign = 'center';
+        c.fillText("WARP OUT", 0, hr * 0.55);
+        c.restore();
+    }
+
+    // 2. Speed Pads, Slow Graviton Wells, and Single Way Conduits
+    for(let cell of G.grid) {
+        if(cell.type === 'speed_pad') {
+            // Neon Gold Kinetic Accelerator Pad
+            drawHexSolid(cell.x, cell.y, hr * 0.88, '#ffaa00', 0.15, c);
+            c.save(); c.translate(cell.x, cell.y);
+            c.strokeStyle = '#ffcc00'; c.lineWidth = 1.6;
+            c.beginPath(); hexPath(0, 0, hr * 0.88, c); c.stroke();
+            // Triple animated forward chevrons
+            let seq = Math.floor(G.frame * 0.15) % 3;
+            for(let i = -1; i <= 1; i++) {
+                let yOff = i * hr * 0.25;
+                let active = (i + 1 === seq);
+                c.strokeStyle = active ? '#ffffff' : '#ff9900';
+                c.lineWidth = active ? 2.2 : 1.4;
+                c.beginPath();
+                c.moveTo(-hr * 0.35, yOff + hr * 0.1);
+                c.lineTo(0, yOff - hr * 0.1);
+                c.lineTo(hr * 0.35, yOff + hr * 0.1);
+                c.stroke();
+            }
+            c.fillStyle = '#ffcc00'; c.font = "bold 7px Courier New"; c.textAlign = 'center';
+            c.fillText("SPEED", 0, hr * 0.58);
+            c.restore();
+        }
+        else if(cell.type === 'slow_pad') {
+            // Graviton Inversion Slow Well (Ultraviolet Violet/Purple)
+            drawHexSolid(cell.x, cell.y, hr * 0.88, '#9900ff', 0.18, c);
+            c.save(); c.translate(cell.x, cell.y);
+            c.strokeStyle = '#bb33ff'; c.lineWidth = 1.6;
+            c.beginPath(); hexPath(0, 0, hr * 0.88, c); c.stroke();
+            // Inward graviton vortex
+            let gSpin = -G.frame * 0.04;
+            for(let k = 0; k < 4; k++) {
+                let a = gSpin + k * (Math.PI / 2);
+                c.beginPath();
+                c.moveTo(Math.cos(a)*hr*0.65, Math.sin(a)*hr*0.65);
+                c.lineTo(Math.cos(a + 1.2)*hr*0.2, Math.sin(a + 1.2)*hr*0.2);
+                c.strokeStyle = 'rgba(210, 100, 255, 0.7)'; c.lineWidth = 1.4; c.stroke();
+            }
+            // Dense gravity eye
+            c.beginPath(); c.arc(0, 0, hr * 0.22, 0, 6.28);
+            c.fillStyle = '#220033'; c.fill();
+            c.strokeStyle = '#ffffff'; c.lineWidth = 1; c.stroke();
+            c.fillStyle = '#d966ff'; c.font = "bold 7px Courier New"; c.textAlign = 'center';
+            c.fillText("SLOW", 0, hr * 0.58);
+            c.restore();
+        }
+        else if(cell.type === 'oneway' && cell.onewayTarget) {
+            // Neon Emerald Single-Way Flow Conduit
+            drawHexSolid(cell.x, cell.y, hr * 0.88, '#00ff66', 0.12, c);
+            c.save(); c.translate(cell.x, cell.y);
+            c.strokeStyle = '#00ff88'; c.lineWidth = 1.5;
+            c.beginPath(); hexPath(0, 0, hr * 0.88, c); c.stroke();
+            // Rotate along conduit direction
+            c.rotate(cell.dirAngle || 0);
+            let arrowPulse = (G.frame * 0.1) % 1;
+            // Draw directional vector arrow
+            c.strokeStyle = '#00ff88'; c.lineWidth = 2.0;
+            c.beginPath();
+            c.moveTo(-hr * 0.45, 0); c.lineTo(hr * 0.45, 0);
+            c.lineTo(hr * 0.2, -hr * 0.25);
+            c.moveTo(hr * 0.45, 0); c.lineTo(hr * 0.2, hr * 0.25);
+            c.stroke();
+            // Moving inner pulse chevron
+            let px = -hr * 0.3 + arrowPulse * hr * 0.6;
+            c.strokeStyle = '#ffffff'; c.lineWidth = 1.5;
+            c.beginPath();
+            c.moveTo(px - hr * 0.15, -hr * 0.18);
+            c.lineTo(px, 0);
+            c.lineTo(px - hr * 0.15, hr * 0.18);
+            c.stroke();
+            c.restore();
+        }
+    }
+}
+
+function drawEndpoint(c) {
+    if(!G.end) return;
+    let ex = G.end.x, ey = G.end.y;
+    let hr = G.hexR || 20;
+    let hit = (G.endHit || 0) > 0;
+    let hitRatio = (G.endHit || 0) / 30; // 1.0 down to 0
+
+    // 1. Pre-rendered Neon Glow (intense flashing red when breached, breathing crimson when idle)
+    let glowSize = hr * (hit ? (1.8 + hitRatio * 1.5) : (1.3 + Math.sin(G.frame * 0.06) * 0.2));
+    drawGlow(c, ex, ey, glowSize, '#ff0033');
+
+    // 2. Base Hex Fill pulse
+    let fillAlpha = hit ? (0.35 + (G.endHit % 6 < 3 ? 0.3 : 0)) : (0.18 + Math.sin(G.frame * 0.05) * 0.08);
+    drawHexSolid(ex, ey, hr * 0.90, hit ? '#ffffff' : '#ff0033', fillAlpha, c);
+
+    c.save();
+    c.translate(ex, ey);
+
+    // 3. Rotating Warning Shield Rings
+    let spin1 = G.frame * 0.03;
+    let spin2 = -G.frame * 0.045;
+
+    // Outer rotating hazard ring with dashed notches
+    c.save();
+    c.rotate(spin1);
+    c.strokeStyle = hit ? '#ffffff' : '#ff2255';
+    c.lineWidth = hit ? 2.5 : 1.5;
+    c.setLineDash([hr * 0.35, hr * 0.18]);
+    c.beginPath();
+    hexPath(0, 0, hr * 0.90, c);
+    c.stroke();
+    c.restore();
+
+    // Inner counter-rotating warning circle with 3 tick marks
+    c.save();
+    c.rotate(spin2);
+    c.strokeStyle = hit ? '#ffcc00' : '#ff0044';
+    c.lineWidth = 1.2;
+    c.setLineDash([3, 4]);
+    c.beginPath();
+    c.arc(0, 0, hr * 0.62, 0, 6.28);
+    c.stroke();
+    c.setLineDash([]);
+    // 3 radial tick marks
+    for(let k = 0; k < 3; k++) {
+        let a = k * (Math.PI * 2 / 3);
+        c.beginPath();
+        c.moveTo(Math.cos(a) * hr * 0.45, Math.sin(a) * hr * 0.45);
+        c.lineTo(Math.cos(a) * hr * 0.62, Math.sin(a) * hr * 0.62);
+        c.stroke();
+    }
+    c.restore();
+
+    // 4. Hit shock ripple expanding from core
+    if(hit) {
+        let rippleR = hr * (0.4 + (1 - hitRatio) * 1.6);
+        c.strokeStyle = `rgba(255, 255, 255, ${hitRatio * 0.8})`;
+        c.lineWidth = 2;
+        c.beginPath();
+        hexPath(0, 0, rippleR, c);
+        c.stroke();
+    }
+
+    // 5. Dynamic Base HP Label (Pops in size and flashes white/red upon damage)
+    let fontSize = Math.round(15 + (hit ? hitRatio * 8 : 0));
+    c.font = `bold ${fontSize}px Courier New`;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillStyle = hit ? (G.endHit % 4 < 2 ? '#ffffff' : '#ff0033') : '#ffffff';
+    c.shadowColor = '#ff0033';
+    c.shadowBlur = hit ? 10 : 4;
+    c.fillText(G.hp, 0, 0);
+    c.shadowBlur = 0;
+
+    c.restore();
+}
+
 // --- Performance Optimization: 2. Pre-rendered Neon Glow Sprite Cache ---
 const glowCache = new Map();
 function getGlowSprite(color) {
@@ -314,24 +535,24 @@ function drawGlow(targetCtx, x, y, r, color) {
 }
 
 // --- Performance Optimization: 3. Zero-Allocation Object Pools for Particles & Shocks ---
-const MAX_PARTS = 140;
+const MAX_PARTS = 300;
 const particlePool = [];
 for(let i=0; i<MAX_PARTS; i++) {
-    particlePool.push({ active:false, x:0, y:0, vx:0, vy:0, life:0, color:'#fff', type:'dot', r:2 });
+    particlePool.push({ active:false, x:0, y:0, vx:0, vy:0, life:0, color:'#fff', type:'dot', r:2, text:'' });
 }
-function spawnParticle(x, y, vx, vy, life, color, type='dot', r=2) {
+function spawnParticle(x, y, vx, vy, life, color, type='dot', r=2, text='') {
     if(!G.enableFX) return;
     for(let i=0; i<MAX_PARTS; i++) {
         let p = particlePool[i];
         if(!p.active) {
             p.active = true; p.x = x; p.y = y; p.vx = vx; p.vy = vy;
-            p.life = life; p.color = color; p.type = type; p.r = r;
+            p.life = life; p.color = color; p.type = type; p.r = r; p.text = text;
             return p;
         }
     }
 }
 
-const MAX_SHOCKS = 25;
+const MAX_SHOCKS = 40;
 const shockPool = [];
 for(let i=0; i<MAX_SHOCKS; i++) {
     shockPool.push({ active:false, x:0, y:0, r:1, maxR:60, color:'#f00', alpha:1 });
@@ -464,6 +685,47 @@ function playSound(type) {
         gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
         osc.connect(gain); gain.connect(actx.destination);
         osc.start(t); osc.stop(t + 0.15);
+    }
+    else if(type === 'warp') {
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, t);
+        osc.frequency.exponentialRampToValueAtTime(1400, t + 0.18);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.18);
+    }
+    else if(type === 'boost') {
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(520, t);
+        osc.frequency.exponentialRampToValueAtTime(980, t + 0.1);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.1);
+    }
+    else if(type === 'breach') {
+        // Deep cybernetic bass impact thud
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, t);
+        osc.frequency.exponentialRampToValueAtTime(32, t + 0.38);
+        gain.gain.setValueAtTime(0.45, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.38);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.38);
+        
+        // High harmonic alarm alert tone
+        let osc2 = actx.createOscillator(); let gain2 = actx.createGain();
+        osc2.type = 'square';
+        osc2.frequency.setValueAtTime(880, t);
+        osc2.frequency.setValueAtTime(587, t + 0.08);
+        gain2.gain.setValueAtTime(0.18, t);
+        gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+        osc2.connect(gain2); gain2.connect(actx.destination);
+        osc2.start(t); osc2.stop(t + 0.25);
     }
 }
 
@@ -645,10 +907,17 @@ function fitView() {
 }
 window.addEventListener('resize', () => { if(G.grid.length) { fitView(); draw(); } });
 
+function canBuildOn(hex) {
+    return hex && !hex.occ && hex.type === 'floor' && !hex.wall && hex !== G.start && hex !== G.end && !hex.tower;
+}
+
 function initGrid() {
     let validMap = false;
-    while(!validMap) {
+    let attempts = 0;
+    while(!validMap && attempts++ < 150) {
         G.grid = [];
+        G.warpIn = null;
+        G.warpOut = null;
         const w = G.hexR * Math.sqrt(3); const h = G.hexR * 2; const vDist = h * 0.75;
         // Fit whole hexes: odd rows are shifted right by w/2, so total width = cols*w + w/2;
         // total height = (rows-1)*vDist + h.
@@ -660,13 +929,13 @@ function initGrid() {
                 let cx = offX + q * w + (r%2 ? w/2 : 0); let cy = offY + r * vDist;
                 // Outer wall: first/last row and first/last cell of every row -> sealed on all 4 sides
                 let isWall = (r === 0 || r === rows-1 || q === 0 || q === cols-1);
-                let isObstacle = isWall || (Math.random() < 0.12);
-                let cell = { q, r, x:cx, y:cy, occ: isObstacle, type: isObstacle ? 'obs' : 'floor', wall: isWall, id: r*1000+q };
+                let isObstacle = isWall || (Math.random() < 0.08); // slightly lower rock rate to allow special obstacles
+                let cell = { q, r, x:cx, y:cy, occ: isObstacle, type: isWall ? 'wall' : (isObstacle ? 'obs' : 'floor'), wall: isWall, id: r*1000+q };
                 G.grid.push(cell); if(!isObstacle) floorTiles.push(cell);
             }
         }
         G.grid.forEach(c => c.nb = G.grid.filter(n => n!==c && dist(c,n) < G.hexR*2.1)); // neighbour cache
-        let minD = G.w*0.5; let tries=0;
+        let minD = G.w*0.45; let tries=0;
         do {
             G.start = floorTiles[Math.floor(Math.random()*floorTiles.length)];
             G.end = floorTiles[Math.floor(Math.random()*floorTiles.length)];
@@ -674,11 +943,101 @@ function initGrid() {
         } while(dist(G.start,G.end) < minD && tries<100);
         
         G.start.occ=false; G.start.type='floor'; G.end.occ=false; G.end.type='floor';
-        // Clear random obstacles around start/end, but never the outer wall
+        // Clear obstacles around start/end, but never outer boundary
         getNeighbors(G.start).forEach(n=>{ if(!n.wall) { n.occ=false; n.type='floor'; } });
         getNeighbors(G.end).forEach(n=>{ if(!n.wall) { n.occ=false; n.type='floor'; } });
+
+        // Select candidates for tactical obstacles (must be open floor away from start/end)
+        let candidates = floorTiles.filter(c => c !== G.start && c !== G.end && !getNeighbors(G.start).includes(c) && !getNeighbors(G.end).includes(c) && !c.wall);
+
+        // 1. Transmit Points (Warp Gate: warp_in & warp_out)
+        if(candidates.length >= 10) {
+            let pTries = 0, pIn = null, pOut = null;
+            while(pTries++ < 60 && (!pIn || !pOut)) {
+                let c1 = candidates[Math.floor(Math.random() * candidates.length)];
+                let c2 = candidates[Math.floor(Math.random() * candidates.length)];
+                if(c1 !== c2 && dist(c1, c2) >= G.w * 0.35 && dist(c1, G.end) > G.hexR * 2.5 && dist(c2, G.start) > G.hexR * 2.5) {
+                    let c1Walkable = getNeighbors(c1).filter(n => !n.wall && !n.occ).length;
+                    let c2Walkable = getNeighbors(c2).filter(n => !n.wall && !n.occ).length;
+                    if(c1Walkable >= 2 && c2Walkable >= 2) {
+                        pIn = c1; pOut = c2;
+                    }
+                }
+            }
+            if(pIn && pOut) {
+                G.warpIn = pIn; G.warpIn.type = 'warp_in'; G.warpIn.occ = false;
+                G.warpOut = pOut; G.warpOut.type = 'warp_out'; G.warpOut.occ = false;
+                candidates = candidates.filter(c => c !== pIn && c !== pOut);
+            }
+        }
+
+        // 2. Speed Up Pads (2 pads)
+        for(let i = 0; i < 2 && candidates.length > 0; i++) {
+            let idx = Math.floor(Math.random() * candidates.length);
+            let c = candidates.splice(idx, 1)[0];
+            c.type = 'speed_pad';
+        }
+
+        // 3. Slow Down / Graviton Pads (2 pads)
+        for(let i = 0; i < 2 && candidates.length > 0; i++) {
+            let idx = Math.floor(Math.random() * candidates.length);
+            let c = candidates.splice(idx, 1)[0];
+            c.type = 'slow_pad';
+        }
+
+        // 4. Single Way Conduits (2 one-way directional conduits)
+        for(let i = 0; i < 2 && candidates.length > 0; i++) {
+            let validCandidates = candidates.filter(c => {
+                let walkableNeighbors = getNeighbors(c).filter(n => !n.wall && n.type !== 'obs' && !n.occ);
+                return walkableNeighbors.length >= 2;
+            });
+            if(validCandidates.length > 0) {
+                let c = validCandidates[Math.floor(Math.random() * validCandidates.length)];
+                candidates = candidates.filter(cand => cand !== c);
+                let walkableNeighbors = getNeighbors(c).filter(n => !n.wall && n.type !== 'obs' && !n.occ);
+                let targetN = walkableNeighbors[Math.floor(Math.random() * walkableNeighbors.length)];
+                c.type = 'oneway';
+                c.onewayTarget = targetN;
+                c.dirAngle = Math.atan2(targetN.y - c.y, targetN.x - c.x);
+            }
+        }
+
         if(calcPath()) { validMap = true; renderBgCache(); }
     }
+}
+
+function getTransitions(cur) {
+    if(!cur || cur.occ || cur.tower) return [];
+    let list = [];
+
+    // Warp Gate entrance: you can ONLY warp to warp_out (cannot step out onto physical neighbors)
+    if(cur.type === 'warp_in') {
+        if(G.warpOut && !G.warpOut.occ && !G.warpOut.tower) {
+            list.push({ to: G.warpOut, cost: 0.8 });
+        }
+        return list;
+    }
+
+    for(let n of getNeighbors(cur)) {
+        if(n.occ || n.tower) continue;
+
+        // If currently on a one-way conduit, must exit along onewayTarget
+        if(cur.type === 'oneway' && cur.onewayTarget) {
+            if(n !== cur.onewayTarget) continue;
+        }
+
+        // If entering a one-way conduit, cannot enter against the arrow
+        if(n.type === 'oneway' && n.onewayTarget) {
+            if(n.onewayTarget === cur) continue;
+        }
+
+        let stepCost = 1.0;
+        if(n.type === 'speed_pad') stepCost = 0.5; // Pathfinding favors speed pads
+        else if(n.type === 'slow_pad') stepCost = 1.3;
+
+        list.push({ to: n, cost: stepCost });
+    }
+    return list;
 }
 
 function calcPath(tempBlock=null) {
@@ -689,19 +1048,31 @@ function calcPath(tempBlock=null) {
     return path;
 }
 
-// A* from 'from' to 'to' over unoccupied cells. Returns the cell list or null.
+// A* from 'from' to 'to' over unoccupied cells using directional transitions.
 function findPath(from, to) {
-    if(!from || from.occ) return null;
+    if(!from || from.occ || from.tower || !to || to.occ || to.tower) return null;
     let open=[from], cameFrom=new Map(), gScore=new Map();
     gScore.set(from, 0); let found=false;
+    const h = (a) => {
+        let dDirect = dist(a, to);
+        if(G.warpIn && G.warpOut && !G.warpOut.occ && !G.warpOut.tower) {
+            let dWarp = dist(a, G.warpIn) + dist(G.warpOut, to);
+            return Math.min(dDirect, dWarp);
+        }
+        return dDirect;
+    };
     while(open.length>0) {
-        open.sort((a,b)=>(gScore.get(a)+dist(a,to))-(gScore.get(b)+dist(b,to)));
+        open.sort((a,b)=>(gScore.get(a)+h(a))-(gScore.get(b)+h(b)));
         let cur=open.shift();
         if(cur===to){found=true; break;}
-        for(let n of getNeighbors(cur)) {
-            if(n.occ) continue;
-            let g=gScore.get(cur)+1;
-            if(g<(gScore.get(n)||Infinity)) { cameFrom.set(n,cur); gScore.set(n,g); if(!open.includes(n)) open.push(n); }
+        for(let trans of getTransitions(cur)) {
+            let n = trans.to;
+            let g = gScore.get(cur) + trans.cost;
+            if(g < (gScore.get(n) || Infinity)) {
+                cameFrom.set(n, cur);
+                gScore.set(n, g);
+                if(!open.includes(n)) open.push(n);
+            }
         }
     }
     if(!found) return null;
@@ -711,20 +1082,26 @@ function findPath(from, to) {
     return path.reverse();
 }
 
-// Plan a new route for every live enemy from where it is now. Each enemy heads to the
-// cell it was walking toward (or back to the last cell it reached if that one got blocked).
-// Returns null if any enemy would be trapped, so the caller can reject the change.
-function planEnemyRoutes() {
+// Plan a new route for every live enemy from where it is now.
+function planEnemyRoutes(tempBlock=null) {
+    if(tempBlock) tempBlock.occ = true;
     let cache = new Map(), plans = [];
     for(let e of G.enemies) {
         let tgt = e.path[e.pi];
-        let origin = (tgt && !tgt.occ) ? tgt : e.prev;
-        if(!origin || origin.occ) return null;
+        let origin = (tgt && !tgt.occ && !tgt.tower) ? tgt : e.prev;
+        if(!origin || origin.occ || origin.tower) {
+            if(tempBlock) tempBlock.occ = false;
+            return null;
+        }
         if(!cache.has(origin)) cache.set(origin, findPath(origin, G.end));
         let p = cache.get(origin);
-        if(!p) return null;
+        if(!p) {
+            if(tempBlock) tempBlock.occ = false;
+            return null;
+        }
         plans.push(p);
     }
+    if(tempBlock) tempBlock.occ = false;
     return plans;
 }
 function applyEnemyRoutes(plans) { G.enemies.forEach((e,i) => { e.path = plans[i]; e.pi = 0; }); }
@@ -804,7 +1181,7 @@ function updateLogic() {
             let maxTargets = 2 + t.lvl;
             // Only shock valid enemies
             t.targets = G.enemies.filter(e => dist(t,e) <= range && e.hp>0 && !e.reached).slice(0, maxTargets);
-            t.targets.forEach(e => { if(G.frame%t.rate===0) { e.hp-=t.dmg*(1+t.lvl*0.5)*buff; e.slow=20; } });
+            t.targets.forEach(e => { if(G.frame%t.rate===0) { let grav = e.inGraviton > 0 ? 0.6 : 1.0; e.hp-=t.dmg*(1+t.lvl*0.5)*buff*grav; e.slow=20; } });
         } else if(t.type !== 'buff') {
             if(!t.target || dist(t,t.target)>range) {
                 // Find closest valid target
@@ -918,11 +1295,15 @@ function updateLogic() {
                 if(p.type==='missile') {
                     if(G.enableFX) { playSound('boom'); fxExplode(p.x,p.y,p.color,12); spawnShock(p.x, p.y, p.color, 60); }
                     G.enemies.forEach(e=>{
-                        if(dist(p,e)<p.splash && e.hp>0 && !e.reached) e.hp-=p.dmg;
+                        if(dist(p,e)<p.splash && e.hp>0 && !e.reached) {
+                            let grav = e.inGraviton > 0 ? 0.6 : 1.0;
+                            e.hp -= p.dmg * grav;
+                        }
                     });
                     for(let k=0;k<4;k++){ let a=Math.random()*6.28; G.projs.push({x:p.x,y:p.y,vx:Math.cos(a),vy:Math.sin(a),spd:6,dmg:p.dmg*0.3,color:'#fa0',type:'frag',life:20}); }
                 } else if (hit) { // Single target hit
-                    hit.hp-=p.dmg; 
+                    let grav = hit.inGraviton > 0 ? 0.6 : 1.0;
+                    hit.hp -= p.dmg * grav; 
                     if(G.enableFX) fx(p.x,p.y,p.color,3); 
                 }
             }
@@ -936,7 +1317,7 @@ function updateLogic() {
             let sMult = (DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal).scoreMult;
             G.cash += e.val; 
             G.score += Math.round(e.val * 10 * sMult); 
-            if(G.enableFX) { fxExplode(e.x,e.y,e.color,20); fxHalo(e.x,e.y,e.color); }
+            fxEnemyDestroy(e);
             updateUI(); G.enemies.splice(i,1); continue; 
         }
         
@@ -945,19 +1326,70 @@ function updateLogic() {
         // Check end condition
         if(dist(e, G.end) < G.hexR) {
             e.reached = true; // Mark as reached so towers ignore it
-            if(G.enableFX) fxExplode(e.x,e.y,'#f00',20);
             G.enemies.splice(i,1); loseLife();
+            playSound('breach');
+            G.endHit = 30;
+            if(G.enableFX) {
+                fxExplode(G.end.x, G.end.y, '#ff0033', 30);
+                fxExplode(G.end.x, G.end.y, '#ffffff', 16);
+                fxExplode(G.end.x, G.end.y, e.color || '#ff8800', 14);
+                spawnShock(G.end.x, G.end.y, '#ff0044', G.hexR * 3.8);
+                spawnShock(G.end.x, G.end.y, '#ffffff', G.hexR * 2.2);
+                fxHalo(G.end.x, G.end.y, '#ff0044');
+                fxHalo(G.end.x, G.end.y, '#ffcc00');
+                spawnParticle(G.end.x, G.end.y - 10, 0, -1.0, 1.0, '#ff2244', 'text', 0, '-1 HP');
+            }
             continue;
         }
 
         if(target) {
             let tx=target.x+e.ox, ty=target.y+e.oy;
             let moveSpd = e.spd * (e.slow>0 ? 0.4 : 1); if(e.slow>0) e.slow--;
+            if(e.speedBoost > 0) { moveSpd *= 1.75; e.speedBoost--; if(G.enableFX && G.frame % 3 === 0) fx(e.x, e.y, '#ffdd00', 1); }
+            if(e.inGraviton > 0) { moveSpd *= 0.55; e.inGraviton--; if(G.enableFX && G.frame % 4 === 0) fx(e.x, e.y, '#cc33ff', 1); }
+
             let dx=tx-e.x, dy=ty-e.y, d=Math.hypot(dx,dy);
-            if(d<moveSpd) { e.prev = target; e.pi++; } else { e.x+=dx/d*moveSpd; e.y+=dy/d*moveSpd; e.angle=Math.atan2(dy,dx); }
+            if(d<moveSpd) {
+                e.prev = target;
+                if(target.type === 'speed_pad') {
+                    e.speedBoost = 50;
+                    if(G.enableFX && G.frame % 6 === 0) playSound('boost');
+                } else if(target.type === 'slow_pad') {
+                    e.inGraviton = 45;
+                }
+
+                // Warp Gate Teleport
+                if(target.type === 'warp_in' && G.warpOut && !G.warpOut.occ && !G.warpOut.tower) {
+                    if(e.path[e.pi + 1] === G.warpOut) {
+                        e.x = G.warpOut.x + (e.ox || 0);
+                        e.y = G.warpOut.y + (e.oy || 0);
+                        e.prev = G.warpOut;
+                        if(G.enableFX) {
+                            playSound('warp');
+                            fxExplode(target.x, target.y, '#00ffff', 18);
+                            fxExplode(G.warpOut.x, G.warpOut.y, '#ff00ff', 18);
+                            spawnShock(G.warpOut.x, G.warpOut.y, '#ff00ff', 45);
+                        }
+                        e.pi += 2;
+                    } else {
+                        e.pi++;
+                    }
+                } else {
+                    e.pi++;
+                }
+            } else {
+                e.x+=dx/d*moveSpd; e.y+=dy/d*moveSpd; e.angle=Math.atan2(dy,dx);
+            }
         } else { 
             // Fallback if path ends abnormally
             e.reached = true; G.enemies.splice(i,1); loseLife();
+            playSound('breach');
+            G.endHit = 30;
+            if(G.enableFX) {
+                fxExplode(G.end.x, G.end.y, '#ff0033', 25);
+                spawnShock(G.end.x, G.end.y, '#ff0044', G.hexR * 3.2);
+                spawnParticle(G.end.x, G.end.y - 10, 0, -1.0, 1.0, '#ff2244', 'text', 0, '-1 HP');
+            }
         }
     }
     
@@ -973,11 +1405,15 @@ function updateLogic() {
         let p = particlePool[i];
         if(p.active) {
             p.x += p.vx; p.y += p.vy;
+            if(p.type === 'spark' || p.type === 'dot') {
+                p.vx *= 0.94; p.vy *= 0.94;
+            }
             if(p.type === 'halo') p.r += 2;
-            p.life -= 0.08;
+            p.life -= (p.type === 'text' ? 0.025 : 0.035);
             if(p.life <= 0) p.active = false;
         }
     }
+    if(G.endHit > 0) G.endHit--;
 }
 
 // --- Wave System ---
@@ -1016,7 +1452,7 @@ function spawnEnemy() {
         shape='pentagon'; baseHp*=1.3; spd*=0.9; size = Math.round(hr * 0.54); 
     }
     let e = { 
-        x:G.start.x, y:G.start.y, pi:0, slow:0, hp:baseHp, max:baseHp, spd:spd, size:size,
+        x:G.start.x, y:G.start.y, pi:0, slow:0, speedBoost:0, inGraviton:0, hp:baseHp, max:baseHp, spd:spd, size:size,
         path:G.path, prev:G.start, // own route + last cell reached (for rerouting)
         val: Math.max(1, Math.floor((5+Math.floor(G.wave/2)) * (G.difficulty==='easy'?1.2:(G.difficulty==='hell'?0.8:1.0)))), shape: shape, 
         color: `hsl(${(G.wave*25)%360},100%,60%)`, angle: 0, 
@@ -1034,11 +1470,11 @@ function draw() {
     // 1. Offscreen Cached Static Map (Hex Grid, Obstacles, Walls, Gates)
     ctx.drawImage(bgCanvas, 0, 0);
 
-    // Dynamic Base HP
-    if(G.end) {
-        ctx.fillStyle = '#fff'; ctx.font = "bold 16px Courier New"; ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(G.hp, G.end.x, G.end.y);
-    }
+    // 1.5 Special Tactical Obstacles & Conduits (Warp Gate, Speed Pad, Slow Graviton, One-Way)
+    drawSpecialObstacles(ctx);
+
+    // 1.8 Dynamic Animated Endpoint Core & Breach Alert Visuals
+    drawEndpoint(ctx);
 
     if(G.enableFX) ctx.globalCompositeOperation = 'lighter';
 
@@ -1504,8 +1940,20 @@ function draw() {
                 if(p.type === 'halo') {
                     ctx.strokeStyle = p.color; ctx.lineWidth = 2;
                     ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.28); ctx.stroke();
+                } else if(p.type === 'spark') {
+                    ctx.strokeStyle = p.color; ctx.lineWidth = p.r || 1.8;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x - p.vx * 2.2, p.y - p.vy * 2.2);
+                    ctx.stroke();
+                } else if(p.type === 'text') {
+                    ctx.fillStyle = p.color; ctx.font = "bold 13px Courier New"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(p.text || "-1 HP", p.x, p.y);
                 } else {
-                    ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 2, 2);
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r || 1.8, 0, 6.28);
+                    ctx.fill();
                 }
             }
         }
@@ -1521,7 +1969,7 @@ function draw() {
         let scale = G.hexR / 20; ctx.scale(scale, scale);
         drawTowerShape(ctx, data.type, 1, data.color);
         ctx.restore();
-        if(hex) drawHexSolid(hex.x, hex.y, G.hexR, data.color, 0.5);
+        if(hex) drawHexSolid(hex.x, hex.y, G.hexR, canBuildOn(hex) ? data.color : '#ff0033', 0.45);
     }
     
     if(G.selected) {
@@ -1531,6 +1979,19 @@ function draw() {
     }
     
     ctx.globalCompositeOperation = 'source-over'; ctx.shadowBlur=0;
+
+    // Perimeter Danger Flash when Endpoint Base is Breached
+    if(G.endHit > 0) {
+        ctx.save();
+        ctx.setTransform(1,0,0,1,0,0);
+        let flashAlpha = (G.endHit / 30) * 0.4;
+        ctx.fillStyle = `rgba(255, 0, 50, ${flashAlpha * 0.2})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = `rgba(255, 0, 50, ${flashAlpha})`;
+        ctx.lineWidth = Math.max(4, Math.round(14 * (G.endHit / 30)));
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+    }
 }
 
 // --- Utils ---
@@ -1625,11 +2086,42 @@ function distToSegment(A, B, P) { const l2 = (A.x-B.x)**2 + (A.y-B.y)**2; if(l2=
 function fx(x,y,c,n) { 
     if(!G.enableFX) return;
     for(let i=0; i<n; i++) {
-        spawnParticle(x, y, (Math.random()-.5)*3.5, (Math.random()-.5)*3.5, 0.8, c, 'dot', 2);
+        let a = Math.random() * 6.28;
+        let spd = 1.0 + Math.random() * 3.5;
+        spawnParticle(x, y, Math.cos(a)*spd, Math.sin(a)*spd, 0.7 + Math.random()*0.3, c, 'spark', 1.8);
     }
 }
-function fxExplode(x,y,c,n) { fx(x, y, c, Math.min(n, 12)); }
+function fxExplode(x,y,c,n=16) { fx(x, y, c, n); }
 function fxHalo(x,y,c) { spawnParticle(x, y, 0, 0, 1, c, 'halo', 5); }
+function fxEnemyDestroy(e) {
+    if(!G.enableFX) return;
+    let isBoss = (e.shape === 'decagon');
+    let isHeavy = (e.shape === 'octagon');
+    let count = isBoss ? 45 : (isHeavy ? 30 : 20);
+    let shockR = isBoss ? G.hexR * 3.2 : (isHeavy ? G.hexR * 2.5 : G.hexR * 1.8);
+
+    // 1. Expanding Neon Shockwave ring in enemy's color
+    spawnShock(e.x, e.y, e.color, shockR);
+    if(isBoss || isHeavy) {
+        spawnShock(e.x, e.y, '#ffffff', shockR * 0.6);
+    }
+
+    // 2. Expanding halo ring
+    fxHalo(e.x, e.y, e.color);
+
+    // 3. Directional Neon Vector Sparks (GeoDefense shard burst)
+    for(let k = 0; k < count; k++) {
+        let a = Math.random() * Math.PI * 2;
+        let spd = (1.5 + Math.random() * 4.5) * (isBoss ? 1.4 : 1.0);
+        let c = (k % 3 === 0) ? '#ffffff' : e.color;
+        let r = 1.6 + Math.random() * 1.4;
+        let life = 0.7 + Math.random() * 0.4;
+        spawnParticle(e.x, e.y, Math.cos(a)*spd, Math.sin(a)*spd, life, c, 'spark', r);
+    }
+
+    // 4. Floating Cash Bounty Indicator
+    spawnParticle(e.x, e.y - 4, 0, -0.9, 1.0, '#00ff88', 'text', 0, '+$' + e.val);
+}
 function towerRange(t) { return t.range * (1 + (t.lvl-1)*0.05); }
 function toWorld(cx, cy) { let r = canvas.getBoundingClientRect(); return { x:(cx - r.left - G.view.ox)/G.view.s, y:(cy - r.top - G.view.oy)/G.view.s }; }
 let isTouchDrag = false;
@@ -1638,7 +2130,15 @@ function getNeighbors(c) { return c.nb || G.grid.filter(n => dist(c,n) < G.hexR*
 
 // Bound once at game start (bindTouch handles both touch and mouse).
 function setupMenuListeners() {
-    bindTouch('m-upg', () => {
+    const upgMenu = document.getElementById('upg-menu');
+    if(upgMenu) {
+        ['click', 'touchstart', 'mousedown'].forEach(evt => {
+            upgMenu.addEventListener(evt, e => e.stopPropagation(), {passive: evt === 'touchstart' ? false : true});
+        });
+    }
+
+    bindTouch('m-upg', (e) => {
+        if(e) { e.stopPropagation(); }
         if(!G.selected) return;
         let t = G.selected; let isMax = t.lvl >= 6;
         let cost = Math.floor(t.cost * t.lvl * 0.7);
@@ -1648,18 +2148,20 @@ function setupMenuListeners() {
         } else playSound('boom');
     });
 
-    bindTouch('m-sell', () => {
+    bindTouch('m-sell', (e) => {
+        if(e) { e.stopPropagation(); }
         if(!G.selected) return;
         let t = G.selected; let sell = Math.floor(t.cost * 0.5 * t.lvl);
         G.cash += sell; 
         let cell = G.grid.find(g=>g.q===t.q && g.r===t.r);
-        if(cell) cell.occ = false;
+        if(cell) { cell.occ = false; cell.tower = null; }
         G.towers = G.towers.filter(to => to !== t);
         calcPath(); let plans = planEnemyRoutes(); if(plans) applyEnemyRoutes(plans);
         playSound('sell'); closeMenu(); updateUI();
     });
 
-    bindTouch('m-lock', () => {
+    bindTouch('m-lock', (e) => {
+        if(e) { e.stopPropagation(); }
         if(!G.selected || G.selected.type !== 'laser') return;
         G.selected.lockedAngle = (G.selected.lockedAngle != null) ? null : G.selected.angle;
         updateMenuUI();
@@ -1747,17 +2249,24 @@ function endDrag(e) {
     e.preventDefault(); if(!G.dragType) return;
     let hex = pixelToHex(G.dragPos.x, G.dragPos.y - dragLift()); 
     let data = TOWER_DATA[G.dragType];
-    if(hex && !hex.occ && hex.type!=='obs' && hex!==G.start && hex!==G.end) {
+    if(hex && canBuildOn(hex)) {
         if(G.cash >= data.cost) {
             hex.occ = true;
             let mainPath = findPath(G.start, G.end);
-            let plans = mainPath && planEnemyRoutes(); // null if any live enemy would be trapped
-            if(plans) {
-                G.path = mainPath; applyEnemyRoutes(plans);
+            let plans = mainPath ? planEnemyRoutes() : null; // null if any live enemy would be trapped
+            if(mainPath && plans) {
+                hex.occ = true;
+                let newTower = {q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data, cd:0, lvl:1, angle:0, lockedAngle:null};
+                hex.tower = newTower;
+                G.towers.push(newTower);
+                G.path = mainPath;
+                applyEnemyRoutes(plans);
                 G.cash -= data.cost;
-                G.towers.push({q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data, cd:0, lvl:1, angle:0, lockedAngle:null});
                 playSound('place'); fxExplode(hex.x, hex.y, '#fff', 8); updateUI();
-            } else { hex.occ = false; playSound('boom'); fxExplode(hex.x,hex.y,'#f00',5); }
+            } else {
+                hex.occ = false; hex.tower = null;
+                playSound('boom'); fxExplode(hex.x, hex.y, '#f00', 5);
+            }
         } else playSound('boom');
     }
     G.dragType = null;
@@ -1770,7 +2279,8 @@ function fireLaser(t, buff) {
     let hitCount = 0;
     G.enemies.forEach(e => {
         if(e.hp > 0 && !e.reached && distToSegment({x:t.x, y:t.y}, {x:ex, y:ey}, e) < (e.size || 10)) {
-            e.hp -= t.dmg * (1 + t.lvl * 0.5) * buff;
+            let grav = (e.inGraviton > 0 ? 0.6 : 1.0);
+            e.hp -= t.dmg * (1 + t.lvl * 0.5) * buff * grav;
             hitCount++;
             if(G.enableFX && G.frame % 3 === 0) fx(e.x, e.y, t.color, 2);
         }
@@ -1781,7 +2291,8 @@ function handleClick(e) {
     if(G.dragType) return;
     let p = toWorld(e.clientX, e.clientY);
     let hex = pixelToHex(p.x, p.y);
-    if(hex && hex.occ && hex.type!=='obs') { let t = G.towers.find(to => to.q === hex.q && to.r === hex.r); if(t) selectTower(t); } else closeMenu();
+    let t = (hex && hex.tower) || G.towers.find(to => (hex && to.q === hex.q && to.r === hex.r) || dist(to, p) < G.hexR * 0.95);
+    if(t) { selectTower(t); } else closeMenu();
 }
 const drags = document.querySelectorAll('.tower-card');
 drags.forEach(d => { d.addEventListener('touchstart', e => startDrag(e, d.dataset.type), {passive:false}); d.addEventListener('mousedown', e => startDrag(e, d.dataset.type)); });
