@@ -1099,104 +1099,279 @@ function draw() {
 
     G.enemies.forEach(e => {
         let s = e.size || 8;
-        // 2. Pre-rendered Neon Glow
-        drawGlow(ctx, e.x, e.y, s * 1.8, e.color);
-        ctx.fillStyle = e.color;
-        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.6;
-        ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.angle);
-        ctx.beginPath();
+        // 1. Pre-rendered Neon Glow Aura
+        drawGlow(ctx, e.x, e.y, s * 2.0, e.color);
 
-        if(e.shape === 'hexagon') {
-            // Hexagonal assault creep: outer regular 6-gon + concentric inner hexagonal core
-            for(let k = 0; k < 6; k++) {
-                let a = k * Math.PI / 3;
-                let hx = Math.cos(a) * s, hy = Math.sin(a) * s;
-                if(k === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
-            }
+        ctx.save();
+        ctx.translate(e.x, e.y);
+
+        let nodes = []; // Glowing vertex nodes (Signature GeoDefense vector CRT look)
+        let darkCore = 'rgba(5, 10, 18, 0.72)'; // Dark translucent vector body (reveals grid lines)
+
+        if(e.shape === 'dart') {
+            // --- GeoDefense Infiltrator (Supersonic Delta-Wing Vector Jet) ---
+            ctx.rotate(e.angle);
+
+            // Outer primary swept delta wing
+            ctx.beginPath();
+            ctx.moveTo(s * 1.45, 0);                 // sharp spear nose
+            ctx.lineTo(-s * 0.95, s * 0.9);          // port wingtip
+            ctx.lineTo(-s * 0.45, 0);                // recessed trailing thruster notch
+            ctx.lineTo(-s * 0.95, -s * 0.9);         // starboard wingtip
             ctx.closePath();
-            ctx.fill(); ctx.stroke();
-            // Inner core star/vertices
-            ctx.beginPath(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
-            for(let k = 0; k < 6; k++) {
-                let a = k * Math.PI / 3;
-                let hx = Math.cos(a) * (s * 0.45), hy = Math.sin(a) * (s * 0.45);
-                if(k === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
-            }
-            ctx.closePath(); ctx.stroke();
-        }
-        else if(e.shape === 'octagon') {
-            // Armored Octagonal Fortress: 8-sided polygon with reinforced faceted armor plates
-            for(let k = 0; k < 8; k++) {
-                let a = k * Math.PI / 4;
-                let ox = Math.cos(a) * s, oy = Math.sin(a) * s;
-                if(k === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
-            }
+            ctx.fillStyle = darkCore; ctx.fill();
+            ctx.strokeStyle = e.color; ctx.lineWidth = 1.8; ctx.stroke();
+
+            // Inner nested booster chevron
+            ctx.beginPath();
+            ctx.moveTo(s * 0.65, 0);
+            ctx.lineTo(-s * 0.35, s * 0.45);
+            ctx.lineTo(-s * 0.15, 0);
+            ctx.lineTo(-s * 0.35, -s * 0.45);
             ctx.closePath();
-            ctx.fill(); ctx.stroke();
-            // Internal 8-point geometric star matrix
-            ctx.beginPath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2;
-            for(let k = 0; k < 8; k += 2) {
-                let a = k * Math.PI / 4;
-                ctx.moveTo(Math.cos(a)*s*0.8, Math.sin(a)*s*0.8);
-                ctx.lineTo(-Math.cos(a)*s*0.8, -Math.sin(a)*s*0.8);
-            }
-            ctx.stroke();
-        }
-        else if(e.shape === 'decagon') {
-            // Boss Decagon: Giant 10-sided polygon juggernaut with rotating decagram core
-            for(let k = 0; k < 10; k++) {
-                let a = k * (Math.PI * 2 / 10);
-                let dx = Math.cos(a) * s, dy = Math.sin(a) * s;
-                if(k === 0) ctx.moveTo(dx, dy); else ctx.lineTo(dx, dy);
-            }
-            ctx.closePath();
-            ctx.fill(); ctx.stroke();
-            // Inner Decagram / 10-pointed nested polygon shield
-            ctx.beginPath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
-            for(let k = 0; k < 10; k++) {
-                let a = k * (Math.PI * 2 / 10) + (G.frame * 0.02);
-                let r = (k % 2 === 0) ? s * 0.6 : s * 0.3;
-                let sx = Math.cos(a) * r, sy = Math.sin(a) * r;
-                if(k === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
-            }
-            ctx.closePath(); ctx.stroke();
-        }
-        else if(e.shape === 'dart') {
-            // Infiltrator Fast Dart: Aerodynamic 4-pointed rhombus arrow polygon
-            ctx.moveTo(s * 1.35, 0);
-            ctx.lineTo(-s * 0.9, s * 0.95);
-            ctx.lineTo(-s * 0.45, 0);
-            ctx.lineTo(-s * 0.9, -s * 0.95);
-            ctx.closePath();
-            ctx.fill(); ctx.stroke();
-            // Center neon spinal vector
-            ctx.beginPath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2;
-            ctx.moveTo(-s * 0.3, 0); ctx.lineTo(s * 0.8, 0);
-            ctx.stroke();
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.1; ctx.stroke();
+
+            // Central vector spine
+            ctx.beginPath();
+            ctx.moveTo(-s * 0.4, 0); ctx.lineTo(s * 1.2, 0);
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2; ctx.stroke();
+
+            // Trailing vector exhaust jet stream
+            let thrusterLen = s * (0.4 + Math.sin(G.frame * 0.4) * 0.2);
+            ctx.beginPath();
+            ctx.moveTo(-s * 0.45, 0); ctx.lineTo(-s * 0.45 - thrusterLen, 0);
+            ctx.strokeStyle = e.color; ctx.lineWidth = 2.0; ctx.stroke();
+
+            // Vertex nodes
+            nodes.push({x: s * 1.45, y: 0}, {x: -s * 0.95, y: s * 0.9}, {x: -s * 0.95, y: -s * 0.9});
         }
         else {
-            // Pentagon Heavy Drone: 5-sided polygon with inner star truss
-            for(let k = 0; k < 5; k++) {
-                let a = k * (Math.PI * 2 / 5);
-                let px = Math.cos(a) * s, py = Math.sin(a) * s;
-                if(k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            // Geometric Rotating Vector Creeps
+            let spin = (G.frame * 0.04) + (e.x + e.y) * 0.05;
+
+            if(e.shape === 'hexagon') {
+                // --- GeoDefense Classic Creep (Counter-Rotating Vector Hexagon / Diamond) ---
+                // Outer Hexagon
+                ctx.save();
+                ctx.rotate(spin);
+                ctx.beginPath();
+                for(let k = 0; k < 6; k++) {
+                    let a = k * Math.PI / 3;
+                    let hx = Math.cos(a) * s, hy = Math.sin(a) * s;
+                    k === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
+                    nodes.push({x: hx, y: hy, spin: spin});
+                }
+                ctx.closePath();
+                ctx.fillStyle = darkCore; ctx.fill();
+                ctx.strokeStyle = e.color; ctx.lineWidth = 1.8; ctx.stroke();
+
+                // Diagonal cross-spokes
+                ctx.beginPath();
+                for(let k = 0; k < 3; k++) {
+                    let a = k * Math.PI / 3;
+                    ctx.moveTo(Math.cos(a)*s*0.9, Math.sin(a)*s*0.9);
+                    ctx.lineTo(-Math.cos(a)*s*0.9, -Math.sin(a)*s*0.9);
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 0.9; ctx.stroke();
+                ctx.restore();
+
+                // Counter-rotating inner diamond core
+                ctx.save();
+                ctx.rotate(-spin * 1.6);
+                ctx.beginPath();
+                let is = s * 0.52;
+                ctx.moveTo(is, 0); ctx.lineTo(0, is); ctx.lineTo(-is, 0); ctx.lineTo(0, -is);
+                ctx.closePath();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.3; ctx.stroke();
+                ctx.restore();
+
+                // Pulsating central nucleus
+                let nR = 1.5 + Math.sin(G.frame * 0.15) * 0.6;
+                ctx.beginPath(); ctx.arc(0, 0, nR, 0, 6.28);
+                ctx.fillStyle = '#ffffff'; ctx.fill();
             }
-            ctx.closePath();
-            ctx.fill(); ctx.stroke();
-            // Pentagon core truss
-            ctx.beginPath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
-            for(let k = 0; k < 5; k++) {
-                let a = k * (Math.PI * 2 / 5);
-                ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a)*s*0.5, Math.sin(a)*s*0.5);
+            else if(e.shape === 'octagon') {
+                // --- GeoDefense Armored Fortress (Heavy Dual-Ring Gyroscope Octagon) ---
+                // Outer Heavy Octagon
+                ctx.save();
+                ctx.rotate(spin * 0.7);
+                ctx.beginPath();
+                for(let k = 0; k < 8; k++) {
+                    let a = k * Math.PI / 4;
+                    let ox = Math.cos(a) * s, oy = Math.sin(a) * s;
+                    k === 0 ? ctx.moveTo(ox, oy) : ctx.lineTo(ox, oy);
+                    nodes.push({x: ox, y: oy, spin: spin * 0.7});
+                }
+                ctx.closePath();
+                ctx.fillStyle = darkCore; ctx.fill();
+                ctx.strokeStyle = e.color; ctx.lineWidth = 2.0; ctx.stroke();
+
+                // 8 Radial armor-chassis struts
+                ctx.beginPath();
+                for(let k = 0; k < 8; k++) {
+                    let a = k * Math.PI / 4;
+                    ctx.moveTo(Math.cos(a)*s*0.4, Math.sin(a)*s*0.4);
+                    ctx.lineTo(Math.cos(a)*s*0.95, Math.sin(a)*s*0.95);
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.1; ctx.stroke();
+                ctx.restore();
+
+                // Counter-rotating reinforced inner octagon
+                ctx.save();
+                ctx.rotate(-spin * 1.2);
+                ctx.beginPath();
+                for(let k = 0; k < 8; k++) {
+                    let a = k * Math.PI / 4;
+                    let mx = Math.cos(a) * (s * 0.55), my = Math.sin(a) * (s * 0.55);
+                    k === 0 ? ctx.moveTo(mx, my) : ctx.lineTo(mx, my);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4; ctx.stroke();
+                // Inner structural square
+                let sq = s * 0.32;
+                ctx.strokeRect(-sq, -sq, sq*2, sq*2);
+                ctx.restore();
+
+                // Core reactor pip
+                ctx.beginPath(); ctx.arc(0, 0, 2, 0, 6.28);
+                ctx.fillStyle = e.color; ctx.fill();
+                ctx.beginPath(); ctx.arc(0, 0, 1, 0, 6.28);
+                ctx.fillStyle = '#fff'; ctx.fill();
             }
-            ctx.stroke();
+            else if(e.shape === 'decagon') {
+                // --- GeoDefense Boss Juggernaut (Multi-Tiered Rotating Vector Super-Fortress) ---
+                // Tier 1: Outer 10-gon perimeter ring with corner capacitor nodes
+                ctx.save();
+                ctx.rotate(spin * 0.5);
+                ctx.beginPath();
+                for(let k = 0; k < 10; k++) {
+                    let a = k * (Math.PI * 2 / 10);
+                    let dx = Math.cos(a) * s, dy = Math.sin(a) * s;
+                    k === 0 ? ctx.moveTo(dx, dy) : ctx.lineTo(dx, dy);
+                    nodes.push({x: dx, y: dy, spin: spin * 0.5, r: 1.8});
+                }
+                ctx.closePath();
+                ctx.fillStyle = darkCore; ctx.fill();
+                ctx.strokeStyle = e.color; ctx.lineWidth = 2.2; ctx.stroke();
+
+                // 10 Radial power pylons
+                ctx.beginPath();
+                for(let k = 0; k < 10; k++) {
+                    let a = k * (Math.PI * 2 / 10);
+                    ctx.moveTo(Math.cos(a)*s*0.5, Math.sin(a)*s*0.5);
+                    ctx.lineTo(Math.cos(a)*s*0.95, Math.sin(a)*s*0.95);
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1.2; ctx.stroke();
+                ctx.restore();
+
+                // Tier 2: Counter-rotating 10-point interlaced star polygon (Decagram shield)
+                ctx.save();
+                ctx.rotate(-spin * 0.9);
+                ctx.beginPath();
+                for(let k = 0; k < 10; k++) {
+                    let a = k * (Math.PI * 2 / 10);
+                    let r = (k % 2 === 0) ? s * 0.68 : s * 0.38;
+                    let sx = Math.cos(a) * r, sy = Math.sin(a) * r;
+                    k === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.6; ctx.stroke();
+                ctx.restore();
+
+                // Tier 3: Inner high-velocity diamond core
+                ctx.save();
+                ctx.rotate(spin * 2.2);
+                let ds = s * 0.25;
+                ctx.beginPath();
+                ctx.moveTo(ds, 0); ctx.lineTo(0, ds); ctx.lineTo(-ds, 0); ctx.lineTo(0, -ds);
+                ctx.closePath();
+                ctx.strokeStyle = e.color; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.restore();
+
+                // Pulsating core reactor
+                let bNuc = 2.4 + Math.sin(G.frame * 0.2) * 1.0;
+                ctx.beginPath(); ctx.arc(0, 0, bNuc, 0, 6.28);
+                ctx.fillStyle = '#ffffff'; ctx.fill();
+            }
+            else {
+                // --- GeoDefense Drone / Weaver (Spinning 5-Point Vector Star & Pentagram) ---
+                // Outer spinning pentagon
+                ctx.save();
+                ctx.rotate(spin * 1.1);
+                ctx.beginPath();
+                for(let k = 0; k < 5; k++) {
+                    let a = k * (Math.PI * 2 / 5);
+                    let px = Math.cos(a) * s, py = Math.sin(a) * s;
+                    k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                    nodes.push({x: px, y: py, spin: spin * 1.1});
+                }
+                ctx.closePath();
+                ctx.fillStyle = darkCore; ctx.fill();
+                ctx.strokeStyle = e.color; ctx.lineWidth = 1.8; ctx.stroke();
+
+                // Intersecting sacred geometry pentagram (Weaver lines)
+                ctx.beginPath();
+                for(let k = 0; k < 5; k++) {
+                    let a1 = k * (Math.PI * 2 / 5);
+                    let a2 = (k + 2) * (Math.PI * 2 / 5);
+                    ctx.moveTo(Math.cos(a1)*s*0.92, Math.sin(a1)*s*0.92);
+                    ctx.lineTo(Math.cos(a2)*s*0.92, Math.sin(a2)*s*0.92);
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.1; ctx.stroke();
+                ctx.restore();
+
+                // Counter-rotating inner mini-pentagon
+                ctx.save();
+                ctx.rotate(-spin * 1.8);
+                ctx.beginPath();
+                for(let k = 0; k < 5; k++) {
+                    let a = k * (Math.PI * 2 / 5);
+                    let px = Math.cos(a) * (s * 0.38), py = Math.sin(a) * (s * 0.38);
+                    k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2; ctx.stroke();
+                ctx.restore();
+
+                // Core node
+                ctx.beginPath(); ctx.arc(0, 0, 1.4, 0, 6.28);
+                ctx.fillStyle = '#ffffff'; ctx.fill();
+            }
         }
 
-        ctx.rotate(-e.angle); 
-        // Health bar
-        let bw = Math.max(12, s * 1.5);
-        ctx.fillStyle = '#000'; ctx.fillRect(-bw/2, -s - 6, bw, 2.5);
-        ctx.fillStyle = '#0f0'; ctx.fillRect(-bw/2, -s - 6, bw * (Math.max(0, e.hp) / e.max), 2.5);
+        // --- Render Bright Glowing Vertex Nodes (CRT Vector Corner Pip Emulation) ---
+        if(nodes.length > 0) {
+            ctx.beginPath();
+            nodes.forEach(pt => {
+                let px = pt.x, py = pt.y;
+                if(pt.spin !== undefined) {
+                    let cos = Math.cos(pt.spin), sin = Math.sin(pt.spin);
+                    px = pt.x * cos - pt.y * sin;
+                    py = pt.x * sin + pt.y * cos;
+                }
+                let nr = pt.r || 1.35;
+                ctx.moveTo(px + nr, py);
+                ctx.arc(px, py, nr, 0, 6.28);
+            });
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+        }
+
+        // --- Health Bar (Neon Vector Status Line) ---
+        let bw = Math.max(14, s * 1.6);
+        let hpPct = Math.max(0, Math.min(1, e.hp / e.max));
+        let barY = -s - 6;
+        // Background track with subtle border
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(-bw/2, barY, bw, 2.5);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(-bw/2, barY, bw, 2.5);
+        // Dynamic health color (Neon Cyan -> Yellow -> Neon Red)
+        let hpCol = hpPct > 0.5 ? '#00ffcc' : (hpPct > 0.25 ? '#ffcc00' : '#ff0055');
+        ctx.fillStyle = hpCol;
+        ctx.fillRect(-bw/2, barY, bw * hpPct, 2.5);
+
         ctx.restore();
     });
 
