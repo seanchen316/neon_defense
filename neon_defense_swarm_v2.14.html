@@ -18,8 +18,8 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 0 15px; flex-shrink: 0; z-index: 10;
         }
-        .stat-group { display: flex; gap: 15px; font-weight: bold; font-size: 14px; text-shadow: 0 0 5px currentColor; }
-        .stat-cash { color: #ff3; } .stat-wave { color: #3ff; } .stat-score { color: #fff; }
+        .stat-group { display: flex; gap: 9px; font-weight: bold; font-size: 13px; text-shadow: 0 0 5px currentColor; }
+        .stat-cash { color: #ff3; } .stat-wave { color: #3ff; } .stat-score { color: #fff; } .stat-hi { color: #fa0; }
         
         .top-btn {
             border: 1px solid #555; color: #888; font-size: 11px; padding: 3px 8px; 
@@ -35,23 +35,25 @@
         #bottom-bar {
             height: 85px; background: #080808; border-top: 1px solid #333;
             display: flex; justify-content: center; align-items: center; gap: 6px;
-            padding: 0 10px; flex-shrink: 0; z-index: 10;
+            padding: 0 10px; flex-shrink: 0; z-index: 10; overflow-x: auto;
         }
 
         /* Tower Card */
         .tower-card {
-            width: 48px; height: 60px; border-radius: 4px; 
+            width: 50px; height: 64px; border-radius: 4px; flex-shrink: 0;
             border: 1px solid #333; background: #151515;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            position: relative; transition: transform 0.1s; cursor: pointer;
+            position: relative; transition: transform 0.1s, border-color 0.15s; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
-        .tower-card:active { transform: scale(1.1); border-color: #fff; background: #222; }
-        .t-canvas { position: absolute; top: 4px; left: 0; width: 46px; height: 36px; pointer-events: none; }
-        .t-cost { font-size: 9px; color: #888; margin-bottom: 3px; pointer-events: none; font-weight: bold; }
+        .tower-card:hover { border-color: #666; background: #1c1c1c; }
+        .tower-card:active { transform: scale(1.08); border-color: #fff; background: #222; }
+        .t-canvas { position: absolute; top: 2px; left: 0; width: 50px; height: 46px; pointer-events: none; }
+        .t-cost { font-size: 10px; color: #aaa; margin-bottom: 4px; pointer-events: none; font-weight: bold; font-family: monospace; }
         
         /* Pause Button */
         #btn-pause {
-            width: 45px; height: 45px; border-radius: 50%; border: 2px solid #666;
+            width: 45px; height: 45px; border-radius: 50%; border: 2px solid #666; flex-shrink: 0;
             color: #fff; font-size: 18px; margin-left: 10px; background: #222;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
@@ -63,9 +65,10 @@
             position: absolute; display: none; pointer-events: auto; z-index: 100;
             background: rgba(0,20,0,0.95); border: 1px solid #0f0; border-radius: 6px;
             padding: 6px; text-align: center; box-shadow: 0 0 20px rgba(0,255,0,0.3);
-            transform: translate(-50%, -100%); min-width: 120px;
+            min-width: 120px;
         }
         #upg-menu::after { content:''; position: absolute; bottom:-6px; left:50%; margin-left:-6px; border-width:6px 6px 0; border-style:solid; border-color:#0f0 transparent; }
+        #upg-menu.flip-below::after { top:-6px; bottom:auto; border-width:0 6px 6px; border-style:solid; border-color:transparent transparent #0f0 transparent; }
         .menu-header { font-size:11px; color:#0f0; margin-bottom:5px; border-bottom: 1px solid #050; padding-bottom: 3px; }
         .menu-btn { 
             display: block; width: 100%; padding: 10px 0; margin: 3px 0; 
@@ -92,6 +95,27 @@
             color:#0f0; display:flex; flex-direction:column; align-items:center; justify-content:center; 
             font-size:20px; z-index:999; text-shadow: 0 0 20px #0f0; text-align: center;
         }
+        /* Difficulty Selector */
+        .diff-container { display: flex; gap: 8px; margin-top: 18px; margin-bottom: 5px; z-index: 1000; }
+        .diff-btn {
+            background: #111; border: 1px solid #444; color: #888;
+            font-family: inherit; font-size: 11px; font-weight: bold;
+            padding: 8px 14px; border-radius: 4px; cursor: pointer;
+            transition: all 0.15s; pointer-events: auto;
+            user-select: none; -webkit-user-select: none; touch-action: manipulation;
+        }
+        .diff-btn:hover:not(.selected) { background: #222; color: #ccc; border-color: #666; }
+        .diff-btn:active { transform: scale(1.05); }
+        .diff-btn.selected { color: #000; font-weight: 900; }
+        .diff-btn[data-diff="easy"].selected { background: #00ff66; border-color: #00ff66; box-shadow: 0 0 12px rgba(0,255,102,0.6); }
+        .diff-btn[data-diff="normal"].selected { background: #33ccff; border-color: #33ccff; box-shadow: 0 0 12px rgba(51,204,255,0.6); }
+        .diff-btn[data-diff="hard"].selected { background: #ff9900; border-color: #ff9900; box-shadow: 0 0 12px rgba(255,153,0,0.6); }
+        .diff-btn[data-diff="hell"].selected { background: #ff0044; border-color: #ff0044; box-shadow: 0 0 14px rgba(255,0,68,0.8); }
+        .stat-diff { font-size: 11px; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #333; }
+        .stat-diff.easy { color: #00ff66; border-color: #005522; }
+        .stat-diff.normal { color: #33ccff; border-color: #004466; }
+        .stat-diff.hard { color: #ff9900; border-color: #663300; }
+        .stat-diff.hell { color: #ff0044; border-color: #660011; }
         .blink { animation: blinker 1s linear infinite; margin-top: 20px; font-size: 14px; color: #fff;}
         @keyframes blinker { 50% { opacity: 0; } }
     </style>
@@ -103,7 +127,9 @@
     <div class="stat-group">
         <span class="stat-cash">$<span id="ui-cash">120</span></span>
         <span class="stat-score">SC <span id="ui-score">0</span></span>
-        <span class="stat-wave">WV <span id="ui-wave">1</span></span>
+        <span class="stat-hi">HI <span id="ui-hi">0</span></span>
+        <span class="stat-wave">WV <span id="ui-wave">0</span></span>
+        <span id="ui-diff" class="stat-diff normal">NORMAL</span>
     </div>
     <div id="btn-speed" class="top-btn">1x</div>
 </div>
@@ -132,9 +158,16 @@
 </div>
 
 <div id="overlay">
-    <div>GEODEFENSE SWARM V2.14b</div>
-    <div style="font-size:12px; color:#aaa; margin-top:10px">Towers only attack active enemies.</div>
-    <div class="blink">TAP TO START</div>
+    <div id="ov-title">GEODEFENSE SWARM V2.14b</div>
+    <div id="ov-sub" style="font-size:12px; color:#aaa; margin-top:10px">Towers only attack active enemies.</div>
+    <div class="diff-container" id="diff-selector">
+        <button class="diff-btn" data-diff="easy">EASY</button>
+        <button class="diff-btn selected" data-diff="normal">NORMAL</button>
+        <button class="diff-btn" data-diff="hard">HARD</button>
+        <button class="diff-btn" data-diff="hell">HELL</button>
+    </div>
+    <div id="diff-best" style="font-size:12px; color:#ffdd00; margin-top:10px; font-weight:bold; letter-spacing:1px; text-shadow:0 0 8px rgba(255,221,0,0.6);">RECORD: WAVE 0  ·  SCORE 0</div>
+    <div id="ov-action" class="blink">TAP TO START</div>
 </div>
 
 <script>
@@ -148,19 +181,172 @@ const TOWER_DATA = {
     orange: { name: "COLLECTOR",cost: 100,range: 80,  dmg: 0,  rate: 0,  color: '#f80', type:'buff' }
 };
 
+const DIFFICULTY_CONFIG = {
+    easy:   { name: "EASY",   label: "EASY",   hp: 30, cash: 160, hpMult: 0.75, spdMult: 0.9,  scoreMult: 0.8 },
+    normal: { name: "NORMAL", label: "NORMAL", hp: 20, cash: 120, hpMult: 1.0,  spdMult: 1.0,  scoreMult: 1.0 },
+    hard:   { name: "HARD",   label: "HARD",   hp: 15, cash: 100, hpMult: 1.4,  spdMult: 1.15, scoreMult: 1.5 },
+    hell:   { name: "HELL",   label: "HELL",   hp: 10, cash: 80,  hpMult: 2.1,  spdMult: 1.3,  scoreMult: 2.5 }
+};
+
 let G = {
     w:0, h:0, hexR:0, active:false, paused:false, speed:1, enableFX: true,
-    hp:20, cash:120, wave:1, score:0,
+    difficulty: 'normal',
+    hp:20, cash:120, wave:0, score:0, // wave is incremented when a wave starts, so the first one is wave 1
     grid:[], path:[], towers:[], enemies:[], projs:[], parts:[], shocks:[],
     start:null, end:null, selected:null,
     dragType:null, dragPos:{x:0,y:0},
-    nextWaveTime:0, spawning:false, spawnQ:0, frame:0, shake: 0
+    waveTimer:0, spawning:false, spawnQ:0, frame:0, shake: 0,
+    view:{s:1, ox:0, oy:0}, // map-to-screen scale/offset (for resize/rotation)
+    overAt:0 // time of game over (0 = still playing)
 };
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
 const container = document.getElementById('game-container');
 let actx;
+
+// --- Performance Optimization: 1. Offscreen Canvas for Static Grid & Portals ---
+const bgCanvas = document.createElement('canvas');
+const bgCtx = bgCanvas.getContext('2d', { alpha: false });
+
+function renderBgCache() {
+    if(!G.w || !G.h || !G.grid.length) return;
+    bgCanvas.width = G.w;
+    bgCanvas.height = G.h;
+    bgCtx.fillStyle = '#050505';
+    bgCtx.fillRect(0, 0, G.w, G.h);
+    bgCtx.lineWidth = 1;
+
+    G.grid.forEach(c => {
+        if(c.type === 'obs') {
+            if(c.wall) {
+                // Outer perimeter wall: Solid boundary hex (0.92R)
+                bgCtx.fillStyle = '#021808';
+                bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.92, bgCtx); bgCtx.fill();
+                bgCtx.shadowColor = '#00ff66';
+                bgCtx.shadowBlur = G.enableFX ? 8 : 0;
+                bgCtx.strokeStyle = '#00ff66';
+                bgCtx.lineWidth = 1.8;
+                bgCtx.stroke();
+                bgCtx.shadowBlur = 0;
+                // Inner concentric energy ring & cross mark
+                bgCtx.strokeStyle = '#007733';
+                bgCtx.lineWidth = 1;
+                bgCtx.beginPath();
+                hexPath(c.x, c.y, G.hexR * 0.45, bgCtx);
+                bgCtx.moveTo(c.x - 3, c.y); bgCtx.lineTo(c.x + 3, c.y);
+                bgCtx.moveTo(c.x, c.y - 3); bgCtx.lineTo(c.x, c.y + 3);
+                bgCtx.stroke();
+            } else {
+                // Internal natural obstacle / debris pillar: Refined inset pylon (0.78R) with base foundation (0.88R)
+                bgCtx.strokeStyle = '#003318';
+                bgCtx.lineWidth = 1;
+                bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.88, bgCtx); bgCtx.stroke();
+
+                bgCtx.fillStyle = '#011005';
+                bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.78, bgCtx); bgCtx.fill();
+                bgCtx.strokeStyle = '#00883a';
+                bgCtx.lineWidth = 1.3;
+                bgCtx.stroke();
+                // Inner dark emerald core node
+                bgCtx.fillStyle = '#023814';
+                bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.40, bgCtx); bgCtx.fill();
+                bgCtx.strokeStyle = '#005522';
+                bgCtx.lineWidth = 0.8;
+                bgCtx.stroke();
+            }
+        } else {
+            bgCtx.strokeStyle = '#0a2a2a';
+            bgCtx.lineWidth = 1;
+            bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR, bgCtx); bgCtx.stroke();
+        }
+    });
+
+    if(G.start) {
+        drawHexSolid(G.start.x, G.start.y, G.hexR * 0.90, '#ffdd00', 0.25, bgCtx);
+        bgCtx.shadowColor = '#ffea00';
+        bgCtx.shadowBlur = G.enableFX ? 14 : 0;
+        bgCtx.strokeStyle = '#ffee33';
+        bgCtx.lineWidth = 2.0;
+        bgCtx.beginPath(); hexPath(G.start.x, G.start.y, G.hexR * 0.90, bgCtx); bgCtx.stroke();
+        bgCtx.strokeStyle = '#ffd700';
+        bgCtx.lineWidth = 1.4;
+        bgCtx.beginPath();
+        bgCtx.arc(G.start.x, G.start.y, G.hexR * 0.45, 0, 6.28);
+        bgCtx.moveTo(G.start.x - 4, G.start.y); bgCtx.lineTo(G.start.x + 4, G.start.y);
+        bgCtx.moveTo(G.start.x, G.start.y - 4); bgCtx.lineTo(G.start.x, G.start.y + 4);
+        bgCtx.stroke();
+        bgCtx.shadowBlur = 0;
+    }
+
+    if(G.end) {
+        drawHexSolid(G.end.x, G.end.y, G.hexR * 0.90, '#f00', 0.3, bgCtx);
+        bgCtx.strokeStyle = '#ff2244';
+        bgCtx.lineWidth = 1.8;
+        bgCtx.beginPath(); hexPath(G.end.x, G.end.y, G.hexR * 0.90, bgCtx); bgCtx.stroke();
+    }
+}
+
+// --- Performance Optimization: 2. Pre-rendered Neon Glow Sprite Cache ---
+const glowCache = new Map();
+function getGlowSprite(color) {
+    if(glowCache.has(color)) return glowCache.get(color);
+    const size = 64;
+    const gCvs = document.createElement('canvas');
+    gCvs.width = size; gCvs.height = size;
+    const gCtx = gCvs.getContext('2d');
+    const grad = gCtx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    grad.addColorStop(0, color);
+    grad.addColorStop(0.35, color);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    gCtx.fillStyle = grad;
+    gCtx.globalAlpha = 0.55;
+    gCtx.beginPath();
+    gCtx.arc(size/2, size/2, size/2, 0, 6.28);
+    gCtx.fill();
+    glowCache.set(color, gCvs);
+    return gCvs;
+}
+function drawGlow(targetCtx, x, y, r, color) {
+    if(!G.enableFX) return;
+    let sprite = getGlowSprite(color);
+    targetCtx.drawImage(sprite, x - r, y - r, r * 2, r * 2);
+}
+
+// --- Performance Optimization: 3. Zero-Allocation Object Pools for Particles & Shocks ---
+const MAX_PARTS = 140;
+const particlePool = [];
+for(let i=0; i<MAX_PARTS; i++) {
+    particlePool.push({ active:false, x:0, y:0, vx:0, vy:0, life:0, color:'#fff', type:'dot', r:2 });
+}
+function spawnParticle(x, y, vx, vy, life, color, type='dot', r=2) {
+    if(!G.enableFX) return;
+    for(let i=0; i<MAX_PARTS; i++) {
+        let p = particlePool[i];
+        if(!p.active) {
+            p.active = true; p.x = x; p.y = y; p.vx = vx; p.vy = vy;
+            p.life = life; p.color = color; p.type = type; p.r = r;
+            return p;
+        }
+    }
+}
+
+const MAX_SHOCKS = 25;
+const shockPool = [];
+for(let i=0; i<MAX_SHOCKS; i++) {
+    shockPool.push({ active:false, x:0, y:0, r:1, maxR:60, color:'#f00', alpha:1 });
+}
+function spawnShock(x, y, color, maxR=60) {
+    if(!G.enableFX) return;
+    for(let i=0; i<MAX_SHOCKS; i++) {
+        let s = shockPool[i];
+        if(!s.active) {
+            s.active = true; s.x = x; s.y = y; s.r = 1; s.maxR = maxR;
+            s.color = color; s.alpha = 1;
+            return s;
+        }
+    }
+}
 
 // --- Helper: Touch Binding (The key to mobile success) ---
 function bindTouch(id, fn) {
@@ -184,55 +370,302 @@ function bindTouch(id, fn) {
 }
 
 // --- System ---
-function initAudio() { if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); }
+function initAudio() { 
+    if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); 
+    if(actx && actx.state === 'suspended') actx.resume();
+}
 function playSound(type) {
     if(!actx || !G.enableFX) return;
-    const osc = actx.createOscillator(); const gain = actx.createGain();
-    osc.connect(gain); gain.connect(actx.destination); let t = actx.currentTime;
-    if(type==='shoot') { osc.type='triangle'; osc.frequency.setValueAtTime(800,t); osc.frequency.exponentialRampToValueAtTime(100,t+0.1); gain.gain.setValueAtTime(0.05,t); gain.gain.exponentialRampToValueAtTime(0.01,t+0.1); osc.start(t); osc.stop(t+0.1); }
-    else if(type==='boom') { osc.type='sawtooth'; osc.frequency.setValueAtTime(60,t); osc.frequency.exponentialRampToValueAtTime(10,t+0.4); gain.gain.setValueAtTime(0.3,t); gain.gain.exponentialRampToValueAtTime(0.01,t+0.4); osc.start(t); osc.stop(t+0.4); }
-    else if(type==='place') { osc.type='sine'; osc.frequency.setValueAtTime(400,t); osc.frequency.linearRampToValueAtTime(800,t+0.15); gain.gain.setValueAtTime(0.2,t); gain.gain.linearRampToValueAtTime(0,t+0.15); osc.start(t); osc.stop(t+0.15); }
+    if(actx.state === 'suspended') actx.resume();
+    let t = actx.currentTime;
+    if(type === 'upgrade') {
+        // Crisp dual-tone futuristic ascending arpeggio/chime
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+            let osc = actx.createOscillator();
+            let gain = actx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, t + idx * 0.05);
+            gain.gain.setValueAtTime(0.18, t + idx * 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.05 + 0.22);
+            osc.connect(gain); gain.connect(actx.destination);
+            osc.start(t + idx * 0.05); osc.stop(t + idx * 0.05 + 0.22);
+        });
+    }
+    else if(type === 'laser') {
+        // High-frequency energy beam hum/pulse
+        let osc = actx.createOscillator();
+        let gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1400, t);
+        osc.frequency.exponentialRampToValueAtTime(350, t + 0.08);
+        gain.gain.setValueAtTime(0.06, t);
+        gain.gain.exponentialRampToValueAtTime(0.005, t + 0.08);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.08);
+    }
+    else if(type === 'missile') {
+        // Whooshing rocket launch ignition with rising thrust pitch
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, t);
+        osc.frequency.exponentialRampToValueAtTime(450, t + 0.16);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.2);
+    }
+    else if(type === 'sniper') {
+        // High-velocity kinetic rifle report with supersonic snap and mechanical resonance
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1600, t);
+        osc.frequency.exponentialRampToValueAtTime(70, t + 0.28);
+        gain.gain.setValueAtTime(0.38, t);
+        gain.gain.exponentialRampToValueAtTime(0.005, t + 0.28);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.28);
+    }
+    else if(type === 'shoot') {
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(880, t);
+        osc.frequency.exponentialRampToValueAtTime(120, t + 0.09);
+        gain.gain.setValueAtTime(0.08, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.09);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.09);
+    }
+    else if(type === 'boom') {
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(90, t);
+        osc.frequency.exponentialRampToValueAtTime(20, t + 0.35);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.35);
+    }
+    else if(type === 'place') {
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, t);
+        osc.frequency.exponentialRampToValueAtTime(720, t + 0.12);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.12);
+    }
+    else if(type === 'sell') {
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, t);
+        osc.frequency.exponentialRampToValueAtTime(250, t + 0.15);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.15);
+    }
 }
 
 bindTouch('btn-pause', () => { G.paused = !G.paused; document.getElementById('btn-pause').innerText = G.paused ? "►" : "||"; });
 bindTouch('btn-speed', () => { G.speed = G.speed===1 ? 2 : 1; document.getElementById('btn-speed').innerText = G.speed+"x"; });
-bindTouch('btn-fx', () => { G.enableFX = !G.enableFX; let btn=document.getElementById('btn-fx'); btn.innerText="FX: "+(G.enableFX?"ON":"OFF"); btn.classList.toggle('active',G.enableFX); });
+bindTouch('btn-fx', () => { G.enableFX = !G.enableFX; let btn=document.getElementById('btn-fx'); btn.innerText="FX: "+(G.enableFX?"ON":"OFF"); btn.classList.toggle('active',G.enableFX); if(G.grid.length) renderBgCache(); });
 bindTouch('btn-wave', forceNextWave);
-bindTouch('overlay', startGame);
+// --- High Scores & Record System ---
+const STORAGE_KEY = 'geodefense_swarm_records_v1';
+function loadRecords() {
+    try {
+        let raw = localStorage.getItem(STORAGE_KEY);
+        if(raw) {
+            let data = JSON.parse(raw);
+            if(data && typeof data === 'object') return data;
+        }
+    } catch(e) {}
+    return {
+        easy:   { score: 0, wave: 0 },
+        normal: { score: 0, wave: 0 },
+        hard:   { score: 0, wave: 0 },
+        hell:   { score: 0, wave: 0 }
+    };
+}
+function saveRecords(records) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); } catch(e) {}
+}
+let gameRecords = loadRecords();
+
+function updateRecord(diff, score, wave) {
+    if(!gameRecords[diff]) gameRecords[diff] = { score: 0, wave: 0 };
+    let rec = gameRecords[diff];
+    let isNewScore = score > rec.score;
+    let isNewWave = wave > rec.wave;
+    if(isNewScore) rec.score = score;
+    if(isNewWave) rec.wave = wave;
+    if(isNewScore || isNewWave) saveRecords(gameRecords);
+    return { isNewScore, isNewWave, bestScore: rec.score, bestWave: rec.wave };
+}
+
+const DIFF_KEY = 'geodefense_swarm_diff_v1';
+let selectedDifficulty = 'normal';
+try {
+    let saved = localStorage.getItem(DIFF_KEY);
+    if(saved && DIFFICULTY_CONFIG[saved]) selectedDifficulty = saved;
+} catch(e){}
+
+function updateDiffBestUI() {
+    let rec = gameRecords[selectedDifficulty] || { score: 0, wave: 0 };
+    let bestEl = document.getElementById('diff-best');
+    if(bestEl) {
+        bestEl.innerText = `RECORD: WAVE ${rec.wave}  ·  SCORE ${rec.score.toLocaleString()}`;
+    }
+}
+
+function setDifficulty(diff) {
+    if(!DIFFICULTY_CONFIG[diff]) return;
+    selectedDifficulty = diff;
+    try { localStorage.setItem(DIFF_KEY, diff); } catch(e){}
+    document.querySelectorAll('.diff-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.diff === diff);
+    });
+    updateDiffBestUI();
+    if(typeof actx !== 'undefined' && actx && actx.state === 'running') {
+        playSound('place');
+    }
+}
+
+// Bind individual difficulty buttons for immediate response
+document.querySelectorAll('.diff-btn').forEach(btn => {
+    let lastBtnTouch = 0;
+    btn.addEventListener('touchstart', (e) => {
+        lastBtnTouch = Date.now();
+        e.preventDefault();
+        e.stopPropagation();
+        setDifficulty(btn.dataset.diff);
+    }, {passive: false});
+
+    btn.addEventListener('click', (e) => {
+        if(Date.now() - lastBtnTouch < 500) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setDifficulty(btn.dataset.diff);
+    });
+});
+
+// Bind Overlay for Tap to Start / Restart & fallback event delegation
+const overlayEl = document.getElementById('overlay');
+if(overlayEl) {
+    let lastOverlayTouch = 0;
+    function handleOverlayTap(e) {
+        let diffBtn = (e.target && e.target.closest) ? e.target.closest('.diff-btn') : null;
+        if(diffBtn && diffBtn.dataset.diff) {
+            e.preventDefault();
+            e.stopPropagation();
+            setDifficulty(diffBtn.dataset.diff);
+            return;
+        }
+
+        // Tapped inside difficulty container or record preview -> ignore, do not start
+        if(e.target && e.target.closest && (e.target.closest('#diff-selector') || e.target.closest('#diff-best'))) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+
+        e.preventDefault();
+        initAudio();
+        if(G.overAt) {
+            if(Date.now() - G.overAt > 800) location.reload();
+        } else if(!G.active) {
+            startGame();
+        }
+    }
+
+    overlayEl.addEventListener('touchstart', (e) => {
+        lastOverlayTouch = Date.now();
+        handleOverlayTap(e);
+    }, {passive: false});
+
+    overlayEl.addEventListener('click', (e) => {
+        if(Date.now() - lastOverlayTouch < 500) return;
+        handleOverlayTap(e);
+    });
+}
+
+// Initialize active button state and best record
+setDifficulty(selectedDifficulty);
 
 function startGame() {
     initAudio(); document.getElementById('overlay').style.display='none';
-    G.active=true; resize(); renderTowerIcons(); setTimer(5); setupMenuListeners(); loop();
+    G.difficulty = selectedDifficulty || 'normal';
+    let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
+    G.hp = cfg.hp;
+    G.cash = cfg.cash;
+    G.active = true;
+    updateUI();
+    resize(); renderTowerIcons(); setTimer(5); setupMenuListeners(); loop();
 }
 
+function loseLife() {
+    G.hp = Math.max(0, G.hp-1); updateUI();
+    if(G.hp<=0 && G.active) gameOver();
+}
+function gameOver() {
+    G.active=false; G.dragType=null; closeMenu(); G.overAt=Date.now();
+    let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
+    let res = updateRecord(G.difficulty, G.score, G.wave);
+    document.getElementById('ov-title').innerText = 'GAME OVER';
+    let isNew = res.isNewScore || res.isNewWave;
+    let newBadge = isNew ? `<div style="color:#ffe600; font-size:13px; margin-top:8px; font-weight:bold; animation:blinker 0.8s infinite;">★ NEW RECORD! ★</div>` : '';
+    document.getElementById('ov-sub').innerHTML = `[${cfg.name}] SCORE ${G.score.toLocaleString()}  ·  WAVE ${G.wave}<br><span style="color:#aaa; font-size:11px; margin-top:5px; display:inline-block;">RECORD: WAVE ${res.bestWave}  ·  SCORE ${res.bestScore.toLocaleString()}</span>${newBadge}`;
+    let diffBox = document.getElementById('diff-selector');
+    if(diffBox) diffBox.style.display = 'none'; // hide selector on game over screen
+    let bestBox = document.getElementById('diff-best');
+    if(bestBox) bestBox.style.display = 'none';
+    document.getElementById('ov-action').innerText = 'TAP TO RESTART';
+    document.getElementById('overlay').style.display='flex';
+}
+
+// First-time setup: size the map to the container and build it.
 function resize() {
     let rect = container.getBoundingClientRect();
     G.w = rect.width; G.h = rect.height;
-    canvas.width = G.w; canvas.height = G.h;
     let minDim = Math.min(G.w, G.h);
     G.hexR = Math.max(14, Math.floor(minDim / 22)); 
     if(G.hexR > 35) G.hexR = 35;
     initGrid();
+    fitView();
 }
+
+// Keep the existing map and scale/centre it to the current container size.
+function fitView() {
+    let rect = container.getBoundingClientRect();
+    canvas.width = rect.width; canvas.height = rect.height;
+    let s = Math.min(rect.width/G.w, rect.height/G.h);
+    G.view = { s, ox:(rect.width - G.w*s)/2, oy:(rect.height - G.h*s)/2 };
+    closeMenu();
+}
+window.addEventListener('resize', () => { if(G.grid.length) { fitView(); draw(); } });
 
 function initGrid() {
     let validMap = false;
     while(!validMap) {
         G.grid = [];
         const w = G.hexR * Math.sqrt(3); const h = G.hexR * 2; const vDist = h * 0.75;
-        const cols = Math.floor(G.w / w); const rows = Math.floor(G.h / vDist);
-        const offX = (G.w - cols * w)/2 + w/2; const offY = (G.h - rows * vDist)/2 + h/2;
+        // Fit whole hexes: odd rows are shifted right by w/2, so total width = cols*w + w/2;
+        // total height = (rows-1)*vDist + h.
+        const cols = Math.floor((G.w - w/2) / w); const rows = Math.floor((G.h - h) / vDist) + 1;
+        const offX = (G.w - (cols*w + w/2))/2 + w/2; const offY = (G.h - ((rows-1)*vDist + h))/2 + h/2;
         let floorTiles = [];
         for(let r=0; r<rows; r++) {
             for(let q=0; q<cols; q++) {
                 let cx = offX + q * w + (r%2 ? w/2 : 0); let cy = offY + r * vDist;
-                if(cy < G.hexR || cy > G.h - G.hexR) continue; 
-                let isEdge = (cx < G.hexR*1.5 || cx > G.w - G.hexR*1.5 || cy < G.hexR*1.5 || cy > G.h - G.hexR*1.5);
-                let isObstacle = isEdge || (Math.random() < 0.12);
-                let cell = { q, r, x:cx, y:cy, occ: isObstacle, type: isObstacle ? 'obs' : 'floor', id: r*1000+q };
+                // Outer wall: first/last row and first/last cell of every row -> sealed on all 4 sides
+                let isWall = (r === 0 || r === rows-1 || q === 0 || q === cols-1);
+                let isObstacle = isWall || (Math.random() < 0.12);
+                let cell = { q, r, x:cx, y:cy, occ: isObstacle, type: isObstacle ? 'obs' : 'floor', wall: isWall, id: r*1000+q };
                 G.grid.push(cell); if(!isObstacle) floorTiles.push(cell);
             }
         }
+        G.grid.forEach(c => c.nb = G.grid.filter(n => n!==c && dist(c,n) < G.hexR*2.1)); // neighbour cache
         let minD = G.w*0.5; let tries=0;
         do {
             G.start = floorTiles[Math.floor(Math.random()*floorTiles.length)];
@@ -241,39 +674,68 @@ function initGrid() {
         } while(dist(G.start,G.end) < minD && tries<100);
         
         G.start.occ=false; G.start.type='floor'; G.end.occ=false; G.end.type='floor';
-        getNeighbors(G.start).forEach(n=>{n.occ=false; n.type='floor';});
-        getNeighbors(G.end).forEach(n=>{n.occ=false; n.type='floor';});
-        if(calcPath()) validMap = true;
+        // Clear random obstacles around start/end, but never the outer wall
+        getNeighbors(G.start).forEach(n=>{ if(!n.wall) { n.occ=false; n.type='floor'; } });
+        getNeighbors(G.end).forEach(n=>{ if(!n.wall) { n.occ=false; n.type='floor'; } });
+        if(calcPath()) { validMap = true; renderBgCache(); }
     }
 }
 
 function calcPath(tempBlock=null) {
     if(tempBlock) tempBlock.occ=true;
-    let open=[G.start], cameFrom=new Map(), gScore=new Map();
-    gScore.set(G.start, 0); let found=false;
+    let path = findPath(G.start, G.end);
+    if(tempBlock) tempBlock.occ=false;
+    if(path) G.path = path;
+    return path;
+}
+
+// A* from 'from' to 'to' over unoccupied cells. Returns the cell list or null.
+function findPath(from, to) {
+    if(!from || from.occ) return null;
+    let open=[from], cameFrom=new Map(), gScore=new Map();
+    gScore.set(from, 0); let found=false;
     while(open.length>0) {
-        open.sort((a,b)=>(gScore.get(a)+dist(a,G.end))-(gScore.get(b)+dist(b,G.end)));
+        open.sort((a,b)=>(gScore.get(a)+dist(a,to))-(gScore.get(b)+dist(b,to)));
         let cur=open.shift();
-        if(cur===G.end){found=true; break;}
+        if(cur===to){found=true; break;}
         for(let n of getNeighbors(cur)) {
             if(n.occ) continue;
             let g=gScore.get(cur)+1;
             if(g<(gScore.get(n)||Infinity)) { cameFrom.set(n,cur); gScore.set(n,g); if(!open.includes(n)) open.push(n); }
         }
     }
-    if(tempBlock) tempBlock.occ=false;
     if(!found) return null;
-    let path=[], curr=G.end;
-    while(curr!==G.start) { path.push(curr); curr=cameFrom.get(curr); }
-    path.push(G.start);
-    return G.path=path.reverse();
+    let path=[], curr=to;
+    while(curr!==from) { path.push(curr); curr=cameFrom.get(curr); }
+    path.push(from);
+    return path.reverse();
 }
+
+// Plan a new route for every live enemy from where it is now. Each enemy heads to the
+// cell it was walking toward (or back to the last cell it reached if that one got blocked).
+// Returns null if any enemy would be trapped, so the caller can reject the change.
+function planEnemyRoutes() {
+    let cache = new Map(), plans = [];
+    for(let e of G.enemies) {
+        let tgt = e.path[e.pi];
+        let origin = (tgt && !tgt.occ) ? tgt : e.prev;
+        if(!origin || origin.occ) return null;
+        if(!cache.has(origin)) cache.set(origin, findPath(origin, G.end));
+        let p = cache.get(origin);
+        if(!p) return null;
+        plans.push(p);
+    }
+    return plans;
+}
+function applyEnemyRoutes(plans) { G.enemies.forEach((e,i) => { e.path = plans[i]; e.pi = 0; }); }
 
 // --- Logic ---
 function loop() {
     requestAnimationFrame(loop);
-    if(!G.active || G.paused) return;
-    let loops = G.speed; while(loops--) { G.frame++; updateLogic(); }
+    if(!G.active) return;
+    if(!G.paused) {
+        let loops = G.speed; while(loops-- && G.active) { G.frame++; updateLogic(); }
+    }
     draw();
 }
 
@@ -285,25 +747,26 @@ function updateLogic() {
             if(G.spawnQ<=0) { G.spawning=false; setTimer(10); } 
         }
     }
-    if(G.nextWaveTime>0 && Date.now()>G.nextWaveTime) startWave();
+    if(G.waveTimer>0 && --G.waveTimer<=0) startWave();
     
     let tSpan=document.getElementById('ui-timer');
-    if(G.nextWaveTime>0) {
+    if(G.waveTimer>0) {
         document.getElementById('btn-wave').style.display='flex';
-        let left=Math.ceil((G.nextWaveTime-Date.now())/1000); tSpan.innerText = left>0?left:0;
+        tSpan.innerText = Math.ceil(G.waveTimer/60);
     } else document.getElementById('btn-wave').style.display='none';
 
-    // Buffs
+    // Buffs (strongest nearby Collector wins; they don't stack)
     G.towers.forEach(t => t.buffVal=1);
     G.towers.filter(t=>t.type==='buff').forEach(c => {
-        G.towers.forEach(t => { if(t!==c && dist(c,t)<=c.range+10) t.buffVal = 1.25+(c.lvl*0.1); });
+        let cRange = towerRange(c);
+        G.towers.forEach(t => { if(t!==c && dist(c,t)<=cRange+10) t.buffVal = Math.max(t.buffVal, 1.25+(c.lvl*0.1)); });
     });
 
     // Towers
     G.towers.forEach(t => {
         if(t.cd>0) t.cd--;
         let buff = t.buffVal || 1;
-        let range = t.range * (1 + (t.lvl-1)*0.05);
+        let range = towerRange(t);
 
         // Check if current target is invalid (dead or reached)
         if(t.target && (t.target.hp<=0 || t.target.reached)) {
@@ -312,10 +775,13 @@ function updateLogic() {
 
         if(t.type === 'laser') {
             let hasTarget = false;
+            let reach = Math.max(G.w, G.h) * 1.5;
             if(t.lockedAngle != null) {
                 t.angle = t.lockedAngle;
-                // Only fire if there is at least one VALID target in range
-                hasTarget = G.enemies.some(e => dist(t,e)<=range && e.hp>0 && !e.reached);
+                let ex = t.x + Math.cos(t.angle) * reach;
+                let ey = t.y + Math.sin(t.angle) * reach;
+                // Only fire if there is at least one VALID target in line of the beam
+                hasTarget = G.enemies.some(e => e.hp>0 && !e.reached && distToSegment({x:t.x, y:t.y}, {x:ex, y:ey}, e) < (e.size || 10));
             } else {
                 if(!t.target || dist(t,t.target)>range) {
                     // Find closest valid target
@@ -355,9 +821,54 @@ function updateLogic() {
                 t.angle = Math.atan2(t.target.y-t.y, t.target.x-t.x);
                 if(t.cd<=0) {
                     let dmg = t.dmg * Math.pow(1.4, t.lvl-1) * buff;
-                    G.projs.push({ x:t.x, y:t.y, vx:Math.cos(t.angle), vy:Math.sin(t.angle), spd:10, dmg:dmg, color:t.color, type:t.type, splash:t.splash||0, tar:t.target, life:80 });
-                    t.cd = t.rate/(1+(t.lvl-1)*0.15); 
-                    if(G.enableFX) playSound('shoot');
+                    let scale = G.hexR / 20;
+                    if(t.type === 'missile') {
+                        // Rocket launch: emerges from missile tube tip
+                        let bDist = 12 * scale;
+                        let spawnX = t.x + Math.cos(t.angle) * bDist;
+                        let spawnY = t.y + Math.sin(t.angle) * bDist;
+                        G.projs.push({ 
+                            x:spawnX, y:spawnY, 
+                            vx:Math.cos(t.angle), vy:Math.sin(t.angle), 
+                            spd:4.5, maxSpd:11 + Math.min(t.lvl, 6)*0.8,
+                            dmg:dmg, color:t.color, type:'missile', 
+                            splash:t.splash||50, tar:t.target, life:110, angle:t.angle 
+                        });
+                        t.cd = t.rate/(1+(t.lvl-1)*0.15);
+                        if(G.enableFX) playSound('missile');
+                    } else if(t.type === 'sniper') {
+                        // High-velocity kinetic bullet with supersonic tracer emerges from rail muzzle
+                        let bDist = (14 + Math.min(t.lvl, 6) * 1.2) * scale;
+                        let spawnX = t.x + Math.cos(t.angle) * bDist;
+                        let spawnY = t.y + Math.sin(t.angle) * bDist;
+                        G.projs.push({
+                            x:spawnX, y:spawnY,
+                            vx:Math.cos(t.angle), vy:Math.sin(t.angle),
+                            spd:24, dmg:dmg, color:t.color, type:'sniper',
+                            tar:t.target, life:55, angle:t.angle
+                        });
+                        t.cd = t.rate/(1+(t.lvl-1)*0.15);
+                        if(G.enableFX) {
+                            playSound('sniper');
+                            fx(spawnX, spawnY, '#ffffff', 4);
+                        }
+                    } else {
+                        // Blaster shell: aligns perfectly with barrel muzzle
+                        let bDist = (12 + Math.min(t.lvl, 6) * 1.2) * scale;
+                        let spawnX = t.x + Math.cos(t.angle) * bDist;
+                        let spawnY = t.y + Math.sin(t.angle) * bDist;
+                        G.projs.push({ 
+                            x:spawnX, y:spawnY, 
+                            vx:Math.cos(t.angle), vy:Math.sin(t.angle), 
+                            spd:11, dmg:dmg, color:t.color, type:t.type, 
+                            splash:t.splash||0, tar:t.target, life:80, angle:t.angle 
+                        });
+                        t.cd = t.rate/(1+(t.lvl-1)*0.15); 
+                        if(G.enableFX) {
+                            playSound('shoot');
+                            fx(spawnX, spawnY, t.color, 2); // crisp muzzle flash spark
+                        }
+                    }
                 }
             }
         }
@@ -365,24 +876,47 @@ function updateLogic() {
 
     for(let i=G.projs.length-1; i>=0; i--) {
         let p=G.projs[i]; p.life--;
-        // Homing Logic: Check if target exists and is valid
-        if(p.type==='missile' && p.tar && p.tar.hp>0 && !p.tar.reached) { 
-            let ta=Math.atan2(p.tar.y-p.y, p.tar.x-p.x); 
-            p.vx=p.vx*0.92+Math.cos(ta)*0.08; 
-            p.vy=p.vy*0.92+Math.sin(ta)*0.08; 
-        } else if(p.type==='missile' && (p.tar && (p.tar.hp<=0 || p.tar.reached))) {
-            // Target lost, stop homing, just fly straight
-            p.tar = null; 
+        // Missile Aerodynamic Homing & Rocket Propulsion
+        if(p.type==='missile') {
+            if(p.spd < p.maxSpd) p.spd += 0.25; // Accelerating rocket thruster
+            if(p.tar && p.tar.hp>0 && !p.tar.reached) { 
+                let ta = Math.atan2(p.tar.y-p.y, p.tar.x-p.x); 
+                // Steer velocity toward target with turn rate
+                p.vx = p.vx*0.88 + Math.cos(ta)*0.12; 
+                p.vy = p.vy*0.88 + Math.sin(ta)*0.12;
+                let vLen = Math.hypot(p.vx, p.vy) || 1;
+                p.vx /= vLen; p.vy /= vLen;
+                p.angle = Math.atan2(p.vy, p.vx);
+            } else {
+                p.tar = null; // target dead/escaped, rocket continues on current ballistic vector
+            }
+            // Emit neon smoke/exhaust particle trail from object pool
+            if(G.enableFX && G.frame % 2 === 0) {
+                let backX = p.x - Math.cos(p.angle || 0) * 8;
+                let backY = p.y - Math.sin(p.angle || 0) * 8;
+                spawnParticle(
+                    backX, backY,
+                    (Math.random()-0.5)*1.2 - Math.cos(p.angle||0)*1.5,
+                    (Math.random()-0.5)*1.2 - Math.sin(p.angle||0)*1.5,
+                    0.7, (Math.random() > 0.4 ? '#ff3300' : '#ffaa00'), 'dot', 2
+                );
+            }
         }
 
+        let prevX = p.x, prevY = p.y;
         p.x+=p.vx*p.spd; p.y+=p.vy*p.spd; if(p.type==='frag') p.spd*=0.9;
         
-        // Collision Detection - Ignore Reached/Dead
-        let hit = G.enemies.find(e => dist(p,e) < (p.type==='missile'?20:12) && e.hp>0 && !e.reached);
+        // Collision Detection - Ignore Reached/Dead (anti-tunneling segment check scaled to grid)
+        let hitRad = (p.type==='missile' ? (G.hexR * 0.75) : (G.hexR * 0.42));
+        let hit = G.enemies.find(e => {
+            if(e.hp<=0 || e.reached) return false;
+            let combinedR = hitRad + (e.size || 8)*0.5;
+            return dist(p, e) < combinedR || distToSegment({x:prevX, y:prevY}, {x:p.x, y:p.y}, e) < combinedR;
+        });
         if(hit || p.life<=0) {
             if(hit || (p.type==='missile' && p.life<=0)) {
                 if(p.type==='missile') {
-                    if(G.enableFX) { playSound('boom'); fxExplode(p.x,p.y,p.color,12); G.shocks.push({x:p.x, y:p.y, r:1, maxR:60, color:p.color, alpha:1}); }
+                    if(G.enableFX) { playSound('boom'); fxExplode(p.x,p.y,p.color,12); spawnShock(p.x, p.y, p.color, 60); }
                     G.enemies.forEach(e=>{
                         if(dist(p,e)<p.splash && e.hp>0 && !e.reached) e.hp-=p.dmg;
                     });
@@ -399,18 +933,20 @@ function updateLogic() {
     for(let i=G.enemies.length-1; i>=0; i--) {
         let e=G.enemies[i];
         if(e.hp<=0) { 
-            G.cash+=e.val; G.score+=e.val*10; 
+            let sMult = (DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal).scoreMult;
+            G.cash += e.val; 
+            G.score += Math.round(e.val * 10 * sMult); 
             if(G.enableFX) { fxExplode(e.x,e.y,e.color,20); fxHalo(e.x,e.y,e.color); }
             updateUI(); G.enemies.splice(i,1); continue; 
         }
         
         // Pathing
-        let target = G.path[e.pi];
+        let target = e.path[e.pi];
         // Check end condition
         if(dist(e, G.end) < G.hexR) {
             e.reached = true; // Mark as reached so towers ignore it
-            G.hp--; if(G.enableFX) fxExplode(e.x,e.y,'#f00',20); updateUI(); G.enemies.splice(i,1);
-            if(G.hp<=0) { G.active=false; alert("GAME OVER! Score: "+G.score); location.reload(); } 
+            if(G.enableFX) fxExplode(e.x,e.y,'#f00',20);
+            G.enemies.splice(i,1); loseLife();
             continue;
         }
 
@@ -418,15 +954,30 @@ function updateLogic() {
             let tx=target.x+e.ox, ty=target.y+e.oy;
             let moveSpd = e.spd * (e.slow>0 ? 0.4 : 1); if(e.slow>0) e.slow--;
             let dx=tx-e.x, dy=ty-e.y, d=Math.hypot(dx,dy);
-            if(d<moveSpd) e.pi++; else { e.x+=dx/d*moveSpd; e.y+=dy/d*moveSpd; e.angle=Math.atan2(dy,dx); }
+            if(d<moveSpd) { e.prev = target; e.pi++; } else { e.x+=dx/d*moveSpd; e.y+=dy/d*moveSpd; e.angle=Math.atan2(dy,dx); }
         } else { 
             // Fallback if path ends abnormally
-            e.reached = true; G.hp--; updateUI(); G.enemies.splice(i,1); 
+            e.reached = true; G.enemies.splice(i,1); loseLife();
         }
     }
     
-    for(let i=G.shocks.length-1; i>=0; i--) { let s=G.shocks[i]; s.r+=2; s.alpha-=0.05; if(s.alpha<=0) G.shocks.splice(i,1); }
-    for(let i=G.parts.length-1; i>=0; i--) { let p=G.parts[i]; p.x+=p.vx; p.y+=p.vy; p.life-=0.05; if(p.life<=0) G.parts.splice(i,1); }
+    // Update Shock & Particle Object Pools (Zero GC allocations)
+    for(let i=0; i<MAX_SHOCKS; i++) {
+        let s = shockPool[i];
+        if(s.active) {
+            s.r += 2.5; s.alpha -= 0.06;
+            if(s.alpha <= 0) s.active = false;
+        }
+    }
+    for(let i=0; i<MAX_PARTS; i++) {
+        let p = particlePool[i];
+        if(p.active) {
+            p.x += p.vx; p.y += p.vy;
+            if(p.type === 'halo') p.r += 2;
+            p.life -= 0.08;
+            if(p.life <= 0) p.active = false;
+        }
+    }
 }
 
 // --- Wave System ---
@@ -434,25 +985,42 @@ function startWave() {
     G.wave++; 
     G.spawnQ = 6 + Math.floor(G.wave * 1.5); 
     G.spawning = true; 
-    G.nextWaveTime = 0; 
+    G.waveTimer = 0; 
     updateUI();
 }
 function forceNextWave() { 
-    if(G.nextWaveTime > Date.now()) G.score += Math.ceil((G.nextWaveTime - Date.now())/1000)*50; 
+    if(G.waveTimer > 0) G.score += Math.ceil(G.waveTimer/60)*50; 
     startWave(); 
 }
 function spawnEnemy() {
-    let stage = Math.floor((G.wave-1)/5); let baseHp = 20 + (G.wave*5);
+    let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
+    let stage = Math.floor((G.wave-1)/5); let baseHp = (20 + (G.wave*5)) * cfg.hpMult;
     if(stage>=1) baseHp*=1.5; if(stage>=2) baseHp*=2.0;
-    let shape='circle', spd=1.0+(G.wave*0.03);
-    if(G.wave%5===0) { shape='pentagon'; baseHp*=4; spd*=0.5; }
-    else if(stage>=1 && Math.random()>0.7) { shape='triangle'; baseHp*=0.6; spd*=1.5; }
-    else if(stage>=2 && Math.random()>0.7) { shape='square'; baseHp*=3.0; spd*=0.6; }
+    let hr = G.hexR || 20;
+    let shape='hexagon', spd=(1.0+(G.wave*0.03)) * cfg.spdMult, size = Math.round(hr * 0.46);
+
+    if(G.wave%5===0) { 
+        // Boss: Massive Decagon (0.80R giant fortress unit)
+        shape='decagon'; baseHp*=4.5; spd*=0.48; size = Math.round(hr * 0.80); 
+    }
+    else if(stage>=2 && Math.random()>0.6) { 
+        // Armored Heavy: Octagon fortress (0.66R)
+        shape='octagon'; baseHp*=3.0; spd*=0.6; size = Math.round(hr * 0.66); 
+    }
+    else if(stage>=1 && Math.random()>0.65) { 
+        // Infiltrator: Fast Dart Rhombus (0.40R agile speedster)
+        shape='dart'; baseHp*=0.7; spd*=1.55; size = Math.round(hr * 0.40); 
+    }
+    else if(Math.random()>0.5) {
+        // Heavy Drone: Pentagon combat unit (0.54R)
+        shape='pentagon'; baseHp*=1.3; spd*=0.9; size = Math.round(hr * 0.54); 
+    }
     let e = { 
-        x:G.start.x, y:G.start.y, pi:0, slow:0, hp:baseHp, max:baseHp, spd:spd, 
-        val: 5+Math.floor(G.wave/2), shape: shape, 
+        x:G.start.x, y:G.start.y, pi:0, slow:0, hp:baseHp, max:baseHp, spd:spd, size:size,
+        path:G.path, prev:G.start, // own route + last cell reached (for rerouting)
+        val: Math.max(1, Math.floor((5+Math.floor(G.wave/2)) * (G.difficulty==='easy'?1.2:(G.difficulty==='hell'?0.8:1.0)))), shape: shape, 
         color: `hsl(${(G.wave*25)%360},100%,60%)`, angle: 0, 
-        ox: (Math.random()-0.5)*(G.hexR*0.8), oy: (Math.random()-0.5)*(G.hexR*0.8), 
+        ox: (Math.random()-0.5)*(G.hexR*0.5), oy: (Math.random()-0.5)*(G.hexR*0.5), 
         reached:false // Flag for targeting logic
     };
     G.enemies.push(e);
@@ -460,32 +1028,30 @@ function spawnEnemy() {
 
 // --- Draw ---
 function draw() {
-    ctx.fillStyle = '#050505'; ctx.fillRect(0,0,G.w,G.h);
-    ctx.lineWidth = 1;
-    G.grid.forEach(c => {
-        if(c.type === 'obs') {
-            ctx.fillStyle = '#ccc'; ctx.strokeStyle='#999'; ctx.beginPath(); hexPath(c.x,c.y,G.hexR-1); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = '#999'; ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.arc(c.x, c.y, G.hexR-2, 0, Math.PI); ctx.fill();
-        } else if(!c.occ) {
-            ctx.strokeStyle = '#004444'; ctx.beginPath(); hexPath(c.x,c.y,G.hexR); ctx.stroke();
-        }
-    });
-
-    drawHexSolid(G.start.x, G.start.y, G.hexR, '#0f0', 0.2);
-    drawHexSolid(G.end.x, G.end.y, G.hexR, '#f00', 0.3);
+    ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height); // letterbox
+    ctx.setTransform(G.view.s,0,0,G.view.s,G.view.ox,G.view.oy); // map -> screen
     
-    ctx.fillStyle = '#fff'; ctx.font = "bold 16px Courier New"; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(G.hp, G.end.x, G.end.y);
+    // 1. Offscreen Cached Static Map (Hex Grid, Obstacles, Walls, Gates)
+    ctx.drawImage(bgCanvas, 0, 0);
+
+    // Dynamic Base HP
+    if(G.end) {
+        ctx.fillStyle = '#fff'; ctx.font = "bold 16px Courier New"; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(G.hp, G.end.x, G.end.y);
+    }
 
     if(G.enableFX) ctx.globalCompositeOperation = 'lighter';
 
     G.towers.forEach(t => {
-        drawHexSolid(t.x, t.y, G.hexR, t.color, 0.1 + (t.lvl*0.05));
-        ctx.strokeStyle = t.color; ctx.shadowColor = t.color; ctx.shadowBlur = G.enableFX ? 10 : 0;
+        // 2. Pre-rendered Neon Glow & Refined Base Pad (0.85R)
+        drawGlow(ctx, t.x, t.y, G.hexR * 1.3, t.color);
+        drawHexSolid(t.x, t.y, G.hexR * 0.85, t.color, 0.12 + (t.lvl*0.04));
+        ctx.strokeStyle = t.color;
         
         if(t.type === 'buff') {
+            let tRange = towerRange(t);
             G.towers.forEach(target => {
-                if(target !== t && dist(t,target) <= t.range+10) {
+                if(target !== t && dist(t,target) <= tRange+10) {
                     ctx.beginPath(); ctx.moveTo(t.x,t.y); ctx.lineTo(target.x,target.y); ctx.lineWidth=1; ctx.globalAlpha=0.4; ctx.stroke(); ctx.globalAlpha=1;
                 }
             });
@@ -493,9 +1059,9 @@ function draw() {
         
         ctx.save(); ctx.translate(t.x,t.y);
         
-        if(t.lvl > 1) { ctx.beginPath(); ctx.arc(0,0,G.hexR*0.6,0,6.28); ctx.stroke(); }
-        if(t.lvl > 3) { ctx.beginPath(); ctx.arc(0,0,G.hexR*0.8,0,6.28); ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
-        if(t.lvl === 6) { ctx.beginPath(); ctx.arc(0,0,G.hexR*0.95,0,6.28); ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1; }
+        if(t.lvl > 1) { ctx.beginPath(); ctx.arc(0,0,G.hexR*0.55,0,6.28); ctx.stroke(); }
+        if(t.lvl > 3) { ctx.beginPath(); ctx.arc(0,0,G.hexR*0.70,0,6.28); ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
+        if(t.lvl === 6) { ctx.beginPath(); ctx.arc(0,0,G.hexR*0.82,0,6.28); ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1; }
         
         if(t.type !== 'buff') ctx.rotate(t.angle);
         
@@ -505,9 +1071,21 @@ function draw() {
         ctx.restore();
 
         if(t.type==='laser' && t.firing) {
-            ctx.shadowBlur=G.enableFX?15:0; ctx.lineWidth=2+(t.lvl*0.5); ctx.strokeStyle=t.color;
-            ctx.beginPath(); ctx.moveTo(t.x,t.y); ctx.lineTo(t.x+Math.cos(t.angle)*2000, t.y+Math.sin(t.angle)*2000); ctx.stroke();
-            ctx.lineWidth=1; t.firing=false;
+            let reach = Math.max(G.w, G.h) * 1.5;
+            let ex = t.x + Math.cos(t.angle) * reach, ey = t.y + Math.sin(t.angle) * reach;
+            // Multi-pass neon beam (replaces expensive Gaussian blur with hardware additive blending)
+            ctx.strokeStyle = t.color;
+            ctx.lineWidth = 4 + (t.lvl * 0.8);
+            ctx.globalAlpha = 0.55;
+            ctx.beginPath(); ctx.moveTo(t.x, t.y); ctx.lineTo(ex, ey); ctx.stroke();
+            ctx.lineWidth = 2 + (t.lvl * 0.4);
+            ctx.globalAlpha = 0.9;
+            ctx.beginPath(); ctx.moveTo(t.x, t.y); ctx.lineTo(ex, ey); ctx.stroke();
+            // Inner penetrating white-hot core
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1 + (t.lvl * 0.2);
+            ctx.globalAlpha = 1;
+            ctx.beginPath(); ctx.moveTo(t.x, t.y); ctx.lineTo(ex, ey); ctx.stroke();
+            ctx.lineWidth = 1; t.firing = false;
         }
         if(t.type==='shock' && t.targets) {
             ctx.strokeStyle=t.color; ctx.lineWidth=2;
@@ -520,29 +1098,247 @@ function draw() {
     });
 
     G.enemies.forEach(e => {
-        ctx.fillStyle = e.color; ctx.shadowColor = e.color; ctx.shadowBlur = G.enableFX ? 10 : 0;
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+        let s = e.size || 8;
+        // 2. Pre-rendered Neon Glow
+        drawGlow(ctx, e.x, e.y, s * 1.8, e.color);
+        ctx.fillStyle = e.color;
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.6;
         ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.angle);
-        ctx.beginPath(); let s = e.size || 8;
-        if(e.shape==='circle') ctx.arc(0,0,s,0,6.28);
-        else if(e.shape==='triangle') { ctx.moveTo(s,0); ctx.lineTo(-s, s); ctx.lineTo(-s, -s); ctx.closePath(); }
-        else if(e.shape==='square') { ctx.rect(-s,-s, s*2, s*2); }
-        else if(e.shape==='pentagon') { for(let i=0;i<5;i++) ctx.lineTo(s*Math.cos(i*1.25), s*Math.sin(i*1.25)); ctx.closePath(); }
-        ctx.fill(); ctx.stroke(); 
+        ctx.beginPath();
+
+        if(e.shape === 'hexagon') {
+            // Hexagonal assault creep: outer regular 6-gon + concentric inner hexagonal core
+            for(let k = 0; k < 6; k++) {
+                let a = k * Math.PI / 3;
+                let hx = Math.cos(a) * s, hy = Math.sin(a) * s;
+                if(k === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            // Inner core star/vertices
+            ctx.beginPath(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+            for(let k = 0; k < 6; k++) {
+                let a = k * Math.PI / 3;
+                let hx = Math.cos(a) * (s * 0.45), hy = Math.sin(a) * (s * 0.45);
+                if(k === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath(); ctx.stroke();
+        }
+        else if(e.shape === 'octagon') {
+            // Armored Octagonal Fortress: 8-sided polygon with reinforced faceted armor plates
+            for(let k = 0; k < 8; k++) {
+                let a = k * Math.PI / 4;
+                let ox = Math.cos(a) * s, oy = Math.sin(a) * s;
+                if(k === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
+            }
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            // Internal 8-point geometric star matrix
+            ctx.beginPath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2;
+            for(let k = 0; k < 8; k += 2) {
+                let a = k * Math.PI / 4;
+                ctx.moveTo(Math.cos(a)*s*0.8, Math.sin(a)*s*0.8);
+                ctx.lineTo(-Math.cos(a)*s*0.8, -Math.sin(a)*s*0.8);
+            }
+            ctx.stroke();
+        }
+        else if(e.shape === 'decagon') {
+            // Boss Decagon: Giant 10-sided polygon juggernaut with rotating decagram core
+            for(let k = 0; k < 10; k++) {
+                let a = k * (Math.PI * 2 / 10);
+                let dx = Math.cos(a) * s, dy = Math.sin(a) * s;
+                if(k === 0) ctx.moveTo(dx, dy); else ctx.lineTo(dx, dy);
+            }
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            // Inner Decagram / 10-pointed nested polygon shield
+            ctx.beginPath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+            for(let k = 0; k < 10; k++) {
+                let a = k * (Math.PI * 2 / 10) + (G.frame * 0.02);
+                let r = (k % 2 === 0) ? s * 0.6 : s * 0.3;
+                let sx = Math.cos(a) * r, sy = Math.sin(a) * r;
+                if(k === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+            }
+            ctx.closePath(); ctx.stroke();
+        }
+        else if(e.shape === 'dart') {
+            // Infiltrator Fast Dart: Aerodynamic 4-pointed rhombus arrow polygon
+            ctx.moveTo(s * 1.35, 0);
+            ctx.lineTo(-s * 0.9, s * 0.95);
+            ctx.lineTo(-s * 0.45, 0);
+            ctx.lineTo(-s * 0.9, -s * 0.95);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            // Center neon spinal vector
+            ctx.beginPath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2;
+            ctx.moveTo(-s * 0.3, 0); ctx.lineTo(s * 0.8, 0);
+            ctx.stroke();
+        }
+        else {
+            // Pentagon Heavy Drone: 5-sided polygon with inner star truss
+            for(let k = 0; k < 5; k++) {
+                let a = k * (Math.PI * 2 / 5);
+                let px = Math.cos(a) * s, py = Math.sin(a) * s;
+                if(k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            // Pentagon core truss
+            ctx.beginPath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+            for(let k = 0; k < 5; k++) {
+                let a = k * (Math.PI * 2 / 5);
+                ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a)*s*0.5, Math.sin(a)*s*0.5);
+            }
+            ctx.stroke();
+        }
+
         ctx.rotate(-e.angle); 
-        ctx.fillStyle='#000'; ctx.fillRect(-5, -8, 10, 2); ctx.fillStyle='#0f0'; ctx.fillRect(-5, -8, 10*(Math.max(0,e.hp)/e.max), 2);
+        // Health bar
+        let bw = Math.max(12, s * 1.5);
+        ctx.fillStyle = '#000'; ctx.fillRect(-bw/2, -s - 6, bw, 2.5);
+        ctx.fillStyle = '#0f0'; ctx.fillRect(-bw/2, -s - 6, bw * (Math.max(0, e.hp) / e.max), 2.5);
         ctx.restore();
     });
 
-    G.projs.forEach(p => { ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y, p.type==='frag'?2:3, 0, 6.28); ctx.fill(); });
+    G.projs.forEach(p => { 
+        if(p.type === 'missile') {
+            // Aerodynamic vector rocket: pointed nose cone, slender body, stabilizer fins
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle || 0);
+            ctx.strokeStyle = p.color;
+            ctx.fillStyle = '#fff';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            // Rocket fuselage
+            ctx.moveTo(7, 0);       // sharp nose
+            ctx.lineTo(2, 2.5);
+            ctx.lineTo(-5, 2.5);
+            // Delta tail fin
+            ctx.lineTo(-7, 4.5);
+            ctx.lineTo(-6, 2.5);
+            ctx.lineTo(-6, -2.5);
+            ctx.lineTo(-7, -4.5);
+            ctx.lineTo(-5, -2.5);
+            ctx.lineTo(2, -2.5);
+            ctx.closePath();
+            ctx.stroke();
+            // Thruster flame dot
+            ctx.fillStyle = '#ff8800';
+            ctx.beginPath();
+            ctx.arc(-7, 0, 1.8, 0, 6.28);
+            ctx.fill();
+            ctx.restore();
+        } else if(p.type === 'sniper') {
+            // Realistic High-Velocity Kinetic Bullet (Spitzer ogive bullet with glowing supersonic tracer tail)
+            let bAngle = Math.atan2(p.vy, p.vx);
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(bAngle);
+
+            // Supersonic mach tracer streak trailing behind the bullet
+            ctx.strokeStyle = '#d0f';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(-5, 0);
+            ctx.lineTo(-24, 0);
+            ctx.stroke();
+
+            // Inner white-hot tracer core
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.moveTo(-4, 0);
+            ctx.lineTo(-15, 0);
+            ctx.stroke();
+
+            // Realistic bullet profile: cylindrical boat-tail base + aerodynamic pointed ogive tip
+            ctx.fillStyle = '#f0c050'; // Polished brass/copper jacket
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.moveTo(6, 0);                 // Sharp spitzer tip point
+            ctx.quadraticCurveTo(3, 1.8, 0, 1.8); // Curved ogive contour
+            ctx.lineTo(-5, 1.8);              // Cylindrical body
+            ctx.lineTo(-7, 1.0);              // Tapered boat-tail heel
+            ctx.lineTo(-7, -1.0);
+            ctx.lineTo(-5, -1.8);
+            ctx.lineTo(0, -1.8);
+            ctx.quadraticCurveTo(3, -1.8, 6, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Tip specular glint
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(4, 0, 0.8, 0, 6.28);
+            ctx.fill();
+
+        } else if(p.type === 'bolt') {
+            // Blaster cannon shell: elongated vector slug with bright core & tracer tail strictly aligned to barrel angle
+            let sAngle = Math.atan2(p.vy, p.vx);
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(sAngle);
+
+            // High-intensity tracer streak aligned with the barrel axis
+            ctx.strokeStyle = p.color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(3, 0);
+            ctx.lineTo(-11, 0);
+            ctx.stroke();
+
+            // Inner white-hot ballistic core
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(4, 0);
+            ctx.lineTo(-6, 0);
+            ctx.stroke();
+
+            // Front luminous plasma bead
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(3.5, 0, 1.8, 0, 6.28);
+            ctx.fill();
+
+            ctx.restore();
+        } else {
+            ctx.fillStyle = p.color; 
+            ctx.beginPath(); 
+            ctx.arc(p.x, p.y, p.type==='frag'?2:3, 0, 6.28); 
+            ctx.fill(); 
+        }
+    });
     
     if(G.enableFX) {
-        G.shocks.forEach(s => { ctx.strokeStyle=s.color; ctx.globalAlpha=s.alpha; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.28); ctx.stroke(); ctx.globalAlpha=1; });
-        G.parts.forEach(p => { ctx.globalAlpha=p.life; ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,2,2); ctx.globalAlpha=1; });
+        for(let i=0; i<MAX_SHOCKS; i++) {
+            let s = shockPool[i];
+            if(s.active) {
+                ctx.strokeStyle = s.color; ctx.globalAlpha = s.alpha; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.stroke();
+            }
+        }
+        ctx.globalAlpha = 1;
+        for(let i=0; i<MAX_PARTS; i++) {
+            let p = particlePool[i];
+            if(p.active) {
+                ctx.globalAlpha = p.life;
+                if(p.type === 'halo') {
+                    ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.28); ctx.stroke();
+                } else {
+                    ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 2, 2);
+                }
+            }
+        }
+        ctx.globalAlpha = 1;
     }
 
     if(G.dragType) {
-        let ghostY = G.dragPos.y - 80;
+        let ghostY = G.dragPos.y - dragLift();
         let hex = pixelToHex(G.dragPos.x, ghostY); 
         let data = TOWER_DATA[G.dragType];
         ctx.strokeStyle = data.color; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.arc(G.dragPos.x, ghostY, data.range, 0, 6.28); ctx.stroke(); ctx.setLineDash([]);
@@ -555,29 +1351,93 @@ function draw() {
     
     if(G.selected) {
         ctx.strokeStyle='#fff'; ctx.setLineDash([5,5]); ctx.beginPath(); 
-        ctx.arc(G.selected.x, G.selected.y, G.selected.range * (1 + (G.selected.lvl-1)*0.05), 0, 6.28); 
+        ctx.arc(G.selected.x, G.selected.y, towerRange(G.selected), 0, 6.28); 
         ctx.stroke(); ctx.setLineDash([]);
     }
     
-    ctx.restore();
     ctx.globalCompositeOperation = 'source-over'; ctx.shadowBlur=0;
 }
 
 // --- Utils ---
-function toggleFX() { G.enableFX = !G.enableFX; document.getElementById('btn-fx').innerText="FX: "+(G.enableFX?"ON":"OFF"); document.getElementById('btn-fx').classList.toggle('active', G.enableFX); }
-function toggleSpeed() { G.speed = G.speed===1 ? 2 : 1; document.getElementById('btn-speed').innerText = G.speed+"x"; }
-function togglePause() { G.paused = !G.paused; document.getElementById('btn-pause').innerText = G.paused ? "►" : "||"; }
-function setTimer(s) { G.nextWaveTime = Date.now() + s*1000; }
-function hexPath(x,y,r) { for(let i=0;i<6;i++) { let a=Math.PI/3*i - Math.PI/6; i===0?ctx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a)):ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a)); } ctx.closePath(); }
-function drawHexSolid(x,y,r,c,a=1) { ctx.fillStyle=c; ctx.globalAlpha=a; ctx.beginPath(); hexPath(x,y,r); ctx.fill(); ctx.globalAlpha=1; }
+function setTimer(s) { G.waveTimer = s*60; } // counted in logic frames (~60/s), so it respects pause and 2x speed
+function hexPath(x,y,r,targetCtx=ctx) { for(let i=0;i<6;i++) { let a=Math.PI/3*i - Math.PI/6; i===0?targetCtx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a)):targetCtx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a)); } targetCtx.closePath(); }
+function drawHexSolid(x,y,r,c,a=1,targetCtx=ctx) { targetCtx.fillStyle=c; targetCtx.globalAlpha=a; targetCtx.beginPath(); hexPath(x,y,r,targetCtx); targetCtx.fill(); targetCtx.globalAlpha=1; }
 function drawTowerShape(ctx, type, lvl, color) {
-    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
-    if(type === 'bolt') { ctx.rect(-5,-5,10,10); ctx.moveTo(5,0); ctx.lineTo(15+(lvl*2),0); if(lvl>=3) { ctx.moveTo(5,-3); ctx.lineTo(12,-3); ctx.moveTo(5,3); ctx.lineTo(12,3); } } 
-    else if (type === 'missile') { ctx.moveTo(-8,-8); ctx.lineTo(4,-4); ctx.lineTo(4,4); ctx.lineTo(-8,8); ctx.closePath(); ctx.rect(-6, -10, 4, 20); } 
-    else if (type === 'laser') { ctx.arc(0,0,5,0,6.28); ctx.moveTo(5,0); ctx.lineTo(10,0); ctx.arc(10,0,2,0,6.28); if(lvl>=4) { ctx.moveTo(10,-5); ctx.lineTo(15,0); ctx.lineTo(10,5); } } 
-    else if (type === 'shock') { ctx.moveTo(0,-8); ctx.lineTo(4,-2); ctx.lineTo(-4,2); ctx.lineTo(0,8); ctx.arc(0,0,8,0,6.28); } 
-    else if (type === 'sniper') { ctx.rect(-10,-3, 20, 6); ctx.moveTo(10,0); ctx.lineTo(30+(lvl*4), 0); ctx.rect(30+(lvl*4), -2, 4, 4); } 
-    else if (type === 'buff') { ctx.arc(0,0,4,0,6.28); ctx.moveTo(0,0); ctx.lineTo(8, -8); ctx.arc(8,-8, 3, 0, 6.28); }
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.8; ctx.beginPath();
+    if(type === 'bolt') {
+        // Blaster: Iconic round neon turret base + dual-ring core + forward blaster barrel/nozzle
+        ctx.arc(0, 0, 7.5, 0, 6.28);
+        ctx.moveTo(4, 0); ctx.arc(0, 0, 4, 0, 6.28);
+        // Central core dot
+        ctx.moveTo(1.5, 0); ctx.arc(0, 0, 1.5, 0, 6.28);
+        // Projecting barrel
+        let bLen = 12 + Math.min(lvl, 6) * 1.2;
+        ctx.moveTo(6, -2.5); ctx.lineTo(bLen, -2.5); ctx.lineTo(bLen, 2.5); ctx.lineTo(6, 2.5);
+        if(lvl >= 3) {
+            // Twin/flank muzzle fins
+            ctx.moveTo(7, -5); ctx.lineTo(bLen - 2, -4);
+            ctx.moveTo(7, 5); ctx.lineTo(bLen - 2, 4);
+        }
+    } 
+    else if (type === 'missile') {
+        // Missile: Aggressive diamond launcher pod with quad-corner missile bays
+        ctx.moveTo(10, 0); ctx.lineTo(0, 10); ctx.lineTo(-10, 0); ctx.lineTo(0, -10); ctx.closePath();
+        // Inner diamond core
+        ctx.moveTo(5, 0); ctx.lineTo(0, 5); ctx.lineTo(-5, 0); ctx.lineTo(0, -5); ctx.closePath();
+        // Forward missile tubes/rails
+        ctx.moveTo(3, -4); ctx.lineTo(13, -4);
+        ctx.moveTo(3, 4); ctx.lineTo(13, 4);
+        // Exhaust/stabilizer fins
+        ctx.moveTo(-6, -6); ctx.lineTo(-11, -8);
+        ctx.moveTo(-6, 6); ctx.lineTo(-11, 8);
+    } 
+    else if (type === 'laser') {
+        // Laser: Focused triangular prism emitter with central optical core and collimator needle
+        ctx.moveTo(10, 0); ctx.lineTo(-7, 8); ctx.lineTo(-4, 0); ctx.lineTo(-7, -8); ctx.closePath();
+        // Optical lens circle
+        ctx.moveTo(3, 0); ctx.arc(0, 0, 3, 0, 6.28);
+        // Focused beam needle
+        ctx.moveTo(6, 0); ctx.lineTo(13 + Math.min(lvl, 6) * 0.9, 0);
+        // Emitter focus brackets
+        ctx.moveTo(10, -3.5); ctx.lineTo(13, 0); ctx.lineTo(10, 3.5);
+    } 
+    else if (type === 'shock') {
+        // Shock / Thump: Multi-phase pulsed radial ring + arc capacitor electrodes
+        ctx.arc(0, 0, 5, 0, 6.28);
+        ctx.moveTo(8.5, 0); ctx.arc(0, 0, 8.5, 0, 6.28);
+        // 4 Quad-directional capacitor spikes radiating outward
+        for(let i = 0; i < 4; i++) {
+            let a = i * Math.PI / 2;
+            let cos = Math.cos(a), sin = Math.sin(a);
+            ctx.moveTo(cos * 5, sin * 5); ctx.lineTo(cos * 11, sin * 11);
+            ctx.lineTo(cos * 11 - sin * 2.5, sin * 11 + cos * 2.5);
+        }
+    } 
+    else if (type === 'sniper') {
+        // Sniper / Rail: Precision railgun chamber with dual long parallel guide rails and crosshair
+        ctx.rect(-7, -3.5, 7, 7);
+        // Long twin accelerating rails
+        let rLen = 14 + Math.min(lvl, 6) * 1.2;
+        ctx.moveTo(0, -2); ctx.lineTo(rLen, -2);
+        ctx.moveTo(0, 2); ctx.lineTo(rLen, 2);
+        // Rail braces
+        ctx.moveTo(8, -3.5); ctx.lineTo(8, 3.5);
+        ctx.moveTo(rLen - 3, -3.5); ctx.lineTo(rLen - 3, 3.5);
+        // Reticle rear mark
+        ctx.moveTo(-4, -6); ctx.lineTo(-4, 6);
+    } 
+    else if (type === 'buff') {
+        // Collector / Vortex node: Swirling energy vortex / spiral reactor with harmonic satellite nodes
+        ctx.arc(0, 0, 3.5, 0, 6.28);
+        // Swirling vortex arcs
+        for(let i = 0; i < 3; i++) {
+            let a = i * (Math.PI * 2 / 3);
+            ctx.moveTo(Math.cos(a)*4, Math.sin(a)*4);
+            ctx.quadraticCurveTo(Math.cos(a + 0.8)*11, Math.sin(a + 0.8)*11, Math.cos(a + 1.4)*9, Math.sin(a + 1.4)*9);
+        }
+        // Outer energy orbit ring
+        ctx.moveTo(10, 0); ctx.arc(0, 0, 10, 0, 6.28);
+    }
     ctx.stroke();
 }
 function pixelToHex(x, y) {
@@ -587,29 +1447,46 @@ function pixelToHex(x, y) {
 }
 function dist(a,b) { return Math.hypot(a.x-b.x, a.y-b.y); }
 function distToSegment(A, B, P) { const l2 = (A.x-B.x)**2 + (A.y-B.y)**2; if(l2==0) return dist(P,A); let t = ((P.x-A.x)*(B.x-A.x) + (P.y-A.y)*(B.y-A.y)) / l2; t = Math.max(0, Math.min(1, t)); return dist(P, { x: A.x + t*(B.x-A.x), y: A.y + t*(B.y-A.y) }); }
-function fx(x,y,c,n) { if(!G.enableFX) return; for(let i=0;i<n;i++) G.parts.push({x,y,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4,life:1,color:c}); }
-function fxExplode(x,y,c,n) { fx(x,y,c,n*3); }
-function fxHalo(x,y,c) { if(!G.enableFX) return; G.parts.push({x,y,r:5,life:1,color:c,type:'halo'}); }
-function getNeighbors(c) { return G.grid.filter(n => dist(c,n) < G.hexR*2.1 && n!==c); }
+function fx(x,y,c,n) { 
+    if(!G.enableFX) return;
+    for(let i=0; i<n; i++) {
+        spawnParticle(x, y, (Math.random()-.5)*3.5, (Math.random()-.5)*3.5, 0.8, c, 'dot', 2);
+    }
+}
+function fxExplode(x,y,c,n) { fx(x, y, c, Math.min(n, 12)); }
+function fxHalo(x,y,c) { spawnParticle(x, y, 0, 0, 1, c, 'halo', 5); }
+function towerRange(t) { return t.range * (1 + (t.lvl-1)*0.05); }
+function toWorld(cx, cy) { let r = canvas.getBoundingClientRect(); return { x:(cx - r.left - G.view.ox)/G.view.s, y:(cy - r.top - G.view.oy)/G.view.s }; }
+let isTouchDrag = false;
+function dragLift() { return isTouchDrag ? (80 / G.view.s) : 0; } // ghost floats 80 screen px above the finger only on touch
+function getNeighbors(c) { return c.nb || G.grid.filter(n => dist(c,n) < G.hexR*2.1 && n!==c); }
 
+// Bound once at game start (bindTouch handles both touch and mouse).
 function setupMenuListeners() {
-    document.getElementById('m-upg').addEventListener('click', () => {
+    bindTouch('m-upg', () => {
         if(!G.selected) return;
-        let t = G.selected; let isMax = t.lvl >= 6; let cost = Math.floor(t.cost * t.lvl * 0.7);
+        let t = G.selected; let isMax = t.lvl >= 6;
+        let cost = Math.floor(t.cost * t.lvl * 0.7);
         if(!isMax && G.cash >= cost) {
-            G.cash -= cost; t.lvl++; t.dmg *= 1.35; 
-            playSound('place'); fxHalo(t.x,t.y,t.color); updateUI(); updateMenuUI();
+            G.cash -= cost; t.lvl++; 
+            playSound('upgrade'); fxHalo(t.x,t.y,t.color); updateUI();
         } else playSound('boom');
     });
-    document.getElementById('m-sell').addEventListener('click', () => {
-        if(!G.selected) return; let t = G.selected; let sell = Math.floor(t.cost * 0.5 * t.lvl);
-        G.cash += sell; G.grid.find(g=>g.q===t.q && g.r===t.r).occ = false;
+
+    bindTouch('m-sell', () => {
+        if(!G.selected) return;
+        let t = G.selected; let sell = Math.floor(t.cost * 0.5 * t.lvl);
+        G.cash += sell; 
+        let cell = G.grid.find(g=>g.q===t.q && g.r===t.r);
+        if(cell) cell.occ = false;
         G.towers = G.towers.filter(to => to !== t);
-        calcPath(); updateUI(); closeMenu();
+        calcPath(); let plans = planEnemyRoutes(); if(plans) applyEnemyRoutes(plans);
+        playSound('sell'); closeMenu(); updateUI();
     });
-    document.getElementById('m-lock').addEventListener('click', () => {
+
+    bindTouch('m-lock', () => {
         if(!G.selected || G.selected.type !== 'laser') return;
-        G.selected.lockedAngle = (G.selected.lockedAngle !== null) ? null : G.selected.angle;
+        G.selected.lockedAngle = (G.selected.lockedAngle != null) ? null : G.selected.angle;
         updateMenuUI();
     });
 }
@@ -622,81 +1499,126 @@ function updateMenuUI() {
     document.getElementById('m-sell').innerText = `SELL $${sell}`;
     let btnLock = document.getElementById('m-lock');
     if(t.type === 'laser') { btnLock.style.display = 'block'; btnLock.innerText = (t.lockedAngle != null) ? "UNLOCK" : "LOCK"; } else btnLock.style.display = 'none';
-    // Tower Upgrade Buttons (Bound ONCE here to prevent multi-trigger bug)
-    bindTouch('m-upg', () => {
-        if(!G.selected) return;
-        let t = G.selected; let isMax = t.lvl >= 6;
-        let cost = Math.floor(t.cost * t.lvl * 0.7);
-        if(!isMax && G.cash >= cost) {
-            G.cash -= cost; t.lvl++; t.dmg *= 1.35; 
-            playSound('place'); fxHalo(t.x,t.y,t.color); updateUI(); updateMenuUI();
-        } else playSound('boom');
-    });
-
-    bindTouch('m-sell', () => {
-        if(!G.selected) return;
-        let t = G.selected; let sell = Math.floor(t.cost * 0.5 * t.lvl);
-        G.cash += sell; 
-        let cell = G.grid.find(g=>g.q===t.q && g.r===t.r);
-        if(cell) cell.occ = false;
-        G.towers = G.towers.filter(to => to !== t);
-        calcPath(); updateUI(); closeMenu();
-    });
-
-    bindTouch('m-lock', () => {
-        if(!G.selected || G.selected.type !== 'laser') return;
-        G.selected.lockedAngle = (G.selected.lockedAngle !== null) ? null : G.selected.angle;
-        updateMenuUI();
-    });
 }
 function selectTower(t) {
     G.selected = t;
     const m = document.getElementById('upg-menu'); 
-    let rect = canvas.getBoundingClientRect();
-    let menuW = 120, menuH = 100;
-    let mx = t.x - menuW/2;
-    let my = t.y - G.hexR - menuH;
-    if(my < 10) my = t.y + G.hexR + 10; 
-    if(mx < 10) mx = 10; if(mx > G.w - menuW - 10) mx = G.w - menuW - 10;
-    m.style.display = 'block'; m.style.left = mx+'px'; m.style.top = my+'px';
     updateMenuUI();
+    m.style.display = 'block';
+    let menuW = m.offsetWidth || 120;
+    let menuH = m.offsetHeight || 110;
+    let v = G.view, sx = t.x*v.s + v.ox, sy = t.y*v.s + v.oy, hr = G.hexR*v.s; // map -> screen
+    let isBelow = (sy - hr - menuH - 12 < 10);
+    let mx = sx - menuW/2;
+    let my = isBelow ? (sy + hr + 12) : (sy - hr - menuH - 8);
+    if(mx < 10) mx = 10; 
+    if(mx > canvas.width - menuW - 10) mx = canvas.width - menuW - 10;
+    m.classList.toggle('flip-below', isBelow);
+    m.style.left = Math.round(mx)+'px'; 
+    m.style.top = Math.round(my)+'px';
 }
 function closeMenu() { G.selected=null; document.getElementById('upg-menu').style.display='none'; }
-function updateUI() { document.getElementById('ui-cash').innerText = Math.floor(G.cash); document.getElementById('ui-wave').innerText = G.wave; document.getElementById('ui-score').innerText = G.score; }
-function renderTowerIcons() { for(let key in TOWER_DATA) { let cvs = document.getElementById('icon-'+key); if(cvs) { cvs.width=48; cvs.height=40; let cx = cvs.getContext('2d'); cx.translate(24, 25); cx.scale(0.8, 0.8); let data = TOWER_DATA[key]; cx.save(); drawTowerShape(cx, data.type, 1, data.color); cx.restore(); } } }
-function startDrag(e, type) { e.preventDefault(); if(G.selected) closeMenu(); G.dragType = type; updateDragPos(e); }
+function updateUI() { 
+    if(G.active) updateRecord(G.difficulty, G.score, G.wave);
+    document.getElementById('ui-cash').innerText = Math.floor(G.cash); 
+    document.getElementById('ui-wave').innerText = G.wave; 
+    document.getElementById('ui-score').innerText = G.score; 
+    let hiEl = document.getElementById('ui-hi');
+    if(hiEl) {
+        let best = Math.max(G.score, (gameRecords[G.difficulty]?.score || 0));
+        hiEl.innerText = best;
+    }
+    let diffEl = document.getElementById('ui-diff');
+    if(diffEl) {
+        let diffKey = G.difficulty || 'normal';
+        diffEl.innerText = diffKey.toUpperCase();
+        diffEl.className = 'stat-diff ' + diffKey;
+    }
+    updateMenuUI(); 
+}
+function renderTowerIcons() {
+    for(let key in TOWER_DATA) {
+        let cvs = document.getElementById('icon-' + key);
+        if(cvs) {
+            // High-DPI 2x resolution buffer for crystal-clear vector line rendering
+            cvs.width = 100;
+            cvs.height = 92;
+            let cx = cvs.getContext('2d');
+            cx.clearRect(0, 0, 100, 92);
+            let data = TOWER_DATA[key];
+            cx.save();
+            // Scale by 2 for Retina backing store, then center in 50x46 box
+            cx.scale(2, 2);
+            cx.translate(23, 23);
+            cx.scale(1.4, 1.4);
+            // Crisp neon glow
+            cx.shadowColor = data.color;
+            cx.shadowBlur = 6;
+            drawTowerShape(cx, data.type, 1, data.color);
+            cx.restore();
+        }
+    }
+}
+function startDrag(e, type) { 
+    e.preventDefault(); 
+    isTouchDrag = !!(e.touches && e.touches.length);
+    if(G.selected) closeMenu(); 
+    G.dragType = type; 
+    updateDragPos(e); 
+}
 function moveDrag(e) { if(G.dragType) { e.preventDefault(); updateDragPos(e); } }
-function updateDragPos(e) { let t = e.touches?e.touches[0]:e; let r = canvas.getBoundingClientRect(); G.dragPos.x = t.clientX - r.left; G.dragPos.y = t.clientY - r.top; }
+function updateDragPos(e) { let t = e.touches?e.touches[0]:e; let p = toWorld(t.clientX, t.clientY); G.dragPos.x = p.x; G.dragPos.y = p.y; }
 function endDrag(e) {
     e.preventDefault(); if(!G.dragType) return;
-    let hex = pixelToHex(G.dragPos.x, G.dragPos.y - 80); 
+    let hex = pixelToHex(G.dragPos.x, G.dragPos.y - dragLift()); 
     let data = TOWER_DATA[G.dragType];
     if(hex && !hex.occ && hex.type!=='obs' && hex!==G.start && hex!==G.end) {
         if(G.cash >= data.cost) {
-            if(calcPath(hex)) {
-                G.cash -= data.cost; hex.occ = true;
-                G.towers.push({q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data, cd:0, lvl:1, angle:0});
+            hex.occ = true;
+            let mainPath = findPath(G.start, G.end);
+            let plans = mainPath && planEnemyRoutes(); // null if any live enemy would be trapped
+            if(plans) {
+                G.path = mainPath; applyEnemyRoutes(plans);
+                G.cash -= data.cost;
+                G.towers.push({q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data, cd:0, lvl:1, angle:0, lockedAngle:null});
                 playSound('place'); fxExplode(hex.x, hex.y, '#fff', 8); updateUI();
-            } else { playSound('boom'); fxExplode(hex.x,hex.y,'#f00',5); }
+            } else { hex.occ = false; playSound('boom'); fxExplode(hex.x,hex.y,'#f00',5); }
         } else playSound('boom');
     }
     G.dragType = null;
 }
 function fireLaser(t, buff) {
-    let ex = t.x+Math.cos(t.angle)*2000, ey = t.y+Math.sin(t.angle)*2000; t.firing=true;
-    G.enemies.forEach(e=>{ if(distToSegment({x:t.x,y:t.y}, {x:ex,y:ey}, e) < (e.size||10)) { e.hp -= t.dmg*(1+t.lvl*0.5)*buff; if(G.enableFX && G.frame%5===0) fx(e.x,e.y,t.color,1); } });
+    // Full piercing line: laser penetrates and damages ALL enemies along its line of sight
+    let reach = Math.max(G.w, G.h) * 1.5; 
+    let ex = t.x + Math.cos(t.angle) * reach, ey = t.y + Math.sin(t.angle) * reach;
+    t.firing = true;
+    let hitCount = 0;
+    G.enemies.forEach(e => {
+        if(e.hp > 0 && !e.reached && distToSegment({x:t.x, y:t.y}, {x:ex, y:ey}, e) < (e.size || 10)) {
+            e.hp -= t.dmg * (1 + t.lvl * 0.5) * buff;
+            hitCount++;
+            if(G.enableFX && G.frame % 3 === 0) fx(e.x, e.y, t.color, 2);
+        }
+    });
+    if(hitCount > 0 && G.enableFX && G.frame % 10 === 0) playSound('laser');
 }
 function handleClick(e) {
     if(G.dragType) return;
-    let r = canvas.getBoundingClientRect();
-    let hex = pixelToHex(e.clientX - r.left, e.clientY - r.top);
+    let p = toWorld(e.clientX, e.clientY);
+    let hex = pixelToHex(p.x, p.y);
     if(hex && hex.occ && hex.type!=='obs') { let t = G.towers.find(to => to.q === hex.q && to.r === hex.r); if(t) selectTower(t); } else closeMenu();
 }
 const drags = document.querySelectorAll('.tower-card');
 drags.forEach(d => { d.addEventListener('touchstart', e => startDrag(e, d.dataset.type), {passive:false}); d.addEventListener('mousedown', e => startDrag(e, d.dataset.type)); });
+renderTowerIcons();
 window.addEventListener('touchmove', moveDrag, {passive:false}); window.addEventListener('mousemove', moveDrag);
 window.addEventListener('touchend', endDrag); window.addEventListener('mouseup', endDrag);
-canvas.addEventListener('touchstart', (e) => { if(e.touches.length === 1) handleClick({clientX: e.touches[0].clientX, clientY: e.touches[0].clientY}); }, {passive:false});
+canvas.addEventListener('touchstart', (e) => { 
+    if(e.touches.length === 1) {
+        e.preventDefault();
+        handleClick({clientX: e.touches[0].clientX, clientY: e.touches[0].clientY}); 
+    }
+}, {passive:false});
 canvas.addEventListener('click', handleClick);
 </script>
 </body>
