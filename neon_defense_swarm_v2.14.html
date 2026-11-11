@@ -12,9 +12,16 @@
             display: flex; flex-direction: column; height: 100vh; width: 100vw;
         }
 
-        /* Top HUD */
+        /* Top Controls: Tower Cards */
         #top-bar {
-            height: 40px; background: #080808; border-bottom: 1px solid #333;
+            height: 85px; background: #080808; border-bottom: 1px solid #333;
+            display: flex; justify-content: center; align-items: center; gap: 6px;
+            padding: 0 10px; flex-shrink: 0; z-index: 10; overflow-x: auto;
+        }
+
+        /* Bottom HUD: Score Bar */
+        #bottom-bar {
+            height: 40px; background: #080808; border-top: 1px solid #333;
             display: flex; justify-content: space-between; align-items: center;
             padding: 0 15px; flex-shrink: 0; z-index: 10;
         }
@@ -30,13 +37,6 @@
         /* Game Area */
         #game-container { flex-grow: 1; position: relative; overflow: hidden; background: #050505; }
         canvas { display: block; width: 100%; height: 100%; }
-
-        /* Bottom Controls */
-        #bottom-bar {
-            height: 85px; background: #080808; border-top: 1px solid #333;
-            display: flex; justify-content: center; align-items: center; gap: 6px;
-            padding: 0 10px; flex-shrink: 0; z-index: 10; overflow-x: auto;
-        }
 
         /* Tower Card */
         .tower-card {
@@ -123,15 +123,13 @@
 <body>
 
 <div id="top-bar">
-    <div id="btn-fx" class="top-btn active">FX: ON</div>
-    <div class="stat-group">
-        <span class="stat-cash">$<span id="ui-cash">120</span></span>
-        <span class="stat-score">SC <span id="ui-score">0</span></span>
-        <span class="stat-hi">HI <span id="ui-hi">0</span></span>
-        <span class="stat-wave">WV <span id="ui-wave">0</span></span>
-        <span id="ui-diff" class="stat-diff normal">NORMAL</span>
-    </div>
-    <div id="btn-speed" class="top-btn">1x</div>
+    <div class="tower-card" data-type="green" style="border-color:#050"><canvas class="t-canvas" id="icon-green"></canvas><span class="t-cost">$15</span></div>
+    <div class="tower-card" data-type="blue" style="border-color:#005"><canvas class="t-canvas" id="icon-blue"></canvas><span class="t-cost">$80</span></div>
+    <div class="tower-card" data-type="red" style="border-color:#500"><canvas class="t-canvas" id="icon-red"></canvas><span class="t-cost">$40</span></div>
+    <div class="tower-card" data-type="purple" style="border-color:#505"><canvas class="t-canvas" id="icon-purple"></canvas><span class="t-cost">$120</span></div>
+    <div class="tower-card" data-type="yellow" style="border-color:#550"><canvas class="t-canvas" id="icon-yellow"></canvas><span class="t-cost">$60</span></div>
+    <div class="tower-card" data-type="orange" style="border-color:#530"><canvas class="t-canvas" id="icon-orange"></canvas><span class="t-cost">$100</span></div>
+    <div id="btn-pause">||</div>
 </div>
 
 <div id="game-container">
@@ -148,13 +146,15 @@
 </div>
 
 <div id="bottom-bar">
-    <div class="tower-card" data-type="green" style="border-color:#050"><canvas class="t-canvas" id="icon-green"></canvas><span class="t-cost">$15</span></div>
-    <div class="tower-card" data-type="blue" style="border-color:#005"><canvas class="t-canvas" id="icon-blue"></canvas><span class="t-cost">$80</span></div>
-    <div class="tower-card" data-type="red" style="border-color:#500"><canvas class="t-canvas" id="icon-red"></canvas><span class="t-cost">$40</span></div>
-    <div class="tower-card" data-type="purple" style="border-color:#505"><canvas class="t-canvas" id="icon-purple"></canvas><span class="t-cost">$120</span></div>
-    <div class="tower-card" data-type="yellow" style="border-color:#550"><canvas class="t-canvas" id="icon-yellow"></canvas><span class="t-cost">$60</span></div>
-    <div class="tower-card" data-type="orange" style="border-color:#530"><canvas class="t-canvas" id="icon-orange"></canvas><span class="t-cost">$100</span></div>
-    <div id="btn-pause">||</div>
+    <div id="btn-fx" class="top-btn active">FX: ON</div>
+    <div class="stat-group">
+        <span class="stat-cash">$<span id="ui-cash">120</span></span>
+        <span class="stat-score">SC <span id="ui-score">0</span></span>
+        <span class="stat-hi">HI <span id="ui-hi">0</span></span>
+        <span class="stat-wave">WV <span id="ui-wave">0</span></span>
+        <span id="ui-diff" class="stat-diff normal">NORMAL</span>
+    </div>
+    <div id="btn-speed" class="top-btn">1x</div>
 </div>
 
 <div id="overlay">
@@ -174,7 +174,7 @@
 // --- Config ---
 const TOWER_DATA = {
     green:  { name: "BLASTER", cost: 15, range: 90,  dmg: 8, rate: 12, color: '#0f0', type:'bolt' },
-    blue:   { name: "LASER",   cost: 80, range: 130, dmg: 0.8,rate: 0,  color: '#0af', type:'laser' },
+    blue:   { name: "LASER",   cost: 80, range: 130, dmg: 1.0, rate: 0,  color: '#0af', type:'laser', burst: 160, cooldown: 75 },
     red:    { name: "MISSILE", cost: 40, range: 140, dmg: 40, rate: 70, color: '#f00', type:'missile', splash: 50 },
     purple: { name: "SNIPER",  cost: 120,range: 300, dmg: 150,rate: 110,color: '#d0f', type:'sniper' },
     yellow: { name: "SHOCK",   cost: 60, range: 100, dmg: 0.5,rate: 5,  color: '#ff0', type:'shock' },
@@ -219,42 +219,22 @@ function renderBgCache() {
 
     G.grid.forEach(c => {
         if(c.wall || c.type === 'wall' || c.type === 'obs') {
-            if(c.wall || c.type === 'wall') {
-                // Outer perimeter wall: Solid boundary hex (0.92R)
-                bgCtx.fillStyle = '#021808';
-                bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.92, bgCtx); bgCtx.fill();
-                bgCtx.shadowColor = '#00ff66';
-                bgCtx.shadowBlur = G.enableFX ? 8 : 0;
-                bgCtx.strokeStyle = '#00ff66';
-                bgCtx.lineWidth = 1.8;
-                bgCtx.stroke();
-                bgCtx.shadowBlur = 0;
-                // Inner concentric energy ring & cross mark
-                bgCtx.strokeStyle = '#007733';
-                bgCtx.lineWidth = 1;
-                bgCtx.beginPath();
-                hexPath(c.x, c.y, G.hexR * 0.45, bgCtx);
-                bgCtx.moveTo(c.x - 3, c.y); bgCtx.lineTo(c.x + 3, c.y);
-                bgCtx.moveTo(c.x, c.y - 3); bgCtx.lineTo(c.x, c.y + 3);
-                bgCtx.stroke();
-            } else {
-                // Internal natural obstacle / debris pillar: Refined inset pylon (0.78R) with base foundation (0.88R)
-                bgCtx.strokeStyle = '#003318';
-                bgCtx.lineWidth = 1;
-                bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.88, bgCtx); bgCtx.stroke();
+            // Obstacle & Wall: Refined inset pylon (0.78R) with base foundation (0.88R) and inner emerald core (0.40R)
+            bgCtx.strokeStyle = '#003318';
+            bgCtx.lineWidth = 1;
+            bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.88, bgCtx); bgCtx.stroke();
 
-                bgCtx.fillStyle = '#011005';
-                bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.78, bgCtx); bgCtx.fill();
-                bgCtx.strokeStyle = '#00883a';
-                bgCtx.lineWidth = 1.3;
-                bgCtx.stroke();
-                // Inner dark emerald core node
-                bgCtx.fillStyle = '#023814';
-                bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.40, bgCtx); bgCtx.fill();
-                bgCtx.strokeStyle = '#005522';
-                bgCtx.lineWidth = 0.8;
-                bgCtx.stroke();
-            }
+            bgCtx.fillStyle = '#011005';
+            bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.78, bgCtx); bgCtx.fill();
+            bgCtx.strokeStyle = '#00883a';
+            bgCtx.lineWidth = 1.3;
+            bgCtx.stroke();
+            // Inner dark emerald core node
+            bgCtx.fillStyle = '#023814';
+            bgCtx.beginPath(); hexPath(c.x, c.y, G.hexR * 0.40, bgCtx); bgCtx.fill();
+            bgCtx.strokeStyle = '#005522';
+            bgCtx.lineWidth = 0.8;
+            bgCtx.stroke();
         } else {
             bgCtx.strokeStyle = '#0a2a2a';
             bgCtx.lineWidth = 1;
@@ -611,6 +591,17 @@ function playSound(type) {
             osc.connect(gain); gain.connect(actx.destination);
             osc.start(t + idx * 0.05); osc.stop(t + idx * 0.05 + 0.22);
         });
+    }
+    else if(type === 'vent') {
+        // Futuristic thermal dissipation hiss / vent for laser tower cooldown
+        let osc = actx.createOscillator(); let gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(650, t);
+        osc.frequency.exponentialRampToValueAtTime(80, t + 0.16);
+        gain.gain.setValueAtTime(0.05, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+        osc.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.16);
     }
     else if(type === 'laser') {
         // High-frequency energy beam hum/pulse
@@ -1151,6 +1142,20 @@ function updateLogic() {
         }
 
         if(t.type === 'laser') {
+            let maxBurst = (t.burst || 160) + (t.lvl - 1) * 15;
+            let maxCd = Math.max(45, (t.cooldown || 75) - (t.lvl - 1) * 5);
+            if(t.burstTimer == null) t.burstTimer = maxBurst;
+            if(t.cooldownTimer == null) t.cooldownTimer = 0;
+
+            if(t.cooldownTimer > 0) {
+                t.cooldownTimer--;
+                t.firing = false;
+                if(t.cooldownTimer === 0) {
+                    t.burstTimer = maxBurst;
+                    if(G.enableFX) fxExplode(t.x, t.y, '#00ffff', 4);
+                }
+            }
+
             let hasTarget = false;
             let reach = Math.max(G.w, G.h) * 1.5;
             if(t.lockedAngle != null) {
@@ -1176,7 +1181,32 @@ function updateLogic() {
                     hasTarget = true;
                 }
             }
-            if(hasTarget) fireLaser(t, buff);
+
+            if(t.cooldownTimer <= 0) {
+                if(hasTarget) {
+                    if(t.burstTimer > 0) {
+                        fireLaser(t, buff);
+                        t.burstTimer--;
+                        if(t.burstTimer <= 0) {
+                            t.cooldownTimer = maxCd;
+                            t.maxCooldown = maxCd;
+                            if(G.enableFX) {
+                                playSound('vent');
+                                fxExplode(t.x, t.y, '#ff9900', 6);
+                                fxExplode(t.x, t.y, '#00ffff', 4);
+                            }
+                        }
+                    } else {
+                        t.firing = false;
+                    }
+                } else {
+                    t.firing = false;
+                    // Gradually replenish charge when not firing
+                    if(t.burstTimer < maxBurst) {
+                        t.burstTimer = Math.min(maxBurst, t.burstTimer + 1);
+                    }
+                }
+            }
         } else if(t.type === 'shock') {
             let maxTargets = 2 + t.lvl;
             // Only shock valid enemies
@@ -1250,6 +1280,8 @@ function updateLogic() {
             }
         }
     });
+
+    if(G.selected && G.selected.type === 'laser' && G.frame % 10 === 0) updateMenuUI();
 
     for(let i=G.projs.length-1; i>=0; i--) {
         let p=G.projs[i]; p.life--;
@@ -1499,10 +1531,53 @@ function draw() {
         if(t.lvl > 3) { ctx.beginPath(); ctx.arc(0,0,G.hexR*0.70,0,6.28); ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
         if(t.lvl === 6) { ctx.beginPath(); ctx.arc(0,0,G.hexR*0.82,0,6.28); ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1; }
         
+        // Laser burst and cooldown visual indicators
+        if(t.type === 'laser') {
+            let maxBurst = (t.burst || 160) + (t.lvl - 1) * 15;
+            let maxCd = t.maxCooldown || Math.max(45, (t.cooldown || 75) - (t.lvl - 1) * 5);
+            if(t.cooldownTimer > 0) {
+                // Recharging / Cooling down gauge: Amber/Orange arc filling up
+                let cdRatio = 1 - (t.cooldownTimer / maxCd);
+                ctx.beginPath();
+                ctx.arc(0, 0, G.hexR * 0.76, -Math.PI/2, -Math.PI/2 + cdRatio * Math.PI * 2);
+                ctx.strokeStyle = '#ff9900';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                ctx.lineWidth = 1;
+                // Subtle heat shimmer/vent
+                if(G.enableFX && G.frame % 15 === 0) {
+                    fx(t.x + (Math.random()-0.5)*10, t.y + (Math.random()-0.5)*10, '#ffaa00', 1);
+                }
+            } else if(t.firing) {
+                // Firing burst gauge: Cyan arc depleting
+                let burstRatio = Math.max(0, (t.burstTimer || 0) / maxBurst);
+                ctx.beginPath();
+                ctx.arc(0, 0, G.hexR * 0.76, -Math.PI/2, -Math.PI/2 + burstRatio * Math.PI * 2);
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                ctx.lineWidth = 1;
+            }
+        }
+
         if(t.type !== 'buff') ctx.rotate(t.angle);
         
         let scale = G.hexR / 20; ctx.scale(scale, scale);
-        drawTowerShape(ctx, t.type, t.lvl, t.color);
+        drawTowerShape(ctx, t.type, t.lvl, (t.type === 'laser' && t.cooldownTimer > 0) ? '#4a7590' : t.color);
+
+        if(t.type === 'laser' && t.firing) {
+            let muzzleX = 13 + Math.min(t.lvl, 6) * 0.9;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(muzzleX, 0, 2.5 + Math.sin(G.frame * 0.5) * 0.8, 0, 6.28);
+            ctx.fill();
+            ctx.fillStyle = '#00ffff';
+            ctx.beginPath();
+            ctx.arc(muzzleX, 0, 4.5 + Math.sin(G.frame * 0.5) * 1.2, 0, 6.28);
+            ctx.globalAlpha = 0.5;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
         
         ctx.restore();
 
@@ -1521,7 +1596,7 @@ function draw() {
             ctx.strokeStyle = '#fff'; ctx.lineWidth = 1 + (t.lvl * 0.2);
             ctx.globalAlpha = 1;
             ctx.beginPath(); ctx.moveTo(t.x, t.y); ctx.lineTo(ex, ey); ctx.stroke();
-            ctx.lineWidth = 1; t.firing = false;
+            ctx.lineWidth = 1;
         }
         if(t.type==='shock' && t.targets) {
             ctx.strokeStyle=t.color; ctx.lineWidth=2;
@@ -2170,7 +2245,13 @@ function setupMenuListeners() {
 function updateMenuUI() {
     if(!G.selected) return; let t = G.selected;
     let isMax = t.lvl >= 6; let cost = Math.floor(t.cost * t.lvl * 0.7); let sell = Math.floor(t.cost * 0.5 * t.lvl);
-    document.getElementById('m-info').innerText = `${t.name} LVL ${t.lvl}`;
+    let statusText = "";
+    if(t.type === 'laser') {
+        if(t.cooldownTimer > 0) statusText = " [COOLING]";
+        else if(t.firing) statusText = " [FIRING]";
+        else statusText = " [READY]";
+    }
+    document.getElementById('m-info').innerText = `${t.name} LVL ${t.lvl}${statusText}`;
     let btnUp = document.getElementById('m-upg');
     btnUp.innerText = isMax ? "MAX" : `UPGRADE $${cost}`; btnUp.style.opacity = (isMax || G.cash < cost) ? 0.5 : 1;
     document.getElementById('m-sell').innerText = `SELL $${sell}`;
@@ -2256,7 +2337,7 @@ function endDrag(e) {
             let plans = mainPath ? planEnemyRoutes() : null; // null if any live enemy would be trapped
             if(mainPath && plans) {
                 hex.occ = true;
-                let newTower = {q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data, cd:0, lvl:1, angle:0, lockedAngle:null};
+                let newTower = {q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data, cd:0, lvl:1, angle:0, lockedAngle:null, burstTimer: data.burst || 160, cooldownTimer: 0};
                 hex.tower = newTower;
                 G.towers.push(newTower);
                 G.path = mainPath;
@@ -2285,7 +2366,7 @@ function fireLaser(t, buff) {
             if(G.enableFX && G.frame % 3 === 0) fx(e.x, e.y, t.color, 2);
         }
     });
-    if(hitCount > 0 && G.enableFX && G.frame % 10 === 0) playSound('laser');
+    if(G.enableFX && G.frame % 10 === 0) playSound('laser');
 }
 function handleClick(e) {
     if(G.dragType) return;
