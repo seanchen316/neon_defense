@@ -1422,9 +1422,15 @@ function resize() {
 // Keep the existing map and scale/centre it to the current container size.
 function fitView() {
     let rect = container.getBoundingClientRect();
+    if(!rect.width || !rect.height || !G.w || !G.h) return;
     canvas.width = rect.width; canvas.height = rect.height;
     let s = Math.min(rect.width/G.w, rect.height/G.h);
-    G.view = { s, ox:(rect.width - G.w*s)/2, oy:(rect.height - G.h*s)/2 };
+    if(!isFinite(s) || s <= 0) s = 1;
+    let ox = (rect.width - G.w*s)/2;
+    let oy = (rect.height - G.h*s)/2;
+    if(!isFinite(ox)) ox = 0;
+    if(!isFinite(oy)) oy = 0;
+    G.view = { s, ox, oy };
     closeMenu();
 }
 window.addEventListener('resize', () => { if(G.grid.length) { fitView(); pauseRedrawNeeded = true; draw(); } });
@@ -1583,7 +1589,9 @@ function findPath(from, to) {
         }
         return dDirect;
     };
-    while(open.length>0) {
+    let maxSteps = (G.grid ? G.grid.length : 300) * 2 + 50;
+    let steps = 0;
+    while(open.length > 0 && steps++ < maxSteps) {
         open.sort((a,b)=>(gScore.get(a)+h(a))-(gScore.get(b)+h(b)));
         let cur=open.shift();
         if(cur===to){found=true; break;}
@@ -1599,7 +1607,12 @@ function findPath(from, to) {
     }
     if(!found) return null;
     let path=[], curr=to;
-    while(curr!==from) { path.push(curr); curr=cameFrom.get(curr); }
+    let traceLimit = (G.grid ? G.grid.length : 300) + 10;
+    while(curr && curr!==from && path.length < traceLimit) {
+        path.push(curr);
+        curr = cameFrom.get(curr);
+    }
+    if(!curr || curr !== from) return null; // Prevent cycles or disjoint paths
     path.push(from);
     return path.reverse();
 }
@@ -1608,30 +1621,51 @@ function findPath(from, to) {
 function planEnemyRoutes(tempBlock=null) {
     if(tempBlock) tempBlock.occ = true;
     let cache = new Map(), plans = [];
-    for(let e of G.enemies) {
-        let tgt = e.path[e.pi];
-        let origin = (tgt && !tgt.occ && !tgt.tower) ? tgt : e.prev;
-        if(!origin || origin.occ || origin.tower) {
-            if(tempBlock) tempBlock.occ = false;
-            return null;
+    try {
+        for(let e of G.enemies) {
+            if(!e) continue;
+            let tgt = (e.path && Array.isArray(e.path) && e.pi < e.path.length) ? e.path[e.pi] : null;
+            let origin = (tgt && !tgt.occ && !tgt.tower) ? tgt : e.prev;
+            if(!origin || origin.occ || origin.tower) {
+                return null;
+            }
+            // If tempBlock is set and this enemy's remaining path does not touch tempBlock, its existing path is valid!
+            if(tempBlock && e.path && Array.isArray(e.path) && !e.path.slice(e.pi).includes(tempBlock) && e.prev !== tempBlock) {
+                plans.push(e.path.slice(e.pi));
+                continue;
+            }
+            if(!cache.has(origin)) cache.set(origin, findPath(origin, G.end));
+            let p = cache.get(origin);
+            if(!p || !p.length) {
+                return null;
+            }
+            plans.push(p);
         }
-        // If tempBlock is set and this enemy's remaining path does not touch tempBlock, its existing path is valid!
-        if(tempBlock && !e.path.slice(e.pi).includes(tempBlock) && e.prev !== tempBlock) {
-            plans.push(e.path.slice(e.pi));
-            continue;
-        }
-        if(!cache.has(origin)) cache.set(origin, findPath(origin, G.end));
-        let p = cache.get(origin);
-        if(!p) {
-            if(tempBlock) tempBlock.occ = false;
-            return null;
-        }
-        plans.push(p);
+        return plans;
+    } finally {
+        if(tempBlock) tempBlock.occ = false;
     }
-    if(tempBlock) tempBlock.occ = false;
-    return plans;
 }
-function applyEnemyRoutes(plans) { G.enemies.forEach((e,i) => { e.path = plans[i]; e.pi = 0; }); }
+
+function applyEnemyRoutes(plans) {
+    if(!plans || !Array.isArray(plans)) return;
+    G.enemies.forEach((e, i) => {
+        let p = plans[i];
+        if(p && Array.isArray(p) && p.length > 0) {
+            e.path = p;
+            e.pi = 0;
+        } else {
+            // Robust fallback: ensure enemy never ends up with undefined path
+            let startNode = (e.path && Array.isArray(e.path) && e.path[e.pi] && !e.path[e.pi].occ && !e.path[e.pi].tower)
+                ? e.path[e.pi] : (e.prev || G.start);
+            let fallback = findPath(startNode, G.end) || G.path;
+            if(fallback && Array.isArray(fallback) && fallback.length > 0) {
+                e.path = fallback;
+                e.pi = 0;
+            }
+        }
+    });
+}
 
 // Check if placing a tower on hex is valid and keeps a valid trail for enemies
 let dragPlacementCache = { hex: null, lastCheck: -1, valid: false, mainPath: null, plans: null };
@@ -1669,13 +1703,22 @@ function loop() {
     if(!G.active) return;
     if(G.paused) {
         if(pauseRedrawNeeded) {
-            draw();
+            try { draw(); } catch(e) { console.error("Pause draw error:", e); }
             pauseRedrawNeeded = false;
         }
         return;
     }
-    let loops = G.speed; while(loops-- && G.active) { G.frame++; updateLogic(); }
-    draw();
+    try {
+        let loops = G.speed; while(loops-- && G.active) { G.frame++; updateLogic(); }
+    } catch(err) {
+        console.error("Game logic error:", err);
+    }
+    try {
+        draw();
+    } catch(err) {
+        console.error("Game draw error:", err);
+        try { ctx.setTransform(1, 0, 0, 1, 0, 0); } catch(_) {}
+    }
 }
 
 const MAX_ALIVE_ENEMIES = 160;
@@ -2114,8 +2157,12 @@ function updateLogic() {
             updateUI(); G.enemies.splice(i,1); continue; 
         }
         
-        // Pathing
-        let target = e.path[e.pi];
+        // Pathing Safeguard: heal corrupted or missing enemy path
+        if(!e.path || !Array.isArray(e.path) || e.path.length === 0) {
+            e.path = G.path || findPath(G.start, G.end) || [];
+            e.pi = 0;
+        }
+        let target = (e.path && e.pi < e.path.length) ? e.path[e.pi] : null;
         // Check end condition
         if(distSq(e, G.end) < endRSq) {
             e.reached = true; // Mark as reached so towers ignore it
@@ -2301,11 +2348,16 @@ function addEnemyNode(x, y, spin, r = 1.35) {
 
 // --- Draw ---
 function draw() {
+    if(!G.view || !isFinite(G.view.s) || G.view.s <= 0) fitView();
     ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height); // letterbox
-    ctx.setTransform(G.view.s,0,0,G.view.s,G.view.ox,G.view.oy); // map -> screen
+    if(G.view && isFinite(G.view.s) && G.view.s > 0) {
+        ctx.setTransform(G.view.s,0,0,G.view.s,G.view.ox,G.view.oy); // map -> screen
+    }
     
     // 1. Offscreen Cached Static Map (Hex Grid, Obstacles, Walls, Gates)
-    ctx.drawImage(bgCanvas, 0, 0);
+    if(bgCanvas.width > 0 && bgCanvas.height > 0) {
+        ctx.drawImage(bgCanvas, 0, 0);
+    }
 
     // 1.2 Enemy Entry Point - Black Hole Spinning Vortex
     drawEnemyEntry(ctx);
@@ -3707,34 +3759,43 @@ function moveDrag(e) { if(G.dragType) { e.preventDefault(); updateDragPos(e); } 
 function updateDragPos(e) { let t = e.touches?e.touches[0]:e; let p = toWorld(t.clientX, t.clientY); G.dragPos.x = p.x; G.dragPos.y = p.y; }
 function endDrag(e) {
     e.preventDefault(); if(!G.dragType) return;
-    let hex = pixelToHex(G.dragPos.x, G.dragPos.y - dragLift()); 
-    let data = TOWER_DATA[G.dragType];
-    if(hex && canBuildOn(hex)) {
-        if(G.cash >= data.cost) {
-            let check = testPlacement(hex);
-            if(check.valid) {
+    try {
+        let ghostY = G.dragPos.y - dragLift();
+        let hex = pixelToHex(G.dragPos.x, ghostY); 
+        let data = TOWER_DATA[G.dragType];
+        if(hex && canBuildOn(hex)) {
+            if(G.cash >= data.cost) {
+                // Immediate fresh path verification at the exact instant of drop
                 hex.occ = true;
-                let newTower = {
-                    q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data,
-                    cd:0, lvl:1, angle:0, lockedAngle:null,
-                    burstTimer: data.burst || 160, cooldownTimer: 0,
-                    energy: 0, maxEnergy: 100, bursting: false, spin: 0,
-                    arcTargets: [], shockwaves: [], barrelAlt: false, reloading: false
-                };
-                hex.tower = newTower;
-                G.towers.push(newTower);
-                G.path = check.mainPath || findPath(G.start, G.end);
-                applyEnemyRoutes(check.plans || planEnemyRoutes());
-                G.cash -= data.cost;
-                playSound('place'); fxExplode(hex.x, hex.y, '#fff', 8); updateUI();
-            } else {
-                hex.occ = false; hex.tower = null;
-                playSound('boom'); fxExplode(hex.x, hex.y, '#ff0033', 5);
-            }
-        } else playSound('boom');
+                let mainPath = findPath(G.start, G.end);
+                let plans = mainPath ? planEnemyRoutes() : null;
+                if(mainPath && plans) {
+                    let newTower = {
+                        q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data,
+                        cd:0, lvl:1, angle:0, lockedAngle:null,
+                        burstTimer: data.burst || 160, cooldownTimer: 0,
+                        energy: 0, maxEnergy: 100, bursting: false, spin: 0,
+                        arcTargets: [], shockwaves: [], barrelAlt: false, reloading: false
+                    };
+                    hex.tower = newTower;
+                    G.towers.push(newTower);
+                    G.path = mainPath;
+                    applyEnemyRoutes(plans);
+                    G.cash -= data.cost;
+                    playSound('place'); fxExplode(hex.x, hex.y, '#fff', 8); updateUI();
+                } else {
+                    hex.occ = false; hex.tower = null;
+                    playSound('boom'); fxExplode(hex.x, hex.y, '#ff0033', 5);
+                }
+            } else playSound('boom');
+        }
+    } catch(err) {
+        console.error("Error in endDrag:", err);
+    } finally {
+        dragPlacementCache.hex = null;
+        dragPlacementCache.lastCheck = -1;
+        G.dragType = null;
     }
-    dragPlacementCache.hex = null;
-    G.dragType = null;
 }
 function fireLaser(t, buff) {
     // Full piercing line: laser penetrates and damages ALL enemies along its line of sight
