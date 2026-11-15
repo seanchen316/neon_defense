@@ -68,11 +68,81 @@
         .t-canvas { position: absolute; top: 2px; left: 0; width: 50px; height: 46px; pointer-events: none; }
         .t-cost { font-size: 10px; color: #aaa; margin-bottom: 4px; pointer-events: none; font-weight: bold; font-family: monospace; }
         
-        /* Pause Button */
+        /* Pause Button (in Bottom HUD) */
         #btn-pause {
-            width: 45px; height: 45px; border-radius: 50%; border: 2px solid #666; flex-shrink: 0;
-            color: #fff; font-size: 18px; margin-left: 10px; background: #222;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            min-width: 28px; text-align: center; font-weight: bold;
+            color: #00f5ff; border: 1px solid #008899;
+            transition: all 0.15s;
+        }
+        #btn-pause:hover { border-color: #00ffff; color: #fff; background: #003344; }
+        #btn-pause.paused {
+            background: #003344; color: #ffdd00; border-color: #ffcc00;
+            box-shadow: 0 0 8px rgba(255, 204, 0, 0.6);
+        }
+
+        /* Pause Modal Popup */
+        #pause-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.78);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 500;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+        .pause-box {
+            background: #0d1217;
+            border: 1px solid #00f5ff;
+            box-shadow: 0 0 25px rgba(0, 245, 255, 0.35), inset 0 0 15px rgba(0, 245, 255, 0.08);
+            border-radius: 8px;
+            padding: 22px 24px;
+            width: 250px;
+            max-width: 85vw;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-family: inherit;
+            animation: pauseFadeIn 0.15s ease-out;
+        }
+        @keyframes pauseFadeIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .pause-title {
+            font-size: 18px; font-weight: 900; color: #00f5ff;
+            letter-spacing: 2px; text-shadow: 0 0 12px rgba(0, 245, 255, 0.8);
+        }
+        .pause-subtitle {
+            font-size: 10px; color: #7a889b; letter-spacing: 1.5px;
+            margin-top: -6px; margin-bottom: 4px;
+        }
+        .pause-btn {
+            width: 100%; padding: 10px 14px; background: #141c24;
+            border: 1px solid #2a3a4d; border-radius: 4px; color: #d0dbe5;
+            font-size: 11px; font-weight: bold; cursor: pointer;
+            transition: all 0.15s; touch-action: manipulation;
+            user-select: none; -webkit-user-select: none; font-family: inherit;
+            letter-spacing: 0.5px;
+        }
+        .pause-btn:hover {
+            background: #1e2b38; border-color: #00f5ff; color: #fff;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.35);
+        }
+        .pause-btn:active { transform: scale(0.97); }
+        .pause-btn.btn-resume {
+            background: #003322; border-color: #00ff88; color: #00ff88;
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.25);
+        }
+        .pause-btn.btn-resume:hover {
+            background: #004d33; color: #fff; box-shadow: 0 0 14px rgba(0, 255, 136, 0.55);
+        }
+        .pause-btn.btn-exit { color: #ff3366; border-color: #551122; }
+        .pause-btn.btn-exit:hover {
+            background: #330811; border-color: #ff3366; box-shadow: 0 0 12px rgba(255, 51, 102, 0.5);
+        }
+        .pause-btn.btn-warn {
+            color: #ffcc00; border-color: #ffaa00; background: #2a2200;
+            animation: blinker 0.8s infinite;
         }
 
         /* Menus */
@@ -147,7 +217,6 @@
     <div class="tower-card" data-type="cyan" style="border-color:#055"><canvas class="t-canvas" id="icon-cyan"></canvas><span class="t-cost">$70</span></div>
     <div class="tower-card" data-type="yellow" style="border-color:#550"><canvas class="t-canvas" id="icon-yellow"></canvas><span class="t-cost">$60</span></div>
     <div class="tower-card" data-type="orange" style="border-color:#505"><canvas class="t-canvas" id="icon-orange"></canvas><span class="t-cost">$100</span></div>
-    <div id="btn-pause">||</div>
 </div>
 
 <div id="game-container">
@@ -164,7 +233,6 @@
 </div>
 
 <div id="bottom-bar">
-    <div id="btn-fx" class="top-btn active">FX: ON</div>
     <div class="stat-group">
         <span class="stat-cash">$<span id="ui-cash">120</span></span>
         <span class="stat-score">SC <span id="ui-score">0</span></span>
@@ -172,12 +240,28 @@
         <span class="stat-wave">WV <span id="ui-wave">0</span></span>
         <span id="ui-diff" class="stat-diff normal">NORMAL</span>
     </div>
-    <div id="btn-speed" class="top-btn">1x</div>
+    <div style="display: flex; gap: 6px; align-items: center;">
+        <div id="btn-speed" class="top-btn">1x</div>
+        <div id="btn-pause" class="top-btn">||</div>
+    </div>
+</div>
+
+<div id="pause-modal" style="display:none;">
+    <div class="pause-box">
+        <div class="pause-title">GAME PAUSED</div>
+        <div class="pause-subtitle">SYSTEM HALTED</div>
+        <button class="pause-btn btn-resume" id="p-resume">RESUME GAME</button>
+        <button class="pause-btn" id="p-restart">RESTART LEVEL</button>
+        <button class="pause-btn" id="p-sound">SOUND: ON</button>
+        <button class="pause-btn" id="p-fx">FX: ON</button>
+        <button class="pause-btn" id="p-reset-hi">RESET HIGHSCORE</button>
+        <button class="pause-btn btn-exit" id="p-exit">EXIT GAME</button>
+    </div>
 </div>
 
 <div id="overlay">
-    <div id="ov-title">GEODEFENSE SWARM V2.18</div>
-    <div id="ov-sub" style="font-size:12px; color:#aaa; margin-top:10px">High-Swarm Performance Engine · Zero-GC Pipeline · Smart Trail Detection</div>
+    <div id="ov-title">GEODEFENSE SWARM V2.20</div>
+    <div id="ov-sub" style="font-size:12px; color:#aaa; margin-top:10px">Blackhole Vortex Entry · Pause System Menu · Zero-GC Performance Engine</div>
     <div class="diff-container" id="diff-selector">
         <button class="diff-btn" data-diff="easy">EASY</button>
         <button class="diff-btn selected" data-diff="normal">NORMAL</button>
@@ -262,20 +346,11 @@ function renderBgCache() {
     });
 
     if(G.start) {
-        drawHexSolid(G.start.x, G.start.y, G.hexR * 0.90, '#ffdd00', 0.25, bgCtx);
-        bgCtx.shadowColor = '#ffea00';
-        bgCtx.shadowBlur = G.enableFX ? 14 : 0;
-        bgCtx.strokeStyle = '#ffee33';
-        bgCtx.lineWidth = 2.0;
-        bgCtx.beginPath(); hexPath(G.start.x, G.start.y, G.hexR * 0.90, bgCtx); bgCtx.stroke();
-        bgCtx.strokeStyle = '#ffd700';
-        bgCtx.lineWidth = 1.4;
-        bgCtx.beginPath();
-        bgCtx.arc(G.start.x, G.start.y, G.hexR * 0.45, 0, 6.28);
-        bgCtx.moveTo(G.start.x - 4, G.start.y); bgCtx.lineTo(G.start.x + 4, G.start.y);
-        bgCtx.moveTo(G.start.x, G.start.y - 4); bgCtx.lineTo(G.start.x, G.start.y + 4);
-        bgCtx.stroke();
-        bgCtx.shadowBlur = 0;
+        // Base dark cosmic foundation for dynamic Black Hole Vortex entry
+        drawHexSolid(G.start.x, G.start.y, G.hexR * 0.92, '#06000e', 0.85, bgCtx);
+        bgCtx.strokeStyle = '#2d004d';
+        bgCtx.lineWidth = 1.2;
+        bgCtx.beginPath(); hexPath(G.start.x, G.start.y, G.hexR * 0.92, bgCtx); bgCtx.stroke();
     }
 
     if(G.end) {
@@ -428,6 +503,133 @@ function drawSpecialObstacles(c) {
             c.restore();
         }
     }
+}
+
+function drawEnemyEntry(c) {
+    if(!G.start) return;
+    let sx = G.start.x, sy = G.start.y;
+    let hr = G.hexR || 20;
+    let active = G.spawning || (G.spawnQ > 0);
+
+    // 1. Gravitational Lensing & Ambient Void Glow
+    let glowSize = hr * (active ? (2.1 + Math.sin(G.frame * 0.12) * 0.25) : (1.5 + Math.sin(G.frame * 0.05) * 0.15));
+    drawGlow(c, sx, sy, glowSize, active ? '#c000ff' : '#7b00ff');
+    if(G.enableFX && active) {
+        drawGlow(c, sx, sy, hr * 0.9, '#00f5ff');
+    }
+
+    // 2. Base Accretion Disc Hex Plate Pulse
+    let discAlpha = active ? (0.32 + Math.sin(G.frame * 0.15) * 0.1) : (0.18 + Math.sin(G.frame * 0.06) * 0.06);
+    drawHexSolid(sx, sy, hr * 0.90, active ? '#9900ff' : '#440088', discAlpha, c);
+
+    c.save();
+    c.translate(sx, sy);
+
+    // 3. Counter-rotating Outer Containment / Event Perimeter
+    let pSpin = G.frame * 0.015;
+    c.save();
+    c.rotate(pSpin);
+    c.strokeStyle = active ? '#d580ff' : '#6a2c91';
+    c.lineWidth = active ? 1.6 : 1.1;
+    c.setLineDash([hr * 0.25, hr * 0.15]);
+    c.beginPath();
+    hexPath(0, 0, hr * 0.90, c);
+    c.stroke();
+    c.setLineDash([]);
+    c.restore();
+
+    // 4. Inward Logarithmic Accretion Vortex (Spinning Vortex Arms)
+    let vSpin = -G.frame * (active ? 0.065 : 0.045);
+    let arms = 5;
+    for(let k = 0; k < arms; k++) {
+        let a = vSpin + k * (Math.PI * 2 / arms);
+        let rOuter = hr * 0.86;
+        let rMid = hr * 0.54;
+        let rInner = hr * 0.26;
+        let aMid = a + 0.65;
+        let aInner = a + 1.65;
+
+        // Outer-to-inner logarithmic curvature
+        c.beginPath();
+        c.moveTo(Math.cos(a) * rOuter, Math.sin(a) * rOuter);
+        c.quadraticCurveTo(
+            Math.cos(aMid) * rMid * 1.18, Math.sin(aMid) * rMid * 1.18,
+            Math.cos(aInner) * rInner, Math.sin(aInner) * rInner
+        );
+        c.strokeStyle = (k % 2 === 0) ? (active ? '#00f5ff' : '#00bfff') : (active ? '#ff33cc' : '#b300ff');
+        c.lineWidth = active ? 2.0 : 1.4;
+        c.stroke();
+    }
+
+    // 5. Secondary High-Velocity Infall Tendrils (Tighter inner vortex)
+    for(let k = 0; k < 3; k++) {
+        let a = vSpin * 1.6 + k * (Math.PI * 2 / 3);
+        c.beginPath();
+        c.moveTo(Math.cos(a) * hr * 0.6, Math.sin(a) * hr * 0.6);
+        c.quadraticCurveTo(
+            Math.cos(a + 0.9) * hr * 0.38, Math.sin(a + 0.9) * hr * 0.38,
+            Math.cos(a + 2.0) * hr * 0.22, Math.sin(a + 2.0) * hr * 0.22
+        );
+        c.strokeStyle = active ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.45)';
+        c.lineWidth = active ? 1.5 : 1.0;
+        c.stroke();
+    }
+
+    // 6. Infalling Accretion Plasma Motes (Spiraling inward into Singularity)
+    let particleCount = active ? 8 : 5;
+    let pSpeed = active ? 1.1 : 0.65;
+    for(let i = 0; i < particleCount; i++) {
+        let cycle = (G.frame * pSpeed + i * 23) % (hr * 0.62);
+        let rDist = hr * 0.85 - cycle;
+        if(rDist > hr * 0.22) {
+            let theta = i * 1.35 + (hr / Math.max(6, rDist)) * 0.85 + vSpin;
+            let px = Math.cos(theta) * rDist;
+            let py = Math.sin(theta) * rDist;
+            let alpha = Math.min(1, Math.max(0.1, (rDist - hr * 0.2) / (hr * 0.5)));
+            c.fillStyle = (i % 2 === 0) ? `rgba(0, 245, 255, ${alpha})` : `rgba(255, 80, 220, ${alpha})`;
+            c.beginPath();
+            c.arc(px, py, active ? 1.6 : 1.1, 0, 6.28);
+            c.fill();
+        }
+    }
+
+    // 7. Relativistic Doppler Beaming / Accretion Ring (Asymmetric luminous crescent)
+    let ehRadius = hr * (active ? 0.29 : 0.25) + Math.sin(G.frame * 0.1) * 0.7;
+    c.save();
+    c.rotate(-vSpin * 0.5);
+    // Einstein Ring / Photon Sphere glow
+    c.beginPath();
+    c.arc(0, 0, ehRadius * 1.35, 0, 6.28);
+    c.strokeStyle = active ? 'rgba(0, 245, 255, 0.45)' : 'rgba(180, 80, 255, 0.3)';
+    c.lineWidth = 1.2;
+    c.stroke();
+
+    // Doppler beamed luminous crescent
+    c.beginPath();
+    c.arc(0, 0, ehRadius * 1.12, -Math.PI * 0.4, Math.PI * 0.4);
+    c.strokeStyle = active ? '#ffffff' : '#00ffff';
+    c.lineWidth = active ? 2.5 : 1.8;
+    c.stroke();
+    c.restore();
+
+    // 8. Event Horizon: True Pitch-Black Singularity Shadow
+    c.beginPath();
+    c.arc(0, 0, ehRadius, 0, 6.28);
+    c.fillStyle = '#000000';
+    c.fill();
+    // Photon sphere sharp rim
+    c.strokeStyle = active ? '#ffffff' : '#b066ff';
+    c.lineWidth = active ? 1.8 : 1.2;
+    c.stroke();
+
+    // 9. Status Badge: Sleek cyber indicator
+    c.font = "bold 7px Courier New";
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillStyle = active ? '#00f5ff' : '#8855bb';
+    c.fillText(active ? "SPAWN" : "ENTRY", 0, hr * 0.62);
+
+    c.restore();
 }
 
 function drawEndpoint(c) {
@@ -590,12 +792,19 @@ function bindTouch(id, fn) {
 }
 
 // --- System ---
+const SOUND_KEY = 'geodefense_sound_v1';
+let soundEnabled = true;
+try {
+    let savedSound = localStorage.getItem(SOUND_KEY);
+    if(savedSound !== null) soundEnabled = (savedSound === 'true');
+} catch(e) {}
+
 function initAudio() { 
     if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); 
     if(actx && actx.state === 'suspended') actx.resume();
 }
 function playSound(type) {
-    if(!actx || !G.enableFX) return;
+    if(!actx || !G.enableFX || !soundEnabled) return;
     if(actx.state === 'suspended') actx.resume();
     let t = actx.currentTime;
     if(type === 'upgrade') {
@@ -794,9 +1003,8 @@ function playSound(type) {
     }
 }
 
-bindTouch('btn-pause', () => { G.paused = !G.paused; document.getElementById('btn-pause').innerText = G.paused ? "►" : "||"; });
+bindTouch('btn-pause', () => togglePause());
 bindTouch('btn-speed', () => { G.speed = G.speed===1 ? 2 : 1; document.getElementById('btn-speed').innerText = G.speed+"x"; });
-bindTouch('btn-fx', () => { G.enableFX = !G.enableFX; let btn=document.getElementById('btn-fx'); btn.innerText="FX: "+(G.enableFX?"ON":"OFF"); btn.classList.toggle('active',G.enableFX); if(G.grid.length) renderBgCache(); });
 bindTouch('btn-wave', forceNextWave);
 // --- High Scores & Record System ---
 const STORAGE_KEY = 'geodefense_swarm_records_v1';
@@ -917,11 +1125,186 @@ if(overlayEl) {
     });
 }
 
+// --- Pause & Center Popup Menu Management ---
+const FX_KEY = 'geodefense_fx_v1';
+try {
+    let savedFx = localStorage.getItem(FX_KEY);
+    if(savedFx !== null) G.enableFX = (savedFx === 'true');
+} catch(e) {}
+
+function togglePause(forced) {
+    if(!G.active) return;
+    G.paused = (forced !== undefined) ? forced : !G.paused;
+    let pauseBtn = document.getElementById('btn-pause');
+    if(pauseBtn) {
+        pauseBtn.innerText = G.paused ? "►" : "||";
+        pauseBtn.classList.toggle('paused', G.paused);
+    }
+    let modal = document.getElementById('pause-modal');
+    if(modal) {
+        modal.style.display = G.paused ? 'flex' : 'none';
+        if(G.paused) {
+            updatePauseSoundBtn();
+            updatePauseFxBtn();
+            resetResetHiBtnState();
+        }
+    }
+}
+
+function updatePauseSoundBtn() {
+    let btn = document.getElementById('p-sound');
+    if(!btn) return;
+    btn.innerText = `SOUND: ${soundEnabled ? 'ON' : 'OFF'}`;
+    btn.style.color = soundEnabled ? '#00ff88' : '#888';
+    btn.style.borderColor = soundEnabled ? '#006633' : '#444';
+}
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    try { localStorage.setItem(SOUND_KEY, soundEnabled); } catch(e) {}
+    if(soundEnabled) initAudio();
+    updatePauseSoundBtn();
+    if(soundEnabled) playSound('place');
+}
+
+function updatePauseFxBtn() {
+    let btn = document.getElementById('p-fx');
+    if(!btn) return;
+    btn.innerText = `FX: ${G.enableFX ? 'ON' : 'OFF'}`;
+    btn.style.color = G.enableFX ? '#00ff88' : '#888';
+    btn.style.borderColor = G.enableFX ? '#006633' : '#444';
+}
+
+function toggleFX() {
+    G.enableFX = !G.enableFX;
+    try { localStorage.setItem(FX_KEY, G.enableFX); } catch(e) {}
+    updatePauseFxBtn();
+    if(G.grid.length) renderBgCache();
+    if(soundEnabled) playSound('place');
+}
+
+let resetHiConfirm = false;
+let resetHiTimer = null;
+function resetResetHiBtnState() {
+    resetHiConfirm = false;
+    if(resetHiTimer) clearTimeout(resetHiTimer);
+    let btn = document.getElementById('p-reset-hi');
+    if(btn) {
+        btn.innerText = 'RESET HIGHSCORE';
+        btn.classList.remove('btn-warn');
+        btn.style.color = '';
+    }
+}
+
+function resetHighScores() {
+    gameRecords = {
+        easy:   { score: 0, wave: 0 },
+        normal: { score: 0, wave: 0 },
+        hard:   { score: 0, wave: 0 },
+        hell:   { score: 0, wave: 0 }
+    };
+    saveRecords(gameRecords);
+    updateUI();
+    updateDiffBestUI();
+}
+
+function handleResetHighScore() {
+    let btn = document.getElementById('p-reset-hi');
+    if(!btn) return;
+    if(!resetHiConfirm) {
+        resetHiConfirm = true;
+        btn.innerText = 'CONFIRM RESET?';
+        btn.classList.add('btn-warn');
+        if(resetHiTimer) clearTimeout(resetHiTimer);
+        resetHiTimer = setTimeout(() => {
+            resetResetHiBtnState();
+        }, 3500);
+    } else {
+        resetHighScores();
+        btn.innerText = 'HIGHSCORE RESET!';
+        btn.classList.remove('btn-warn');
+        btn.style.color = '#00ff88';
+        if(resetHiTimer) clearTimeout(resetHiTimer);
+        resetHiTimer = setTimeout(() => {
+            resetResetHiBtnState();
+        }, 1800);
+    }
+}
+
+function restartLevel() {
+    togglePause(false);
+    closeMenu();
+    let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
+    G.hp = cfg.hp;
+    G.cash = cfg.cash;
+    G.wave = 0;
+    G.score = 0;
+    G.towers = [];
+    G.enemies = [];
+    G.projs = [];
+    G.energyOrbs = [];
+    G.selected = null;
+    G.dragType = null;
+    G.spawning = false;
+    G.spawnQ = 0;
+    G.endHit = 0;
+    G.overAt = 0;
+    G.active = true;
+    initGrid();
+    fitView();
+    updateUI();
+    setTimer(5);
+    playSound('place');
+}
+
+function exitGame() {
+    togglePause(false);
+    closeMenu();
+    G.active = false;
+    G.towers = [];
+    G.enemies = [];
+    G.projs = [];
+    G.energyOrbs = [];
+    G.selected = null;
+    G.dragType = null;
+    G.spawning = false;
+    G.spawnQ = 0;
+    G.overAt = 0;
+    
+    let overlayEl = document.getElementById('overlay');
+    if(overlayEl) {
+        document.getElementById('ov-title').innerText = 'GEODEFENSE SWARM V2.19';
+        let diffBox = document.getElementById('diff-selector');
+        if(diffBox) diffBox.style.display = 'flex';
+        let bestBox = document.getElementById('diff-best');
+        if(bestBox) bestBox.style.display = 'block';
+        updateDiffBestUI();
+        document.getElementById('ov-action').innerText = 'TAP TO START';
+        overlayEl.style.display = 'flex';
+    }
+}
+
+// Bind pause modal action buttons
+bindTouch('p-resume', () => togglePause(false));
+bindTouch('p-restart', restartLevel);
+bindTouch('p-sound', toggleSound);
+bindTouch('p-fx', toggleFX);
+bindTouch('p-reset-hi', handleResetHighScore);
+bindTouch('p-exit', exitGame);
+
+const pauseModalEl = document.getElementById('pause-modal');
+if(pauseModalEl) {
+    pauseModalEl.addEventListener('click', (e) => {
+        if(e.target === pauseModalEl) togglePause(false);
+    });
+}
+
 // Initialize active button state and best record
 setDifficulty(selectedDifficulty);
 
 function startGame() {
     initAudio(); document.getElementById('overlay').style.display='none';
+    togglePause(false);
     G.difficulty = selectedDifficulty || 'normal';
     let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
     G.hp = cfg.hp;
@@ -936,6 +1319,7 @@ function loseLife() {
     if(G.hp<=0 && G.active) gameOver();
 }
 function gameOver() {
+    togglePause(false);
     G.active=false; G.dragType=null; closeMenu(); G.overAt=Date.now();
     let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
     let res = updateRecord(G.difficulty, G.score, G.wave);
@@ -1792,6 +2176,10 @@ function spawnEnemy() {
         reached:false // Flag for targeting logic
     };
     G.enemies.push(e);
+    if(G.enableFX) {
+        spawnParticle(G.start.x, G.start.y, 0, 0, 0.7, '#c000ff', 'halo', Math.round(hr * 0.45));
+        fx(G.start.x, G.start.y, '#00f5ff', 2);
+    }
 }
 
 // Pre-allocated static buffer for enemy vertex pip nodes (Zero GC allocation pipeline)
@@ -1812,6 +2200,9 @@ function draw() {
     
     // 1. Offscreen Cached Static Map (Hex Grid, Obstacles, Walls, Gates)
     ctx.drawImage(bgCanvas, 0, 0);
+
+    // 1.2 Enemy Entry Point - Black Hole Spinning Vortex
+    drawEnemyEntry(ctx);
 
     // 1.5 Special Tactical Obstacles & Conduits (Warp Gate, Speed Pad, Slow Graviton, One-Way)
     drawSpecialObstacles(ctx);
@@ -3239,6 +3630,11 @@ canvas.addEventListener('touchstart', (e) => {
     }
 }, {passive:false});
 canvas.addEventListener('click', handleClick);
+window.addEventListener('keydown', (e) => {
+    if(e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        if(G.active) togglePause();
+    }
+});
 </script>
 </body>
 </html>

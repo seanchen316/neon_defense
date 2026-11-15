@@ -246,6 +246,39 @@
             font-family: monospace; font-weight: bold;
         }
         #startBtn:active { transform: scale(0.95); background: #0f0; color: #000; }
+
+        /* Pause Popup Menu */
+        #pauseModal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.78);
+            display: none; justify-content: center; align-items: center;
+            pointer-events: auto; z-index: 150;
+        }
+        .pause-card {
+            width: 260px; padding: 20px 18px;
+            background: rgba(10, 15, 24, 0.96);
+            border: 1.5px solid #0ff; border-radius: 10px;
+            box-shadow: 0 0 28px rgba(0, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.9);
+            display: flex; flex-direction: column; gap: 10px; align-items: stretch;
+            box-sizing: border-box;
+        }
+        .pause-title {
+            text-align: center; font-size: 18px; font-weight: bold;
+            color: #0ff; letter-spacing: 3px; margin-bottom: 4px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+        }
+        .pause-btn {
+            padding: 10px 14px; border-radius: 6px; cursor: pointer;
+            font-family: monospace; font-weight: bold; font-size: 13px;
+            letter-spacing: 1px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #0cf; color: #0cf; text-align: center;
+            transition: all 0.15s;
+        }
+        .pause-btn:hover { background: rgba(0, 204, 255, 0.18); }
+        .pause-btn:active { transform: scale(0.97); }
+        .pause-btn.primary { border-color: #0f0; color: #0f0; background: rgba(0, 60, 0, 0.35); }
+        .pause-btn.warn { border-color: #fa0; color: #fa0; background: rgba(60, 40, 0, 0.25); }
+        .pause-btn.danger { border-color: #f44; color: #f44; background: rgba(60, 0, 0, 0.25); }
     </style>
 </head>
 <body>
@@ -260,7 +293,6 @@
                 <div class="tower-drag-item" data-type="missile"><canvas class="tower-canvas" data-type="missile" width="36" height="36"></canvas><div class="tower-cost">$70</div></div>
                 <div class="tower-drag-item" data-type="slower"><canvas class="tower-canvas" data-type="slower" width="36" height="36"></canvas><div class="tower-cost">$50</div></div>
                 <div class="tower-drag-item" data-type="energy"><canvas class="tower-canvas" data-type="energy" width="36" height="36"></canvas><div class="tower-cost">$100</div></div>
-                <button id="pauseBtn" class="ctrl-btn">II</button>
             </div>
         </div>
 
@@ -286,7 +318,19 @@
                 <div style="color:#fff">W<span id="waveDisplay" class="stat-val">1/20</span></div>
                 <div id="miniTimer">SKIP</div>
                 <button id="speedBtn" class="ctrl-btn">x1</button>
+                <button id="pauseBtn" class="ctrl-btn">II</button>
             </div>
+        </div>
+    </div>
+
+    <div id="pauseModal">
+        <div class="pause-card">
+            <div class="pause-title">PAUSED</div>
+            <button class="pause-btn primary" id="btnResume">RESUME</button>
+            <button class="pause-btn" id="btnRestartLevel">RESTART LEVEL</button>
+            <button class="pause-btn" id="btnSoundToggle">SOUND: ON</button>
+            <button class="pause-btn warn" id="btnResetHiScore">RESET HIGHSCORE</button>
+            <button class="pause-btn danger" id="btnExitGame">EXIT GAME</button>
         </div>
     </div>
 
@@ -468,9 +512,10 @@ function createNoiseBuffer() {
     noiseBuffer = b;
 }
 
+let soundEnabled = true;
 const sfx = {
     play: (type) => {
-        if(!audioCtx || audioCtx.state === 'suspended') return;
+        if(!soundEnabled || !audioCtx || audioCtx.state === 'suspended') return;
         try {
             const t = audioCtx.currentTime;
             const g = audioCtx.createGain(); g.connect(audioCtx.destination);
@@ -2128,10 +2173,85 @@ document.getElementById('startBtn').onclick = onStartGame;
 document.getElementById('speedBtn').onclick = (e) => {
     gameSpeed = gameSpeed === 1 ? 2 : 1; e.target.innerText = `x${gameSpeed}`;
 };
-document.getElementById('pauseBtn').onclick = (e) => {
-    isPaused = !isPaused; e.target.classList.toggle('paused');
+function setPaused(paused) {
+    isPaused = paused;
+    const pauseBtn = document.getElementById('pauseBtn');
+    const pauseModal = document.getElementById('pauseModal');
+    const soundBtn = document.getElementById('btnSoundToggle');
+    const resetHiBtn = document.getElementById('btnResetHiScore');
+    if (pauseBtn) pauseBtn.classList.toggle('paused', paused);
+    if (pauseModal) pauseModal.style.display = paused ? 'flex' : 'none';
+    if (soundBtn) soundBtn.innerText = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
+    if (resetHiBtn) resetHiBtn.innerText = 'RESET HIGHSCORE';
+}
+
+document.getElementById('pauseBtn').onclick = () => {
+    if (!gameActive) return;
+    setPaused(!isPaused);
 };
+
+document.getElementById('btnResume').onclick = () => setPaused(false);
+
+document.getElementById('btnRestartLevel').onclick = () => {
+    const diffData = DIFFICULTY[currentDiff];
+    setPaused(false);
+    gameActive = true;
+    money = diffData.money;
+    lives = diffData.hp;
+    waveCurrent = 0;
+    waveState = { active: false, countingDown: false, timer: 0, spawnCount: 0, spawnMax: 0, spawnTimer: 0 };
+    while (particles.length > 0) {
+        const p = particles.pop();
+        p.active = false;
+        particlePool.push(p);
+    }
+    towers = []; enemies = []; projectiles = []; shockwaves = []; halos = []; floatText = [];
+    toggleBottomPanel(false);
+    initNextWave();
+    lastTime = performance.now();
+};
+
+document.getElementById('btnSoundToggle').onclick = (e) => {
+    soundEnabled = !soundEnabled;
+    e.target.innerText = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
+    if (soundEnabled && audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+};
+
+document.getElementById('btnResetHiScore').onclick = (e) => {
+    records = {
+        EASY:   { score: 0, level: 1 },
+        NORMAL: { score: 0, level: 1 },
+        HARD:   { score: 0, level: 1 },
+        HELL:   { score: 0, level: 1 }
+    };
+    try { localStorage.removeItem(STORAGE_KEY); } catch(err) {}
+    updateRecordsUI();
+    updateUI();
+    e.target.innerText = 'HIGHSCORE RESET!';
+};
+
+document.getElementById('btnExitGame').onclick = () => {
+    setPaused(false);
+    gameActive = false;
+    while (particles.length > 0) {
+        const p = particles.pop();
+        p.active = false;
+        particlePool.push(p);
+    }
+    towers = []; enemies = []; projectiles = []; shockwaves = []; halos = []; floatText = [];
+    toggleBottomPanel(false);
+    document.querySelector('#modal h1').innerText = "NEON DEFENSE";
+    const summary = document.getElementById('gameSummary');
+    if (summary) summary.style.display = 'none';
+    const btn = document.getElementById('startBtn');
+    btn.innerText = "INITIALIZE";
+    btn.onclick = onStartGame;
+    updateRecordsUI();
+    document.getElementById('modal').style.display = 'flex';
+};
+
 function resetGame() {
+    setPaused(false);
     document.getElementById('modal').style.display = 'none';
     document.querySelector('#modal h1').innerText = "NEON DEFENSE";
     const summary = document.getElementById('gameSummary');
@@ -2142,6 +2262,7 @@ function resetGame() {
     startGameSession();
 }
 function gameOver() {
+    setPaused(false);
     gameActive = false;
     const recResult = checkAndUpdateRecord();
     updateRecordsUI();
