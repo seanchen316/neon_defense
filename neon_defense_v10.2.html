@@ -234,6 +234,7 @@
             background: rgba(0,0,0,0.95);
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
+            overflow-y: auto; padding: 16px 0; box-sizing: border-box;
             pointer-events: auto; z-index: 200;
         }
         
@@ -293,6 +294,7 @@
         .pause-btn.primary { border-color: #0f0; color: #0f0; background: rgba(0, 60, 0, 0.35); }
         .pause-btn.warn { border-color: #fa0; color: #fa0; background: rgba(60, 40, 0, 0.25); }
         .pause-btn.danger { border-color: #f44; color: #f44; background: rgba(60, 0, 0, 0.25); }
+        .pause-btn.off { border-color: #666; color: #888; background: rgba(255, 255, 255, 0.02); }
     </style>
 </head>
 <body>
@@ -340,12 +342,10 @@
     <div id="pauseModal">
         <div class="pause-card">
             <div class="pause-title">PAUSED</div>
-            <div class="options" style="margin: 2px 0 4px 0; font-size: 12px; gap: 8px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.03);">
-                <div class="opt-row"><input type="checkbox" id="offsetToggle"><label for="offsetToggle">OFFSET DRAG (防遮擋)</label></div>
-                <div class="opt-row"><input type="checkbox" id="particleToggle" checked><label for="particleToggle">PARTICLE FX (特效)</label></div>
-            </div>
             <button class="pause-btn primary" id="btnResume">RESUME</button>
             <button class="pause-btn" id="btnRestartLevel">RESTART LEVEL</button>
+            <button class="pause-btn off" id="btnOffsetToggle">OFFSET DRAG: OFF</button>
+            <button class="pause-btn" id="btnParticleToggle">PARTICLE FX: ON</button>
             <button class="pause-btn" id="btnSoundToggle">SOUND: ON</button>
             <button class="pause-btn warn" id="btnResetHiScore">RESET HIGHSCORE</button>
             <button class="pause-btn danger" id="btnExitGame">EXIT GAME</button>
@@ -1018,8 +1018,6 @@ function init() {
 function startGameSession() {
     initAudio();
     resize();
-    useDragOffset = document.getElementById('offsetToggle').checked;
-    particlesEnabled = document.getElementById('particleToggle').checked;
     const diffData = DIFFICULTY[currentDiff];
     
     gameActive = true; isPaused = false;
@@ -2256,15 +2254,31 @@ document.getElementById('startBtn').onclick = onStartGame;
 document.getElementById('speedBtn').onclick = (e) => {
     gameSpeed = gameSpeed === 1 ? 2 : 1; e.target.innerText = `x${gameSpeed}`;
 };
+function syncPauseOptionButtons() {
+    const offsetBtn = document.getElementById('btnOffsetToggle');
+    const particleBtn = document.getElementById('btnParticleToggle');
+    const soundBtn = document.getElementById('btnSoundToggle');
+    if (offsetBtn) {
+        offsetBtn.innerText = useDragOffset ? 'OFFSET DRAG: ON' : 'OFFSET DRAG: OFF';
+        offsetBtn.classList.toggle('off', !useDragOffset);
+    }
+    if (particleBtn) {
+        particleBtn.innerText = particlesEnabled ? 'PARTICLE FX: ON' : 'PARTICLE FX: OFF';
+        particleBtn.classList.toggle('off', !particlesEnabled);
+    }
+    if (soundBtn) {
+        soundBtn.innerText = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
+        soundBtn.classList.toggle('off', !soundEnabled);
+    }
+}
 function setPaused(paused) {
     isPaused = paused;
     const pauseBtn = document.getElementById('pauseBtn');
     const pauseModal = document.getElementById('pauseModal');
-    const soundBtn = document.getElementById('btnSoundToggle');
     const resetHiBtn = document.getElementById('btnResetHiScore');
     if (pauseBtn) pauseBtn.classList.toggle('paused', paused);
     if (pauseModal) pauseModal.style.display = paused ? 'flex' : 'none';
-    if (soundBtn) soundBtn.innerText = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
+    syncPauseOptionButtons();
     if (resetHiBtn) resetHiBtn.innerText = 'RESET HIGHSCORE';
     if (paused) renderSingleFrame();
     else if (gameActive) ensureLoop();
@@ -2297,16 +2311,17 @@ document.getElementById('btnRestartLevel').onclick = () => {
     ensureLoop();
 };
 
-document.getElementById('offsetToggle').onchange = (e) => {
-    useDragOffset = e.target.checked;
+document.getElementById('btnOffsetToggle').onclick = () => {
+    useDragOffset = !useDragOffset;
+    syncPauseOptionButtons();
 };
-document.getElementById('particleToggle').onchange = (e) => {
-    particlesEnabled = e.target.checked;
+document.getElementById('btnParticleToggle').onclick = () => {
+    particlesEnabled = !particlesEnabled;
+    syncPauseOptionButtons();
 };
-
-document.getElementById('btnSoundToggle').onclick = (e) => {
+document.getElementById('btnSoundToggle').onclick = () => {
     soundEnabled = !soundEnabled;
-    e.target.innerText = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
+    syncPauseOptionButtons();
     if (soundEnabled && audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
 };
 
@@ -2346,7 +2361,10 @@ document.getElementById('btnExitGame').onclick = () => {
 function resetGame() {
     setPaused(false);
     document.getElementById('modal').style.display = 'none';
-    document.querySelector('#modal h1').innerText = "NEON DEFENSE";
+    const titleEl = document.querySelector('#modal h1');
+    titleEl.innerText = "NEON DEFENSE";
+    titleEl.style.color = "#0f0";
+    titleEl.style.textShadow = "0 0 20px #0f0";
     const summary = document.getElementById('gameSummary');
     if (summary) summary.style.display = 'none';
     const btn = document.getElementById('startBtn');
@@ -2354,22 +2372,65 @@ function resetGame() {
     btn.onclick = onStartGame;
     startGameSession();
 }
+function captureFullScreenSnapshot() {
+    updateUI();
+    renderSingleFrame();
+    let dataUrl = '';
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `neon-defense-gameover-${ts}.png`;
+    try {
+        const snapCanvas = document.createElement('canvas');
+        snapCanvas.width = canvas.width;
+        snapCanvas.height = canvas.height;
+        const sCtx = snapCanvas.getContext('2d');
+        sCtx.drawImage(canvas, 0, 0);
+
+        sCtx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+        sCtx.fillRect(0, 0, snapCanvas.width, 34);
+        sCtx.strokeStyle = 'rgba(0, 255, 0, 0.45)';
+        sCtx.lineWidth = 1;
+        sCtx.beginPath();
+        sCtx.moveTo(0, 34);
+        sCtx.lineTo(snapCanvas.width, 34);
+        sCtx.stroke();
+
+        sCtx.font = 'bold 12px monospace';
+        sCtx.fillStyle = '#0f0';
+        sCtx.textAlign = 'left';
+        sCtx.textBaseline = 'middle';
+        sCtx.fillText(`NEON DEFENSE  |  ${currentDiff}  |  LV.${level}  W${waveCurrent}/${WAVES_PER_LEVEL}  |  PTS: ${Math.floor(score)}  |  HOME: 0`, 12, 17);
+
+        dataUrl = snapCanvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (err) {}
+    return { dataUrl, filename };
+}
 function gameOver() {
+    const snap = captureFullScreenSnapshot();
     setPaused(false);
     gameActive = false;
     const recResult = checkAndUpdateRecord();
     updateRecordsUI();
 
     document.getElementById('modal').style.display = 'flex';
-    document.querySelector('#modal h1').innerText = "SYSTEM FAILURE";
+    const titleEl = document.querySelector('#modal h1');
+    titleEl.innerText = "GAME OVER";
+    titleEl.style.color = "#ff4444";
+    titleEl.style.textShadow = "0 0 20px #ff4444";
     
     const summary = document.getElementById('gameSummary');
     if (summary) {
         summary.style.display = 'block';
         summary.innerHTML = `
-            <div style="font-size:14px; color:#ff4444; margin-bottom:4px; font-weight:bold;">SECTOR COLLAPSED</div>
+            <div style="font-size:14px; color:#ff4444; margin-bottom:4px; font-weight:bold;">GAME OVER - HOME DESTROYED</div>
             <div style="font-size:12px; color:#ccc; margin-bottom:4px;">DIFF: <span style="color:#0f0;">${currentDiff}</span> | LV: <span style="color:#d0f;">${level}</span> | PTS: <span style="color:#fa0;">${Math.floor(score)}</span></div>
             ${recResult.isNew ? '<div style="font-size:12px; color:#0f0; text-shadow:0 0 10px #0f0; font-weight:bold;">🏆 NEW RECORD SET!</div>' : `<div style="font-size:11px; color:#0cf;">BEST: LV.${recResult.record.level} / ${recResult.record.score} PTS</div>`}
+            ${snap.dataUrl ? `<img src="${snap.dataUrl}" alt="Game Over Snapshot" style="max-height:110px; max-width:100%; margin:8px auto 4px; display:block; border:1px solid #0cf; border-radius:4px;"><a href="${snap.dataUrl}" download="${snap.filename}" style="display:inline-block; margin-top:2px; font-size:11px; color:#0cf; text-decoration:underline;">SAVE SNAPSHOT</a>` : ''}
         `;
     }
 

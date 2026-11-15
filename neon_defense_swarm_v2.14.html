@@ -166,6 +166,68 @@
             animation: blinker 0.8s infinite;
         }
 
+        /* Game Over Modal Popup */
+        #game-over-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1001;
+        }
+        .gameover-box {
+            background: rgba(18, 5, 8, 0.96);
+            border: 1px solid #ff0044;
+            box-shadow: 0 0 30px rgba(255, 0, 68, 0.55);
+            border-radius: 8px;
+            padding: 16px 22px;
+            text-align: center;
+            width: 280px;
+            max-width: 90vw;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            animation: pauseIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .gameover-title {
+            font-size: 20px; font-weight: 900; color: #ff0044;
+            letter-spacing: 2px; text-shadow: 0 0 14px rgba(255, 0, 68, 0.8);
+        }
+        .gameover-subtitle {
+            font-size: 10px; color: #ff88aa; letter-spacing: 1.5px;
+            margin-top: -4px; margin-bottom: 2px;
+        }
+        .gameover-snap {
+            width: 100%; max-height: 110px; object-fit: contain; border-radius: 4px;
+            border: 1px solid #ff3366; background: #000; display: none;
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.35);
+        }
+        .gameover-stats {
+            font-size: 11px; color: #d0dbe5; line-height: 1.5; margin: 2px 0 6px 0;
+        }
+        .gameover-btn {
+            width: 100%; padding: 10px 14px; background: #1a0f12;
+            border: 1px solid #ff3366; border-radius: 4px; color: #ffe6eb;
+            font-size: 11px; font-weight: bold; cursor: pointer;
+            transition: all 0.15s; touch-action: manipulation;
+            user-select: none; -webkit-user-select: none; font-family: inherit;
+            letter-spacing: 0.5px;
+        }
+        .gameover-btn:hover {
+            background: #330d17; border-color: #ff0055; color: #fff;
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.45);
+        }
+        .gameover-btn:active { transform: scale(0.97); }
+        .gameover-btn.btn-restart {
+            background: #003322; border-color: #00ff88; color: #00ff88;
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.25);
+        }
+        .gameover-btn.btn-restart:hover {
+            background: #004d33; color: #fff; box-shadow: 0 0 14px rgba(0, 255, 136, 0.55);
+        }
+        .gameover-btn.btn-exit { color: #aaa; border-color: #444; }
+        .gameover-btn.btn-exit:hover {
+            background: #222; border-color: #888; color: #fff;
+        }
+
         /* Menus */
         #ui-layer { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
 
@@ -277,6 +339,18 @@
         <button class="pause-btn" id="p-fx">FX: ON</button>
         <button class="pause-btn" id="p-reset-hi">RESET HIGHSCORE</button>
         <button class="pause-btn btn-exit" id="p-exit">EXIT GAME</button>
+    </div>
+</div>
+
+<div id="game-over-modal" style="display:none;">
+    <div class="gameover-box">
+        <div class="gameover-title">GAME OVER</div>
+        <div class="gameover-subtitle">HOME BASE DESTROYED</div>
+        <img id="go-snap-img" class="gameover-snap" alt="Game Snapshot" />
+        <div class="gameover-stats" id="go-stats"></div>
+        <button class="gameover-btn btn-restart" id="go-restart">RESTART LEVEL</button>
+        <button class="gameover-btn" id="go-download">DOWNLOAD SNAPSHOT</button>
+        <button class="gameover-btn btn-exit" id="go-exit">EXIT TO TITLE</button>
     </div>
 </div>
 
@@ -852,7 +926,7 @@ function initAudio() {
     if(actx && actx.state === 'suspended') actx.resume();
 }
 function playSound(type) {
-    if(!actx || !G.enableFX || !soundEnabled) return;
+    if(!actx || !soundEnabled) return;
     if(actx.state === 'suspended') actx.resume();
     let t = actx.currentTime;
     if(type === 'upgrade') {
@@ -1302,8 +1376,30 @@ function handleResetHighScore() {
     }
 }
 
+let lastGameOverSnapshot = null;
+
+function hideGameOverModal() {
+    let m = document.getElementById('game-over-modal');
+    if(m) m.style.display = 'none';
+}
+
+function downloadCurrentSnapshot() {
+    if(!lastGameOverSnapshot) return;
+    try {
+        let a = document.createElement('a');
+        a.download = `GeoDefense_GameOver_${(G.difficulty||'normal').toUpperCase()}_W${G.wave}_Score${G.score}_${Date.now()}.png`;
+        a.href = lastGameOverSnapshot;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } catch(e) {
+        console.warn("Manual snapshot download failed:", e);
+    }
+}
+
 function restartLevel() {
     togglePause(false);
+    hideGameOverModal();
     closeMenu();
     let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
     G.hp = cfg.hp;
@@ -1331,6 +1427,7 @@ function restartLevel() {
 
 function exitGame() {
     togglePause(false);
+    hideGameOverModal();
     closeMenu();
     G.active = false;
     G.towers = [];
@@ -1365,6 +1462,11 @@ bindTouch('p-fx', toggleFX);
 bindTouch('p-reset-hi', handleResetHighScore);
 bindTouch('p-exit', exitGame);
 
+// Bind game over modal action buttons
+bindTouch('go-restart', restartLevel);
+bindTouch('go-download', downloadCurrentSnapshot);
+bindTouch('go-exit', exitGame);
+
 const pauseModalEl = document.getElementById('pause-modal');
 if(pauseModalEl) {
     pauseModalEl.addEventListener('click', (e) => {
@@ -1377,6 +1479,7 @@ setDifficulty(selectedDifficulty);
 
 function startGame() {
     initAudio(); document.getElementById('overlay').style.display='none';
+    hideGameOverModal();
     togglePause(false);
     G.difficulty = selectedDifficulty || 'normal';
     let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
@@ -1391,21 +1494,169 @@ function loseLife() {
     G.hp = Math.max(0, G.hp-1); updateUI();
     if(G.hp<=0 && G.active) gameOver();
 }
+function createRecordSnapshot(res, cfg) {
+    let w = canvas.width, h = canvas.height;
+    if(!w || !h) return '';
+
+    // Create an offscreen canvas to composite the final battle view with the Record HUD banner
+    let snapCvs = document.createElement('canvas');
+    snapCvs.width = w; snapCvs.height = h;
+    let sc = snapCvs.getContext('2d');
+
+    // 1. Draw final game board state
+    sc.drawImage(canvas, 0, 0);
+
+    // 2. High-Tech Cyber Neon Record HUD Overlay Banner
+    sc.save();
+    let isCompact = w < 540;
+    let bannerH = isCompact ? 76 : 64;
+    let bannerY = 12;
+    let margin = 12;
+    let cardW = w - margin * 2;
+
+    // Dark cyberpunk translucent glass background
+    sc.fillStyle = 'rgba(5, 10, 18, 0.90)';
+    sc.beginPath();
+    let r = 8;
+    if(typeof sc.roundRect === 'function') {
+        sc.roundRect(margin, bannerY, cardW, bannerH, r);
+    } else {
+        sc.rect(margin, bannerY, cardW, bannerH);
+    }
+    sc.fill();
+
+    // Cyber perimeter border
+    sc.strokeStyle = '#ff0055';
+    sc.lineWidth = 1.6;
+    sc.stroke();
+
+    // Glowing top accent wire
+    sc.strokeStyle = '#00f5ff';
+    sc.lineWidth = 2.0;
+    sc.beginPath();
+    sc.moveTo(margin + 14, bannerY);
+    sc.lineTo(margin + cardW - 14, bannerY);
+    sc.stroke();
+
+    let diffKey = G.difficulty || 'normal';
+    let diffColor = diffKey === 'easy' ? '#00ff66' : (diffKey === 'hard' ? '#ff9900' : (diffKey === 'hell' ? '#ff0044' : '#33ccff'));
+    let isNew = res.isNewScore || res.isNewWave;
+
+    if(isCompact) {
+        // --- Compact Layout for Mobile Phones ---
+        // Header line: Title + Difficulty + New Record Badge
+        sc.font = 'bold 11px Courier New';
+        sc.fillStyle = '#00f5ff';
+        sc.textAlign = 'left';
+        sc.textBaseline = 'top';
+        sc.fillText("GEODEFENSE SWARM", margin + 12, bannerY + 10);
+
+        sc.fillStyle = diffColor;
+        sc.fillText(`[${cfg.name}]`, margin + 142, bannerY + 10);
+
+        if(isNew) {
+            sc.fillStyle = '#ffe600';
+            sc.font = 'bold 10px Courier New';
+            sc.textAlign = 'right';
+            sc.fillText("★ NEW RECORD ★", margin + cardW - 12, bannerY + 10);
+        }
+
+        // Mid line: Prominent Wave & Score Record
+        sc.font = 'bold 15px Courier New';
+        sc.textAlign = 'left';
+        sc.fillStyle = '#ff0055';
+        sc.fillText("WV", margin + 12, bannerY + 31);
+        sc.fillStyle = '#ffffff';
+        sc.fillText(`${G.wave}`, margin + 38, bannerY + 31);
+
+        sc.fillStyle = '#00ff88';
+        sc.fillText("SCORE", margin + 88, bannerY + 31);
+        sc.fillStyle = '#ffffff';
+        sc.fillText(`${G.score.toLocaleString()}`, margin + 145, bannerY + 31);
+
+        // Footer line: Best Record info
+        sc.font = '10px Courier New';
+        sc.fillStyle = '#8899aa';
+        sc.fillText(`BEST: WV ${res.bestWave} · SC ${res.bestScore.toLocaleString()}`, margin + 12, bannerY + 54);
+    } else {
+        // --- Wide Layout for Tablets & Desktops ---
+        sc.font = 'bold 14px Courier New';
+        sc.fillStyle = '#00f5ff';
+        sc.textAlign = 'left';
+        sc.textBaseline = 'middle';
+        sc.fillText("GEODEFENSE SWARM", margin + 16, bannerY + 22);
+
+        sc.fillStyle = diffColor;
+        sc.font = 'bold 12px Courier New';
+        sc.fillText(`[${cfg.name}]`, margin + 175, bannerY + 22);
+
+        sc.font = '11px Courier New';
+        sc.fillStyle = '#8899aa';
+        sc.fillText(`BEST: WV ${res.bestWave} · SC ${res.bestScore.toLocaleString()}`, margin + 16, bannerY + 44);
+
+        // Large prominent Wave & Score
+        sc.textAlign = 'right';
+        sc.font = 'bold 18px Courier New';
+        sc.fillStyle = '#ff0055';
+        sc.fillText(`WV ${G.wave}`, margin + cardW - 180, bannerY + 26);
+
+        sc.fillStyle = '#00ff88';
+        sc.fillText(`SCORE ${G.score.toLocaleString()}`, margin + cardW - 16, bannerY + 26);
+
+        if(isNew) {
+            sc.font = 'bold 11px Courier New';
+            sc.fillStyle = '#ffe600';
+            sc.fillText("★ NEW RECORD ★", margin + cardW - 16, bannerY + 48);
+        }
+    }
+
+    sc.restore();
+    return snapCvs.toDataURL('image/png');
+}
+
 function gameOver() {
     togglePause(false);
     G.active=false; G.dragType=null; closeMenu(); G.overAt=Date.now();
     let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
     let res = updateRecord(G.difficulty, G.score, G.wave);
-    document.getElementById('ov-title').innerText = 'GAME OVER';
+
+    // 1. Force immediate final frame render so canvas reflects 0 HP and breach impact
+    try { draw(); } catch(e) {}
+
+    // 2. Auto capture full screen snapshot with embedded SCORE & WAVE Record HUD
+    let snapshotUrl = '';
+    try {
+        snapshotUrl = createRecordSnapshot(res, cfg);
+        lastGameOverSnapshot = snapshotUrl;
+
+        let a = document.createElement('a');
+        a.download = `GeoDefense_GameOver_${(G.difficulty||'normal').toUpperCase()}_W${G.wave}_Score${G.score}_${Date.now()}.png`;
+        a.href = snapshotUrl;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } catch(e) {
+        console.warn("Full-screen snapshot auto task failed:", e);
+    }
+
+    // 3. Show center popup "Game Over" modal
     let isNew = res.isNewScore || res.isNewWave;
-    let newBadge = isNew ? `<div style="color:#ffe600; font-size:13px; margin-top:8px; font-weight:bold; animation:blinker 0.8s infinite;">★ NEW RECORD! ★</div>` : '';
-    document.getElementById('ov-sub').innerHTML = `[${cfg.name}] SCORE ${G.score.toLocaleString()}  ·  WAVE ${G.wave}<br><span style="color:#aaa; font-size:11px; margin-top:5px; display:inline-block;">RECORD: WAVE ${res.bestWave}  ·  SCORE ${res.bestScore.toLocaleString()}</span>${newBadge}`;
-    let diffBox = document.getElementById('diff-selector');
-    if(diffBox) diffBox.style.display = 'none'; // hide selector on game over screen
-    let bestBox = document.getElementById('diff-best');
-    if(bestBox) bestBox.style.display = 'none';
-    document.getElementById('ov-action').innerText = 'TAP TO RESTART';
-    document.getElementById('overlay').style.display='flex';
+    let newBadge = isNew ? `<div style="color:#ffe600; font-size:12px; margin-top:5px; font-weight:bold; animation:blinker 0.8s infinite;">★ NEW RECORD! ★</div>` : '';
+    let statsEl = document.getElementById('go-stats');
+    if(statsEl) {
+        statsEl.innerHTML = `[${cfg.name}] SCORE ${G.score.toLocaleString()}  ·  WAVE ${G.wave}<br><span style="color:#aaa; font-size:11px; margin-top:4px; display:inline-block;">BEST: WAVE ${res.bestWave}  ·  SCORE ${res.bestScore.toLocaleString()}</span>${newBadge}`;
+    }
+    let snapImg = document.getElementById('go-snap-img');
+    if(snapImg) {
+        if(snapshotUrl) {
+            snapImg.src = snapshotUrl;
+            snapImg.style.display = 'block';
+        } else {
+            snapImg.style.display = 'none';
+        }
+    }
+    let modal = document.getElementById('game-over-modal');
+    if(modal) modal.style.display = 'flex';
 }
 
 // First-time setup: size the map to the container and build it.
@@ -1767,7 +2018,7 @@ function updateLogic() {
 
         // If collector has energy, activate burst boost!
         if(c.energy > 0) {
-            if(!c.bursting && G.enableFX) playSound('burst');
+            if(!c.bursting) playSound('burst');
             c.bursting = true;
             // Drain energy over time (faster if boosting multiple towers)
             let drain = 0.22 + connected.length * 0.06;
@@ -1805,8 +2056,8 @@ function updateLogic() {
         let dSq = dx * dx + dy * dy;
         if(dSq < 196) { // 14 * 14 = 196
             orb.target.energy = Math.min(orb.target.maxEnergy || 100, (orb.target.energy || 0) + orb.val);
+            if(G.frame % 4 === 0) playSound('absorb');
             if(G.enableFX) {
-                if(G.frame % 4 === 0) playSound('absorb');
                 fx(orb.target.x, orb.target.y, orb.color, 2);
             }
             orb.active = false;
@@ -1829,8 +2080,8 @@ function updateLogic() {
                 t.cd = 0;
                 if(wasReloading) {
                     t.reloading = false;
+                    playSound('reload');
                     if(G.enableFX) {
-                        playSound('reload');
                         fx(t.x, t.y, '#ff3366', 3);
                     }
                 }
@@ -1899,8 +2150,8 @@ function updateLogic() {
                             if(t.burstTimer <= 0) {
                                 t.cooldownTimer = maxCd;
                                 t.maxCooldown = maxCd;
+                                playSound('vent');
                                 if(G.enableFX) {
-                                    playSound('vent');
                                     fxExplode(t.x, t.y, '#ff9900', 6);
                                     fxExplode(t.x, t.y, '#00ffff', 4);
                                 }
@@ -1933,8 +2184,8 @@ function updateLogic() {
                         spd: Math.max(4.2, range / 14),
                         hitEnemies: []
                     });
+                    playSound('emp');
                     if(G.enableFX) {
-                        playSound('emp');
                         fxExplode(t.x, t.y, '#ffffff', 4);
                     }
                 }
@@ -1990,7 +2241,7 @@ function updateLogic() {
                     if(G.enableFX && Math.random() < 0.4) fx(e.x, e.y, '#00f5ff', 1);
                 }
             });
-            if(t.arcTargets.length > 0 && G.frame % 16 === 0 && G.enableFX) {
+            if(t.arcTargets.length > 0 && G.frame % 16 === 0) {
                 playSound('spark');
             }
         } else if(t.type !== 'buff') {
@@ -2031,7 +2282,7 @@ function updateLogic() {
                         t.cd = effectiveRate;
                         t.maxCd = effectiveRate;
                         t.reloading = true;
-                        if(G.enableFX) playSound('missile');
+                        playSound('missile');
                     } else if(t.type === 'sniper') {
                         let bDist = (14 + Math.min(t.lvl, 6) * 1.2) * scale;
                         let spawnX = t.x + Math.cos(t.angle) * bDist;
@@ -2043,8 +2294,8 @@ function updateLogic() {
                             tar:t.target, life:55, angle:t.angle
                         });
                         t.cd = effectiveRate;
+                        playSound('sniper');
                         if(G.enableFX) {
-                            playSound('sniper');
                             fx(spawnX, spawnY, '#ffffff', 4);
                         }
                     } else {
@@ -2058,8 +2309,8 @@ function updateLogic() {
                             splash:t.splash||0, tar:t.target, life:80, angle:t.angle 
                         });
                         t.cd = effectiveRate; 
+                        playSound('shoot');
                         if(G.enableFX) {
-                            playSound('shoot');
                             fx(spawnX, spawnY, t.color, 2);
                         }
                     }
@@ -2123,7 +2374,8 @@ function updateLogic() {
         if(hit || p.life<=0) {
             if(hit || (p.type==='missile' && p.life<=0)) {
                 if(p.type==='missile') {
-                    if(G.enableFX) { playSound('boom'); fxExplode(p.x,p.y,p.color,12); spawnShock(p.x, p.y, p.color, 60); }
+                    playSound('boom');
+                    if(G.enableFX) { fxExplode(p.x,p.y,p.color,12); spawnShock(p.x, p.y, p.color, 60); }
                     let splashR = p.splash;
                     let splashRSq = splashR * splashR;
                     for(let j = 0; j < G.enemies.length; j++) {
@@ -2201,7 +2453,7 @@ function updateLogic() {
                 e.prev = target;
                 if(target.type === 'speed_pad') {
                     e.speedBoost = 50;
-                    if(G.enableFX && G.frame % 6 === 0) playSound('boost');
+                    if(G.frame % 6 === 0) playSound('boost');
                 } else if(target.type === 'slow_pad') {
                     e.inGraviton = 45;
                 }
@@ -2213,8 +2465,8 @@ function updateLogic() {
                         e.y = G.warpOut.y + (e.oy || 0);
                         e.distToEnd = G.end ? Math.hypot(G.end.x - e.x, G.end.y - e.y) : 0;
                         e.prev = G.warpOut;
+                        playSound('warp');
                         if(G.enableFX) {
-                            playSound('warp');
                             fxExplode(target.x, target.y, '#00ffff', 18);
                             fxExplode(G.warpOut.x, G.warpOut.y, '#ff00ff', 18);
                             spawnShock(G.warpOut.x, G.warpOut.y, '#ff00ff', 45);
@@ -3812,7 +4064,7 @@ function fireLaser(t, buff) {
             if(G.enableFX && G.frame % 3 === 0) fx(e.x, e.y, t.color, 2);
         }
     });
-    if(G.enableFX && G.frame % 10 === 0) playSound('laser');
+    if(G.frame % 10 === 0) playSound('laser');
 }
 function handleClick(e) {
     if(G.dragType) return;
