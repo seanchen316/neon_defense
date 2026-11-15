@@ -43,11 +43,28 @@
             width: 50px; height: 64px; border-radius: 4px; flex-shrink: 0;
             border: 1px solid #333; background: #151515;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            position: relative; transition: transform 0.1s, border-color 0.15s; cursor: pointer;
+            position: relative; transition: transform 0.1s, border-color 0.15s, opacity 0.25s, filter 0.25s; cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
         .tower-card:hover { border-color: #666; background: #1c1c1c; }
         .tower-card:active { transform: scale(1.08); border-color: #fff; background: #222; }
+        .tower-card.cant-afford {
+            opacity: 0.30;
+            filter: grayscale(70%) brightness(0.65);
+            box-shadow: none;
+        }
+        .tower-card.cant-afford:hover {
+            border-color: #262626 !important;
+            background: #151515;
+        }
+        .tower-card.cant-afford:active {
+            transform: none;
+            border-color: #262626 !important;
+            background: #151515;
+        }
+        .tower-card.cant-afford .t-cost {
+            color: #666;
+        }
         .t-canvas { position: absolute; top: 2px; left: 0; width: 50px; height: 46px; pointer-events: none; }
         .t-cost { font-size: 10px; color: #aaa; margin-bottom: 4px; pointer-events: none; font-weight: bold; font-family: monospace; }
         
@@ -159,8 +176,8 @@
 </div>
 
 <div id="overlay">
-    <div id="ov-title">GEODEFENSE SWARM V2.17</div>
-    <div id="ov-sub" style="font-size:12px; color:#aaa; margin-top:10px">Smart Trail Placement Warning · Wave 200 Endless Balance · 7 Neon Towers</div>
+    <div id="ov-title">GEODEFENSE SWARM V2.18</div>
+    <div id="ov-sub" style="font-size:12px; color:#aaa; margin-top:10px">High-Swarm Performance Engine · Zero-GC Pipeline · Smart Trail Detection</div>
     <div class="diff-container" id="diff-selector">
         <button class="diff-btn" data-diff="easy">EASY</button>
         <button class="diff-btn selected" data-diff="normal">NORMAL</button>
@@ -1130,7 +1147,7 @@ function findPath(from, to) {
     return path.reverse();
 }
 
-// Plan a new route for every live enemy from where it is now.
+// Plan a new route for live enemies. When tempBlock is provided, only enemies whose path intersects tempBlock need re-routing.
 function planEnemyRoutes(tempBlock=null) {
     if(tempBlock) tempBlock.occ = true;
     let cache = new Map(), plans = [];
@@ -1140,6 +1157,11 @@ function planEnemyRoutes(tempBlock=null) {
         if(!origin || origin.occ || origin.tower) {
             if(tempBlock) tempBlock.occ = false;
             return null;
+        }
+        // If tempBlock is set and this enemy's remaining path does not touch tempBlock, its existing path is valid!
+        if(tempBlock && !e.path.slice(e.pi).includes(tempBlock) && e.prev !== tempBlock) {
+            plans.push(e.path.slice(e.pi));
+            continue;
         }
         if(!cache.has(origin)) cache.set(origin, findPath(origin, G.end));
         let p = cache.get(origin);
@@ -1194,12 +1216,18 @@ function loop() {
     draw();
 }
 
+const MAX_ALIVE_ENEMIES = 160;
+
 function updateLogic() {
     if(G.spawning) {
         let rate = Math.max(15, 35 - G.wave); 
-        if(G.spawnQ>0 && G.frame%rate===0) { 
-            spawnEnemy(); G.spawnQ--; 
-            if(G.spawnQ<=0) { G.spawning=false; setTimer(10); } 
+        if(G.spawnQ > 0 && G.frame % rate === 0) { 
+            // Performance safety breaker: throttle spawn if active swarm reaches safety ceiling
+            if(G.enemies.length < MAX_ALIVE_ENEMIES) {
+                spawnEnemy();
+                G.spawnQ--; 
+                if(G.spawnQ <= 0) { G.spawning = false; setTimer(10); } 
+            }
         }
     }
     if(G.waveTimer>0 && --G.waveTimer<=0) startWave();
@@ -1388,28 +1416,30 @@ function updateLogic() {
                 }
             }
 
-            // Update active expanding shockwaves
+            // Update active expanding shockwaves with AABB pruning
             for(let wIdx = t.shockwaves.length - 1; wIdx >= 0; wIdx--) {
                 let wave = t.shockwaves[wIdx];
                 wave.r += wave.spd;
                 wave.alpha = Math.max(0, 1 - (wave.r / wave.maxR));
 
-                // Damage any enemy reached by wavefront
-                G.enemies.forEach(e => {
-                    if(e.hp > 0 && !e.reached && !wave.hitEnemies.has(e)) {
-                        let d = dist(t, e);
-                        if(Math.abs(d - wave.r) <= (wave.spd + (e.size || 8) * 0.7) || (d < wave.r && d > wave.r - wave.spd * 2.2)) {
-                            wave.hitEnemies.add(e);
-                            let grav = e.inGraviton > 0 ? 0.6 : 1.0;
-                            let shockDmg = t.dmg * Math.pow(1.35, t.lvl - 1) * buff * grav;
-                            e.hp -= shockDmg;
-                            e.slow = t.burstBoost ? 30 : 20;
-                            if(G.enableFX) {
-                                spawnParticle(e.x, e.y, (Math.random()-0.5)*2, (Math.random()-0.5)*2, 0.4, '#ffdd00', 'dot', 1.8);
-                            }
+                // Damage any enemy reached by wavefront with bounding box pre-rejection
+                let checkR = wave.r + wave.spd * 2.2 + 8;
+                for(let j = 0; j < G.enemies.length; j++) {
+                    let e = G.enemies[j];
+                    if(e.hp <= 0 || e.reached || wave.hitEnemies.has(e)) continue;
+                    if(Math.abs(t.x - e.x) > checkR || Math.abs(t.y - e.y) > checkR) continue;
+                    let d = dist(t, e);
+                    if(Math.abs(d - wave.r) <= (wave.spd + (e.size || 8) * 0.7) || (d < wave.r && d > wave.r - wave.spd * 2.2)) {
+                        wave.hitEnemies.add(e);
+                        let grav = e.inGraviton > 0 ? 0.6 : 1.0;
+                        let shockDmg = t.dmg * Math.pow(1.35, t.lvl - 1) * buff * grav;
+                        e.hp -= shockDmg;
+                        e.slow = t.burstBoost ? 30 : 20;
+                        if(G.enableFX) {
+                            spawnParticle(e.x, e.y, (Math.random()-0.5)*2, (Math.random()-0.5)*2, 0.4, '#ffdd00', 'dot', 1.8);
                         }
                     }
-                });
+                }
 
                 if(wave.r >= wave.maxR || wave.alpha <= 0.02) {
                     t.shockwaves.splice(wIdx, 1);
@@ -1417,8 +1447,14 @@ function updateLogic() {
             }
         } else if(t.type === 'slow') {
             let maxArcs = t.lvl >= 6 ? 7 : t.lvl;
-            let validEnemies = G.enemies.filter(e => dist(t, e) <= range && e.hp > 0 && !e.reached);
-            validEnemies.sort((a, b) => dist(a, G.end) - dist(b, G.end));
+            let validEnemies = [];
+            for(let j = 0; j < G.enemies.length; j++) {
+                let e = G.enemies[j];
+                if(e.hp > 0 && !e.reached && Math.abs(t.x - e.x) <= range && Math.abs(t.y - e.y) <= range && dist(t, e) <= range) {
+                    validEnemies.push(e);
+                }
+            }
+            validEnemies.sort((a, b) => (a.distToEnd || 0) - (b.distToEnd || 0));
             t.arcTargets = validEnemies.slice(0, maxArcs);
             let slowRate = t.burstBoost ? 2 : t.rate;
             t.arcTargets.forEach(e => {
@@ -1538,23 +1574,37 @@ function updateLogic() {
         let prevX = p.x, prevY = p.y;
         p.x+=p.vx*p.spd; p.y+=p.vy*p.spd; if(p.type==='frag') p.spd*=0.9;
         
-        // Collision Detection - Ignore Reached/Dead (anti-tunneling segment check scaled to grid)
+        // Fast AABB bounding box check around projectile trajectory segment
         let hitRad = (p.type==='missile' ? (G.hexR * 0.75) : (G.hexR * 0.42));
-        let hit = G.enemies.find(e => {
-            if(e.hp<=0 || e.reached) return false;
+        let pad = hitRad + G.hexR * 0.85;
+        let pMinX = Math.min(prevX, p.x) - pad, pMaxX = Math.max(prevX, p.x) + pad;
+        let pMinY = Math.min(prevY, p.y) - pad, pMaxY = Math.max(prevY, p.y) + pad;
+
+        let hit = null;
+        for(let j = 0; j < G.enemies.length; j++) {
+            let e = G.enemies[j];
+            if(e.hp <= 0 || e.reached) continue;
+            if(e.x < pMinX || e.x > pMaxX || e.y < pMinY || e.y > pMaxY) continue;
             let combinedR = hitRad + (e.size || 8)*0.5;
-            return dist(p, e) < combinedR || distToSegment({x:prevX, y:prevY}, {x:p.x, y:p.y}, e) < combinedR;
-        });
+            if(dist(p, e) < combinedR || distToSegment({x:prevX, y:prevY}, {x:p.x, y:p.y}, e) < combinedR) {
+                hit = e;
+                break;
+            }
+        }
         if(hit || p.life<=0) {
             if(hit || (p.type==='missile' && p.life<=0)) {
                 if(p.type==='missile') {
                     if(G.enableFX) { playSound('boom'); fxExplode(p.x,p.y,p.color,12); spawnShock(p.x, p.y, p.color, 60); }
-                    G.enemies.forEach(e=>{
-                        if(dist(p,e)<p.splash && e.hp>0 && !e.reached) {
+                    let splashR = p.splash;
+                    for(let j = 0; j < G.enemies.length; j++) {
+                        let e = G.enemies[j];
+                        if(e.hp <= 0 || e.reached) continue;
+                        if(Math.abs(p.x - e.x) > splashR || Math.abs(p.y - e.y) > splashR) continue;
+                        if(dist(p, e) < splashR) {
                             let grav = e.inGraviton > 0 ? 0.6 : 1.0;
                             e.hp -= p.dmg * grav;
                         }
-                    });
+                    }
                     for(let k=0;k<4;k++){ let a=Math.random()*6.28; G.projs.push({x:p.x,y:p.y,vx:Math.cos(a),vy:Math.sin(a),spd:6,dmg:p.dmg*0.3,color:'#fa0',type:'frag',life:20}); }
                 } else if (hit) { // Single target hit
                     let grav = hit.inGraviton > 0 ? 0.6 : 1.0;
@@ -1625,6 +1675,7 @@ function updateLogic() {
                     if(e.path[e.pi + 1] === G.warpOut) {
                         e.x = G.warpOut.x + (e.ox || 0);
                         e.y = G.warpOut.y + (e.oy || 0);
+                        e.distToEnd = G.end ? Math.hypot(G.end.x - e.x, G.end.y - e.y) : 0;
                         e.prev = G.warpOut;
                         if(G.enableFX) {
                             playSound('warp');
@@ -1641,6 +1692,7 @@ function updateLogic() {
                 }
             } else {
                 e.x+=dx/d*moveSpd; e.y+=dy/d*moveSpd; e.angle=Math.atan2(dy,dx);
+                e.distToEnd = G.end ? Math.hypot(G.end.x - e.x, G.end.y - e.y) : 0;
             }
         } else { 
             // Fallback if path ends abnormally
@@ -1735,10 +1787,22 @@ function spawnEnemy() {
         path:G.path, prev:G.start, ccResist: ccResist,
         val: Math.max(1, Math.floor(bounty * (G.difficulty==='easy'?1.2:(G.difficulty==='hell'?0.8:1.0)))), shape: shape, 
         color: `hsl(${(G.wave*25)%360},100%,60%)`, angle: 0, 
-        ox: (Math.random()-0.5)*(G.hexR*0.5), oy: (Math.random()-0.5)*(G.hexR*0.5), 
+        ox: (Math.random()-0.5)*(G.hexR*0.5), oy: (Math.random()-0.5)*(G.hexR*0.5),
+        distToEnd: G.end ? Math.hypot(G.end.x - G.start.x, G.end.y - G.start.y) : 0,
         reached:false // Flag for targeting logic
     };
     G.enemies.push(e);
+}
+
+// Pre-allocated static buffer for enemy vertex pip nodes (Zero GC allocation pipeline)
+const SHARED_ENEMY_NODES = [];
+for(let i = 0; i < 32; i++) SHARED_ENEMY_NODES.push({ x: 0, y: 0, spin: undefined, r: 1.35 });
+let sharedNodeCount = 0;
+function addEnemyNode(x, y, spin, r = 1.35) {
+    if(sharedNodeCount < 32) {
+        let n = SHARED_ENEMY_NODES[sharedNodeCount++];
+        n.x = x; n.y = y; n.spin = spin; n.r = r;
+    }
 }
 
 // --- Draw ---
@@ -1959,7 +2023,7 @@ function draw() {
         ctx.save();
         ctx.translate(e.x, e.y);
 
-        let nodes = []; // Glowing vertex nodes (Signature GeoDefense vector CRT look)
+        sharedNodeCount = 0; // Zero-allocation CRT vertex nodes
         let darkCore = 'rgba(5, 10, 18, 0.72)'; // Dark translucent vector body (reveals grid lines)
 
         if(e.shape === 'dart') {
@@ -1997,7 +2061,9 @@ function draw() {
             ctx.strokeStyle = e.color; ctx.lineWidth = 2.0; ctx.stroke();
 
             // Vertex nodes
-            nodes.push({x: s * 1.45, y: 0}, {x: -s * 0.95, y: s * 0.9}, {x: -s * 0.95, y: -s * 0.9});
+            addEnemyNode(s * 1.45, 0);
+            addEnemyNode(-s * 0.95, s * 0.9);
+            addEnemyNode(-s * 0.95, -s * 0.9);
         }
         else {
             // Geometric Rotating Vector Creeps
@@ -2013,7 +2079,7 @@ function draw() {
                     let a = k * Math.PI / 3;
                     let hx = Math.cos(a) * s, hy = Math.sin(a) * s;
                     k === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
-                    nodes.push({x: hx, y: hy, spin: spin});
+                    addEnemyNode(hx, hy, spin);
                 }
                 ctx.closePath();
                 ctx.fillStyle = darkCore; ctx.fill();
@@ -2054,7 +2120,7 @@ function draw() {
                     let a = k * Math.PI / 4;
                     let ox = Math.cos(a) * s, oy = Math.sin(a) * s;
                     k === 0 ? ctx.moveTo(ox, oy) : ctx.lineTo(ox, oy);
-                    nodes.push({x: ox, y: oy, spin: spin * 0.7});
+                    addEnemyNode(ox, oy, spin * 0.7);
                 }
                 ctx.closePath();
                 ctx.fillStyle = darkCore; ctx.fill();
@@ -2102,7 +2168,7 @@ function draw() {
                     let a = k * (Math.PI * 2 / 10);
                     let dx = Math.cos(a) * s, dy = Math.sin(a) * s;
                     k === 0 ? ctx.moveTo(dx, dy) : ctx.lineTo(dx, dy);
-                    nodes.push({x: dx, y: dy, spin: spin * 0.5, r: 1.8});
+                    addEnemyNode(dx, dy, spin * 0.5, 1.8);
                 }
                 ctx.closePath();
                 ctx.fillStyle = darkCore; ctx.fill();
@@ -2157,7 +2223,7 @@ function draw() {
                     let a = k * (Math.PI * 2 / 5);
                     let px = Math.cos(a) * s, py = Math.sin(a) * s;
                     k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-                    nodes.push({x: px, y: py, spin: spin * 1.1});
+                    addEnemyNode(px, py, spin * 1.1);
                 }
                 ctx.closePath();
                 ctx.fillStyle = darkCore; ctx.fill();
@@ -2193,10 +2259,11 @@ function draw() {
             }
         }
 
-        // --- Render Bright Glowing Vertex Nodes (CRT Vector Corner Pip Emulation) ---
-        if(nodes.length > 0) {
+        // --- Render Bright Glowing Vertex Nodes (CRT Vector Corner Pip Emulation - Zero GC) ---
+        if(sharedNodeCount > 0) {
             ctx.beginPath();
-            nodes.forEach(pt => {
+            for(let ni = 0; ni < sharedNodeCount; ni++) {
+                let pt = SHARED_ENEMY_NODES[ni];
                 let px = pt.x, py = pt.y;
                 if(pt.spin !== undefined) {
                     let cos = Math.cos(pt.spin), sin = Math.sin(pt.spin);
@@ -2206,7 +2273,7 @@ function draw() {
                 let nr = pt.r || 1.35;
                 ctx.moveTo(px + nr, py);
                 ctx.arc(px, py, nr, 0, 6.28);
-            });
+            }
             ctx.fillStyle = '#ffffff';
             ctx.fill();
         }
@@ -2872,27 +2939,40 @@ function fxEnemyDestroy(e) {
     let isBoss = (e.shape === 'decagon');
     let isHeavy = (e.shape === 'octagon');
 
-    // 1. Energy Orbs Spawned for Collector Absorption
+    // 1. Energy Orbs Spawned for Collector Absorption (Performance Capped at 60 active orbs)
     let collectors = G.towers.filter(to => to.type === 'buff');
     if(collectors.length > 0) {
-        let orbCount = isBoss ? 24 : (isHeavy ? 16 : 8);
-        for(let k = 0; k < orbCount; k++) {
-            let a = Math.random() * Math.PI * 2;
-            let spd = 2.0 + Math.random() * 4.0;
-            let closestCol = collectors.reduce((best, c) => {
-                let d = dist(e, c);
-                return (!best || d < best.d) ? { c, d } : best;
-            }, null)?.c;
-            if(closestCol) {
-                G.energyOrbs.push({
-                    x: e.x, y: e.y,
-                    vx: Math.cos(a) * spd,
-                    vy: Math.sin(a) * spd,
-                    target: closestCol,
-                    color: `hsl(${(G.frame * 7 + k * 35) % 360}, 100%, 65%)`,
-                    life: 140,
-                    val: isBoss ? 2.5 : (isHeavy ? 1.5 : 1.0)
-                });
+        let closestCol = collectors.reduce((best, c) => {
+            let d = dist(e, c);
+            return (!best || d < best.d) ? { c, d } : best;
+        }, null)?.c;
+
+        if(closestCol) {
+            let orbVal = isBoss ? 2.5 : (isHeavy ? 1.5 : 1.0);
+            let rawCount = isBoss ? 24 : (isHeavy ? 16 : 8);
+            if(G.energyOrbs.length >= 60) {
+                // Instantly absorb energy directly into Collector when particle limit reached
+                closestCol.energy = Math.min(closestCol.maxEnergy || 100, (closestCol.energy || 0) + rawCount * orbVal);
+                if(G.enableFX) fx(closestCol.x, closestCol.y, '#ff00aa', 2);
+            } else {
+                let allowed = Math.min(rawCount, 60 - G.energyOrbs.length);
+                let overflow = rawCount - allowed;
+                if(overflow > 0) {
+                    closestCol.energy = Math.min(closestCol.maxEnergy || 100, (closestCol.energy || 0) + overflow * orbVal);
+                }
+                for(let k = 0; k < allowed; k++) {
+                    let a = Math.random() * Math.PI * 2;
+                    let spd = 2.0 + Math.random() * 4.0;
+                    G.energyOrbs.push({
+                        x: e.x, y: e.y,
+                        vx: Math.cos(a) * spd,
+                        vy: Math.sin(a) * spd,
+                        target: closestCol,
+                        color: `hsl(${(G.frame * 7 + k * 35) % 360}, 100%, 65%)`,
+                        life: 140,
+                        val: orbVal
+                    });
+                }
             }
         }
     }
@@ -3029,6 +3109,17 @@ function selectTower(t) {
     m.style.top = Math.round(my)+'px';
 }
 function closeMenu() { G.selected=null; document.getElementById('upg-menu').style.display='none'; }
+function updateTowerCardsUI() {
+    let cards = document.querySelectorAll('.tower-card');
+    cards.forEach(card => {
+        let type = card.dataset.type;
+        let data = TOWER_DATA[type];
+        if(data) {
+            let canAfford = G.cash >= data.cost;
+            card.classList.toggle('cant-afford', !canAfford);
+        }
+    });
+}
 function updateUI() { 
     if(G.active) updateRecord(G.difficulty, G.score, G.wave);
     document.getElementById('ui-cash').innerText = Math.floor(G.cash); 
@@ -3045,6 +3136,7 @@ function updateUI() {
         diffEl.innerText = diffKey.toUpperCase();
         diffEl.className = 'stat-diff ' + diffKey;
     }
+    updateTowerCardsUI();
     updateMenuUI(); 
 }
 function renderTowerIcons() {
@@ -3137,6 +3229,7 @@ function handleClick(e) {
 const drags = document.querySelectorAll('.tower-card');
 drags.forEach(d => { d.addEventListener('touchstart', e => startDrag(e, d.dataset.type), {passive:false}); d.addEventListener('mousedown', e => startDrag(e, d.dataset.type)); });
 renderTowerIcons();
+updateTowerCardsUI();
 window.addEventListener('touchmove', moveDrag, {passive:false}); window.addEventListener('mousemove', moveDrag);
 window.addEventListener('touchend', endDrag); window.addEventListener('mouseup', endDrag);
 canvas.addEventListener('touchstart', (e) => { 

@@ -1382,6 +1382,7 @@ class Tower {
         this.range = this.info.range; this.damage = this.info.damage;
         this.cooldownMax = this.info.cooldown / 60; this.cooldown = 0; this.level = 1; this.angle = 0;
         this.locked = false; this.affected = []; this.absorbPulse = 0;
+        this.isAbsorbing = false; this.absorbPhase = 0;
         this.buffTimer = 0; this.energy = 0; this.maxEnergy = 100;
         this.totalSpent = this.info.cost;
     }
@@ -1399,6 +1400,7 @@ class Tower {
                 }
             });
             const step = dt * gameSpeed;
+            let absorbingAny = false;
             for (let i = 0; i < particles.length; i++) {
                 const p = particles[i];
                 if (!p.isEnergy || !p.active || p.life <= 0) continue;
@@ -1406,6 +1408,7 @@ class Tower {
                 const dy = this.y - p.y;
                 const dist = Math.hypot(dx, dy);
                 if (dist < this.range) {
+                    absorbingAny = true;
                     p.absorbing = true;
                     p.life = Math.max(p.life, 0.35);
                     const invD = 1 / Math.max(1, dist);
@@ -1414,6 +1417,7 @@ class Tower {
                     const tx = -ny;
                     const ty = nx;
                     const prox = 1 - Math.min(1, dist / this.range);
+                    p.absorbProx = prox;
                     const radialSpeed = 140 + prox * 260;
                     const swirlSpeed = 110 + prox * 160;
                     p.vx = nx * radialSpeed + tx * swirlSpeed;
@@ -1432,6 +1436,8 @@ class Tower {
                     }
                 }
             }
+            this.isAbsorbing = absorbingAny;
+            if (absorbingAny) this.absorbPhase = (this.absorbPhase + step * 2.2) % 1;
             if (this.energy > 0 && this.affected.length > 0 && enemies.length > 0) {
                 for (let i = 0; i < this.affected.length; i++) {
                     this.affected[i].buffTimer = 0.15;
@@ -1514,14 +1520,33 @@ class Tower {
             ctx.rotate(this.angle);
         }
         drawTowerTurret(ctx, this.typeKey, this.level, this.info.color, frameCount, this.locked);
+        if (this.typeKey === 'energy' && this.isAbsorbing) {
+            ctx.save();
+            for (let s = 0; s < 2; s++) {
+                const phase = (this.absorbPhase + s * 0.5) % 1;
+                const rIn = 30 * (1 - phase);
+                ctx.globalAlpha = Math.sin(phase * Math.PI) * 0.55;
+                ctx.strokeStyle = s === 0 ? '#00ffcc' : '#d0f';
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.arc(0, 0, Math.max(2, rIn), 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
         if (this.typeKey === 'energy' && this.absorbPulse > 0) {
             ctx.save();
-            ctx.globalAlpha = this.absorbPulse * 0.75;
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
+            ctx.globalAlpha = this.absorbPulse * 0.85;
+            ctx.strokeStyle = '#00ffcc';
+            ctx.lineWidth = 2.2;
             ctx.beginPath();
-            ctx.arc(0, 0, 7 + (1 - this.absorbPulse) * 18, 0, Math.PI * 2);
+            ctx.arc(0, 0, 7 + (1 - this.absorbPulse) * 20, 0, Math.PI * 2);
             ctx.stroke();
+            ctx.fillStyle = '#fff';
+            ctx.globalAlpha = this.absorbPulse * 0.9;
+            ctx.beginPath();
+            ctx.arc(0, 0, 5.5 * this.absorbPulse, 0, Math.PI * 2);
+            ctx.fill();
             ctx.restore();
         }
         ctx.restore();
@@ -1627,6 +1652,7 @@ class Projectile {
         if (this.type === 'missile') {
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
+            ctx.scale(0.65, 0.65);
             ctx.strokeStyle = '#fff';
             ctx.fillStyle = this.level >= 3 ? '#fff' : this.color;
             ctx.shadowColor = this.color;
@@ -1658,7 +1684,7 @@ class Projectile {
             ctx.lineTo(-6, 1.5);
             ctx.fill();
         } else {
-            const glow = getGlowTexture(this.level >= 3 ? '#fff' : this.color, 3.5);
+            const glow = getGlowTexture(this.level >= 3 ? '#fff' : this.color, 2.0);
             ctx.drawImage(glow, this.x - glow.width / 2, this.y - glow.height / 2);
         }
         ctx.restore();
@@ -1720,6 +1746,7 @@ class Particle {
         this.life = 0; this.maxLife = 0;
         this.isEnergy = false;
         this.absorbing = false;
+        this.absorbProx = 0;
         this.active = false;
     }
     init(x, y, color, lifeScale=1, isEnergy=false) {
@@ -1731,6 +1758,7 @@ class Particle {
         this.maxLife = this.life = (isEnergy ? 1.5 : 0.6) * lifeScale;
         this.isEnergy = isEnergy;
         this.absorbing = false;
+        this.absorbProx = 0;
         this.active = true;
     }
     update(dt) {
@@ -1751,20 +1779,24 @@ class Particle {
         ctx.globalAlpha = alpha;
         if (this.isEnergy) {
             if (this.absorbing) {
-                ctx.strokeStyle = '#d0f';
-                ctx.lineWidth = 1.6;
+                const tailScale = 1.4 + this.absorbProx * 1.8;
+                const tx = this.x - (this.x - this.prevX) * tailScale;
+                const ty = this.y - (this.y - this.prevY) * tailScale;
+                ctx.strokeStyle = this.absorbProx > 0.55 ? '#00ffcc' : '#d0f';
+                ctx.lineWidth = 1.8;
                 ctx.beginPath();
-                ctx.moveTo(this.prevX, this.prevY);
+                ctx.moveTo(tx, ty);
                 ctx.lineTo(this.x, this.y);
                 ctx.stroke();
             }
-            ctx.fillStyle = '#d0f';
+            const dotR = this.absorbing ? Math.max(0.9, 1.8 - this.absorbProx * 0.7) : 1.8;
+            ctx.fillStyle = this.absorbing && this.absorbProx > 0.55 ? '#00ffcc' : '#d0f';
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 1.8, 0, 6.2831853);
+            ctx.arc(this.x, this.y, dotR, 0, 6.2831853);
             ctx.fill();
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 0.8, 0, 6.2831853);
+            ctx.arc(this.x, this.y, dotR * 0.45, 0, 6.2831853);
             ctx.fill();
         } else {
             ctx.fillStyle = this.color;
