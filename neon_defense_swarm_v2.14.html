@@ -21,18 +21,40 @@
 
         /* Bottom HUD: Score Bar */
         #bottom-bar {
-            height: 40px; background: #080808; border-top: 1px solid #333;
+            height: 44px; background: #0a0e13; border-top: 1px solid #1f2d3d;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; flex-shrink: 0; z-index: 10;
+            padding: 0 12px; flex-shrink: 0; z-index: 10;
         }
-        .stat-group { display: flex; gap: 9px; font-weight: bold; font-size: 13px; text-shadow: 0 0 5px currentColor; }
+        .stat-group { display: flex; gap: 8px; font-weight: bold; font-size: 12px; text-shadow: 0 0 5px currentColor; align-items: center; }
         .stat-cash { color: #ff3; } .stat-wave { color: #3ff; } .stat-score { color: #fff; } .stat-hi { color: #fa0; }
         
         .top-btn {
-            border: 1px solid #555; color: #888; font-size: 11px; padding: 3px 8px; 
-            border-radius: 4px; cursor: pointer; background: #222; font-weight: bold;
+            position: relative;
+            min-width: 44px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #334455; color: #a0b2c6; font-size: 13px; font-weight: 900;
+            border-radius: 5px; cursor: pointer; background: #141c24;
+            transition: all 0.12s; touch-action: manipulation;
+            user-select: none; -webkit-user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
-        .top-btn.active { color: #0f0; border-color: #0f0; background: #002200; }
+        /* Expanded invisible touch hit area for touchscreen reliability without enlarging layout */
+        .top-btn::before {
+            content: ''; position: absolute;
+            top: -8px; bottom: -8px; left: -6px; right: -6px;
+            pointer-events: auto;
+        }
+        .top-btn:hover { border-color: #00f5ff; color: #fff; background: #1c2836; }
+        .top-btn:active { transform: scale(0.92); background: #223447; border-color: #00f5ff; }
+        .top-btn.active { color: #00ff88; border-color: #00ff88; background: #002b18; box-shadow: 0 0 8px rgba(0,255,136,0.35); }
+
+        #btn-speed {
+            color: #33ccff; border-color: #1a4d66; background: #0f1c24;
+        }
+        #btn-speed.fast {
+            color: #ffaa00; border-color: #ff9900; background: #261900;
+            box-shadow: 0 0 8px rgba(255,170,0,0.35);
+        }
 
         /* Game Area */
         #game-container { flex-grow: 1; position: relative; overflow: hidden; background: #050505; }
@@ -70,14 +92,13 @@
         
         /* Pause Button (in Bottom HUD) */
         #btn-pause {
-            min-width: 28px; text-align: center; font-weight: bold;
-            color: #00f5ff; border: 1px solid #008899;
-            transition: all 0.15s;
+            color: #00f5ff; border-color: #006677; background: #0d1e26;
+            letter-spacing: 1px;
         }
-        #btn-pause:hover { border-color: #00ffff; color: #fff; background: #003344; }
+        #btn-pause:hover { border-color: #00ffff; color: #fff; background: #003344; box-shadow: 0 0 8px rgba(0,245,255,0.4); }
         #btn-pause.paused {
-            background: #003344; color: #ffdd00; border-color: #ffcc00;
-            box-shadow: 0 0 8px rgba(255, 204, 0, 0.6);
+            background: #332400; color: #ffdd00; border-color: #ffcc00;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
         }
 
         /* Pause Modal Popup */
@@ -240,7 +261,7 @@
         <span class="stat-wave">WV <span id="ui-wave">0</span></span>
         <span id="ui-diff" class="stat-diff normal">NORMAL</span>
     </div>
-    <div style="display: flex; gap: 6px; align-items: center;">
+    <div style="display: flex; gap: 8px; align-items: center;">
         <div id="btn-speed" class="top-btn">1x</div>
         <div id="btn-pause" class="top-btn">||</div>
     </div>
@@ -778,13 +799,16 @@ function bindTouch(id, fn) {
         let newEl = el.cloneNode(true);
         el.parentNode.replaceChild(newEl, el);
         
+        let lastTouch = 0;
         newEl.addEventListener('touchstart', (e) => { 
+            lastTouch = Date.now();
             e.preventDefault(); e.stopPropagation(); 
             fn(e); 
         }, {passive: false});
         
-        // Mouse fallback
+        // Mouse fallback with debouncing to prevent double firing on hybrid devices
         newEl.addEventListener('click', (e) => { 
+            if(Date.now() - lastTouch < 450) return;
             e.preventDefault(); 
             fn(e); 
         });
@@ -1004,7 +1028,14 @@ function playSound(type) {
 }
 
 bindTouch('btn-pause', () => togglePause());
-bindTouch('btn-speed', () => { G.speed = G.speed===1 ? 2 : 1; document.getElementById('btn-speed').innerText = G.speed+"x"; });
+bindTouch('btn-speed', () => { 
+    G.speed = G.speed === 1 ? 2 : 1; 
+    let b = document.getElementById('btn-speed');
+    if(b) {
+        b.innerText = G.speed + "x";
+        b.classList.toggle('fast', G.speed === 2);
+    }
+});
 bindTouch('btn-wave', forceNextWave);
 // --- High Scores & Record System ---
 const STORAGE_KEY = 'geodefense_swarm_records_v1';

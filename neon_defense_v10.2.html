@@ -54,31 +54,45 @@
 
         /* Bottom Info Bar */
         .bottom-info-bar {
-            padding: 8px 12px 12px 12px;
+            padding: 6px 10px 8px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             pointer-events: auto;
             background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
-            min-height: 50px;
+            min-height: 52px;
             box-sizing: border-box;
         }
-        .stats-group { display: flex; gap: 10px; align-items: center; font-size: 13px; font-weight: bold; }
+        .stats-group { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: bold; }
         .stat-val { font-family: monospace; font-size: 1.2em; margin-left: 2px; color: #fff; }
         
         .ctrl-btn {
-            background: rgba(255,255,255,0.1); border: 1px solid #666; color: #ccc;
-            font-size: 11px; padding: 4px 8px; cursor: pointer; min-width: 30px; pointer-events: auto;
-            border-radius: 4px; margin-left: 5px; text-align: center;
+            position: relative;
+            background: rgba(255,255,255,0.12); border: 1px solid #777; color: #ddd;
+            font-size: 12px; font-weight: bold; padding: 6px 11px; cursor: pointer;
+            min-width: 40px; min-height: 36px; pointer-events: auto;
+            border-radius: 6px; margin-left: 2px; text-align: center;
+            display: inline-flex; align-items: center; justify-content: center;
+            box-sizing: border-box; touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s, background 0.1s;
         }
+        .ctrl-btn::before, #miniTimer::before {
+            content: ''; position: absolute; inset: -6px -4px;
+        }
+        .ctrl-btn:active { transform: scale(0.94); background: rgba(255,255,255,0.25); }
         #pauseBtn.paused { background: #f00; color: #fff; border-color: #f00; animation: pulse 1s infinite; }
 
         #miniTimer {
+            position: relative;
             background: rgba(0, 50, 60, 0.9); border: 1px solid #0cf; color: #0cf;
-            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;
-            min-width: 60px; text-align: center; display: none;
+            padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;
+            min-width: 66px; min-height: 36px; text-align: center; display: none;
+            align-items: center; justify-content: center; box-sizing: border-box;
             animation: pulse 1s infinite; pointer-events: auto;
+            touch-action: manipulation; -webkit-tap-highlight-color: transparent;
         }
+        #miniTimer:active { transform: scale(0.94); }
         @keyframes pulse { 50% { opacity: 0.7; } }
 
         /* Build Panel */
@@ -326,6 +340,10 @@
     <div id="pauseModal">
         <div class="pause-card">
             <div class="pause-title">PAUSED</div>
+            <div class="options" style="margin: 2px 0 4px 0; font-size: 12px; gap: 8px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.03);">
+                <div class="opt-row"><input type="checkbox" id="offsetToggle"><label for="offsetToggle">OFFSET DRAG (防遮擋)</label></div>
+                <div class="opt-row"><input type="checkbox" id="particleToggle" checked><label for="particleToggle">PARTICLE FX (特效)</label></div>
+            </div>
             <button class="pause-btn primary" id="btnResume">RESUME</button>
             <button class="pause-btn" id="btnRestartLevel">RESTART LEVEL</button>
             <button class="pause-btn" id="btnSoundToggle">SOUND: ON</button>
@@ -357,11 +375,6 @@
         </div>
 
         <div id="gameSummary" style="display:none; margin-bottom:15px; text-align:center; font-family:monospace; padding:8px 12px; border:1px solid #333; background:rgba(20,20,20,0.8); border-radius:4px; width:280px; box-sizing:border-box;"></div>
-
-        <div class="options">
-            <div class="opt-row"><input type="checkbox" id="offsetToggle"><label for="offsetToggle">OFFSET DRAG (防遮擋)</label></div>
-            <div class="opt-row"><input type="checkbox" id="particleToggle" checked><label for="particleToggle">PARTICLE FX (特效)</label></div>
-        </div>
 
         <button id="startBtn">INITIALIZE</button>
     </div>
@@ -1282,7 +1295,7 @@ function handleWaveLogic(dt) {
         waveState.timer -= dt;
         const sec = Math.ceil(waveState.timer);
         const btn = document.getElementById('miniTimer');
-        btn.style.display = 'block'; btn.innerText = `SKIP ${sec}s`;
+        btn.style.display = 'inline-flex'; btn.innerText = `SKIP ${sec}s`;
         if (waveState.timer <= 0) startWaveSpawn();
     } else { document.getElementById('miniTimer').style.display = 'none'; }
     
@@ -2209,6 +2222,13 @@ document.getElementById('btnRestartLevel').onclick = () => {
     toggleBottomPanel(false);
     initNextWave();
     lastTime = performance.now();
+};
+
+document.getElementById('offsetToggle').onchange = (e) => {
+    useDragOffset = e.target.checked;
+};
+document.getElementById('particleToggle').onchange = (e) => {
+    particlesEnabled = e.target.checked;
 };
 
 document.getElementById('btnSoundToggle').onclick = (e) => {
