@@ -791,6 +791,30 @@ function spawnShock(x, y, color, maxR=60) {
     }
 }
 
+// Zero-Allocation Object Pool for Energy Orbs (Collector absorption)
+const MAX_ENERGY_ORBS = 60;
+const energyOrbPool = [];
+for(let i = 0; i < MAX_ENERGY_ORBS; i++) {
+    energyOrbPool.push({ active: false, x: 0, y: 0, vx: 0, vy: 0, target: null, color: '#fff', life: 0, val: 1 });
+}
+function spawnEnergyOrb(x, y, vx, vy, target, color, val) {
+    for(let i = 0; i < MAX_ENERGY_ORBS; i++) {
+        let o = energyOrbPool[i];
+        if(!o.active) {
+            o.active = true; o.x = x; o.y = y; o.vx = vx; o.vy = vy;
+            o.target = target; o.color = color; o.life = 140; o.val = val;
+            return o;
+        }
+    }
+    return null;
+}
+
+// Pre-calculated Static Unit Circle Vertices for Enemy Shapes (Zero runtime trigonometric overhead)
+const HEX_VERTS = []; for(let k = 0; k < 6; k++) HEX_VERTS.push({ c: Math.cos(k * Math.PI / 3), s: Math.sin(k * Math.PI / 3) });
+const OCT_VERTS = []; for(let k = 0; k < 8; k++) OCT_VERTS.push({ c: Math.cos(k * Math.PI / 4), s: Math.sin(k * Math.PI / 4) });
+const DEC_VERTS = []; for(let k = 0; k < 10; k++) { let a = k * (Math.PI * 2 / 10); DEC_VERTS.push({ c: Math.cos(a), s: Math.sin(a) }); }
+const PENT_VERTS = []; for(let k = 0; k < 5; k++) { let a = k * (Math.PI * 2 / 5); PENT_VERTS.push({ c: Math.cos(a), s: Math.sin(a) }); }
+
 // --- Helper: Touch Binding (The key to mobile success) ---
 function bindTouch(id, fn) {
     const el = document.getElementById(id);
@@ -1163,6 +1187,8 @@ try {
     if(savedFx !== null) G.enableFX = (savedFx === 'true');
 } catch(e) {}
 
+let pauseRedrawNeeded = false;
+
 function togglePause(forced) {
     if(!G.active) return;
     G.paused = (forced !== undefined) ? forced : !G.paused;
@@ -1178,9 +1204,23 @@ function togglePause(forced) {
             updatePauseSoundBtn();
             updatePauseFxBtn();
             resetResetHiBtnState();
+            pauseRedrawNeeded = true;
+            if(typeof actx !== 'undefined' && actx && actx.state === 'running') actx.suspend();
+        } else {
+            if(typeof actx !== 'undefined' && actx && actx.state === 'suspended' && soundEnabled) actx.resume();
         }
     }
 }
+
+// Battery Saving: Auto-suspend Web Audio & pause when tab is minimized/hidden
+document.addEventListener('visibilitychange', () => {
+    if(document.hidden) {
+        if(G.active && !G.paused) togglePause(true);
+        if(typeof actx !== 'undefined' && actx && actx.state === 'running') actx.suspend();
+    } else {
+        if(!G.paused && typeof actx !== 'undefined' && actx && actx.state === 'suspended' && soundEnabled) actx.resume();
+    }
+});
 
 function updatePauseSoundBtn() {
     let btn = document.getElementById('p-sound');
@@ -1274,6 +1314,7 @@ function restartLevel() {
     G.enemies = [];
     G.projs = [];
     G.energyOrbs = [];
+    for(let i = 0; i < MAX_ENERGY_ORBS; i++) energyOrbPool[i].active = false;
     G.selected = null;
     G.dragType = null;
     G.spawning = false;
@@ -1296,6 +1337,7 @@ function exitGame() {
     G.enemies = [];
     G.projs = [];
     G.energyOrbs = [];
+    for(let i = 0; i < MAX_ENERGY_ORBS; i++) energyOrbPool[i].active = false;
     G.selected = null;
     G.dragType = null;
     G.spawning = false;
@@ -1304,7 +1346,7 @@ function exitGame() {
     
     let overlayEl = document.getElementById('overlay');
     if(overlayEl) {
-        document.getElementById('ov-title').innerText = 'GEODEFENSE SWARM V2.19';
+        document.getElementById('ov-title').innerText = 'GEODEFENSE SWARM V2.20';
         let diffBox = document.getElementById('diff-selector');
         if(diffBox) diffBox.style.display = 'flex';
         let bestBox = document.getElementById('diff-best');
@@ -1385,7 +1427,7 @@ function fitView() {
     G.view = { s, ox:(rect.width - G.w*s)/2, oy:(rect.height - G.h*s)/2 };
     closeMenu();
 }
-window.addEventListener('resize', () => { if(G.grid.length) { fitView(); draw(); } });
+window.addEventListener('resize', () => { if(G.grid.length) { fitView(); pauseRedrawNeeded = true; draw(); } });
 
 function canBuildOn(hex) {
     return hex && !hex.occ && hex.type === 'floor' && !hex.wall && hex !== G.start && hex !== G.end && !hex.tower;
@@ -1625,9 +1667,14 @@ function testPlacement(hex) {
 function loop() {
     requestAnimationFrame(loop);
     if(!G.active) return;
-    if(!G.paused) {
-        let loops = G.speed; while(loops-- && G.active) { G.frame++; updateLogic(); }
+    if(G.paused) {
+        if(pauseRedrawNeeded) {
+            draw();
+            pauseRedrawNeeded = false;
+        }
+        return;
     }
+    let loops = G.speed; while(loops-- && G.active) { G.frame++; updateLogic(); }
     draw();
 }
 
@@ -1647,11 +1694,21 @@ function updateLogic() {
     }
     if(G.waveTimer>0 && --G.waveTimer<=0) startWave();
     
-    let tSpan=document.getElementById('ui-timer');
-    if(G.waveTimer>0) {
-        document.getElementById('btn-wave').style.display='flex';
-        tSpan.innerText = Math.ceil(G.waveTimer/60);
-    } else document.getElementById('btn-wave').style.display='none';
+    if(G.waveTimer > 0) {
+        let sec = Math.ceil(G.waveTimer / 60);
+        if(sec !== lastTimerSec) {
+            initDomCache();
+            if(btnWaveEl && btnWaveEl.style.display !== 'flex') btnWaveEl.style.display = 'flex';
+            if(uiTimerEl) uiTimerEl.innerText = sec;
+            lastTimerSec = sec;
+        }
+    } else {
+        if(lastTimerSec !== 0) {
+            initDomCache();
+            if(btnWaveEl && btnWaveEl.style.display !== 'none') btnWaveEl.style.display = 'none';
+            lastTimerSec = 0;
+        }
+    }
 
     // Collector energy update, particle absorption, and connected tower burst boost:
     G.towers.forEach(t => { t.buffVal = 1; t.burstBoost = false; });
@@ -1661,7 +1718,8 @@ function updateLogic() {
         c.spin = (c.spin || 0) + 0.02 + c.lvl * 0.005;
 
         let cRange = towerRange(c);
-        let connected = G.towers.filter(t => t !== c && dist(c, t) <= cRange + 15);
+        let cReachSq = (cRange + 15) * (cRange + 15);
+        let connected = G.towers.filter(t => t !== c && distSq(c, t) <= cReachSq);
         c.connectedCount = connected.length;
 
         // If collector has energy, activate burst boost!
@@ -1690,26 +1748,27 @@ function updateLogic() {
         }
     });
 
-    // Update Energy Orbs flying from dead enemies to Collectors
-    for(let i = G.energyOrbs.length - 1; i >= 0; i--) {
-        let orb = G.energyOrbs[i];
+    // Update Energy Orbs flying from dead enemies to Collectors (Zero-GC Pool)
+    for(let i = 0; i < MAX_ENERGY_ORBS; i++) {
+        let orb = energyOrbPool[i];
+        if(!orb.active) continue;
         orb.life--;
         if(orb.life <= 0 || !G.towers.includes(orb.target)) {
-            G.energyOrbs.splice(i, 1);
+            orb.active = false;
             continue;
         }
         let dx = orb.target.x - orb.x;
         let dy = orb.target.y - orb.y;
-        let d = Math.hypot(dx, dy);
-        if(d < 14) {
-            // Absorbed into Collector tower!
+        let dSq = dx * dx + dy * dy;
+        if(dSq < 196) { // 14 * 14 = 196
             orb.target.energy = Math.min(orb.target.maxEnergy || 100, (orb.target.energy || 0) + orb.val);
             if(G.enableFX) {
                 if(G.frame % 4 === 0) playSound('absorb');
                 fx(orb.target.x, orb.target.y, orb.color, 2);
             }
-            G.energyOrbs.splice(i, 1);
+            orb.active = false;
         } else {
+            let d = Math.sqrt(dSq);
             let spd = Math.min(15, 3.5 + (90 - orb.life) * 0.22);
             orb.vx = orb.vx * 0.82 + (dx / d) * spd * 0.18;
             orb.vy = orb.vy * 0.82 + (dy / d) * spd * 0.18;
@@ -1760,24 +1819,30 @@ function updateLogic() {
 
             let hasTarget = false;
             let reach = Math.max(G.w, G.h) * 1.5;
+            let rSq = range * range;
             if(t.lockedAngle != null) {
                 t.angle = t.lockedAngle;
                 let ex = t.x + Math.cos(t.angle) * reach;
                 let ey = t.y + Math.sin(t.angle) * reach;
-                hasTarget = G.enemies.some(e => e.hp>0 && !e.reached && distToSegment({x:t.x, y:t.y}, {x:ex, y:ey}, e) < (e.size || 10));
+                hasTarget = G.enemies.some(e => {
+                    let sz = e.size || 10;
+                    return e.hp > 0 && !e.reached && distToSegmentSq({x:t.x, y:t.y}, {x:ex, y:ey}, e) < sz * sz;
+                });
             } else {
-                if(!t.target || dist(t,t.target)>range) {
-                    let best = Infinity;
+                if(!t.target || distSq(t, t.target) > rSq) {
+                    let bestSq = Infinity;
                     t.target = null;
                     G.enemies.forEach(e => {
-                        if(e.hp>0 && !e.reached) {
-                            let d = dist(t,e);
-                            if(d <= range && d < best) { best=d; t.target=e; }
+                        if(e.hp > 0 && !e.reached) {
+                            if(Math.abs(t.x - e.x) <= range && Math.abs(t.y - e.y) <= range) {
+                                let dSq = distSq(t, e);
+                                if(dSq <= rSq && dSq < bestSq) { bestSq = dSq; t.target = e; }
+                            }
                         }
                     });
                 }
                 if(t.target) {
-                    t.angle = Math.atan2(t.target.y-t.y, t.target.x-t.x);
+                    t.angle = Math.atan2(t.target.y - t.y, t.target.x - t.x);
                     hasTarget = true;
                 }
             }
@@ -1812,7 +1877,8 @@ function updateLogic() {
             if(!t.shockwaves) t.shockwaves = [];
             let shockRate = t.burstBoost ? Math.max(12, Math.floor((t.rate || 36) * 0.4)) : (t.rate || 36);
             let baseRate = shockRate / (1 + (t.lvl - 1) * 0.12);
-            let enemiesInRange = G.enemies.filter(e => dist(t, e) <= range && e.hp > 0 && !e.reached);
+            let rSq = range * range;
+            let enemiesInRange = G.enemies.filter(e => e.hp > 0 && !e.reached && Math.abs(t.x - e.x) <= range && Math.abs(t.y - e.y) <= range && distSq(t, e) <= rSq);
             
             if(t.cd <= 0) {
                 if(enemiesInRange.length > 0) {
@@ -1822,7 +1888,7 @@ function updateLogic() {
                         maxR: range,
                         alpha: 1.0,
                         spd: Math.max(4.2, range / 14),
-                        hitEnemies: new Set()
+                        hitEnemies: []
                     });
                     if(G.enableFX) {
                         playSound('emp');
@@ -1841,11 +1907,11 @@ function updateLogic() {
                 let checkR = wave.r + wave.spd * 2.2 + 8;
                 for(let j = 0; j < G.enemies.length; j++) {
                     let e = G.enemies[j];
-                    if(e.hp <= 0 || e.reached || wave.hitEnemies.has(e)) continue;
+                    if(e.hp <= 0 || e.reached || wave.hitEnemies.includes(e)) continue;
                     if(Math.abs(t.x - e.x) > checkR || Math.abs(t.y - e.y) > checkR) continue;
                     let d = dist(t, e);
                     if(Math.abs(d - wave.r) <= (wave.spd + (e.size || 8) * 0.7) || (d < wave.r && d > wave.r - wave.spd * 2.2)) {
-                        wave.hitEnemies.add(e);
+                        wave.hitEnemies.push(e);
                         let grav = e.inGraviton > 0 ? 0.6 : 1.0;
                         let shockDmg = t.dmg * Math.pow(1.35, t.lvl - 1) * buff * grav;
                         e.hp -= shockDmg;
@@ -1863,9 +1929,10 @@ function updateLogic() {
         } else if(t.type === 'slow') {
             let maxArcs = t.lvl >= 6 ? 7 : t.lvl;
             let validEnemies = [];
+            let rSq = range * range;
             for(let j = 0; j < G.enemies.length; j++) {
                 let e = G.enemies[j];
-                if(e.hp > 0 && !e.reached && Math.abs(t.x - e.x) <= range && Math.abs(t.y - e.y) <= range && dist(t, e) <= range) {
+                if(e.hp > 0 && !e.reached && Math.abs(t.x - e.x) <= range && Math.abs(t.y - e.y) <= range && distSq(t, e) <= rSq) {
                     validEnemies.push(e);
                 }
             }
@@ -1884,13 +1951,16 @@ function updateLogic() {
                 playSound('spark');
             }
         } else if(t.type !== 'buff') {
-            if(!t.target || dist(t,t.target)>range) {
-                let best = Infinity;
+            let rSq = range * range;
+            if(!t.target || distSq(t, t.target) > rSq) {
+                let bestSq = Infinity;
                 t.target = null;
                 G.enemies.forEach(e => {
-                    if(e.hp>0 && !e.reached) {
-                        let d = dist(t,e);
-                        if(d <= range && d < best) { best=d; t.target=e; }
+                    if(e.hp > 0 && !e.reached) {
+                        if(Math.abs(t.x - e.x) <= range && Math.abs(t.y - e.y) <= range) {
+                            let dSq = distSq(t, e);
+                            if(dSq <= rSq && dSq < bestSq) { bestSq = dSq; t.target = e; }
+                        }
                     }
                 });
             }
@@ -2001,7 +2071,8 @@ function updateLogic() {
             if(e.hp <= 0 || e.reached) continue;
             if(e.x < pMinX || e.x > pMaxX || e.y < pMinY || e.y > pMaxY) continue;
             let combinedR = hitRad + (e.size || 8)*0.5;
-            if(dist(p, e) < combinedR || distToSegment({x:prevX, y:prevY}, {x:p.x, y:p.y}, e) < combinedR) {
+            let combRSq = combinedR * combinedR;
+            if(distSq(p, e) < combRSq || distToSegmentSq({x:prevX, y:prevY}, {x:p.x, y:p.y}, e) < combRSq) {
                 hit = e;
                 break;
             }
@@ -2011,11 +2082,12 @@ function updateLogic() {
                 if(p.type==='missile') {
                     if(G.enableFX) { playSound('boom'); fxExplode(p.x,p.y,p.color,12); spawnShock(p.x, p.y, p.color, 60); }
                     let splashR = p.splash;
+                    let splashRSq = splashR * splashR;
                     for(let j = 0; j < G.enemies.length; j++) {
                         let e = G.enemies[j];
                         if(e.hp <= 0 || e.reached) continue;
                         if(Math.abs(p.x - e.x) > splashR || Math.abs(p.y - e.y) > splashR) continue;
-                        if(dist(p, e) < splashR) {
+                        if(distSq(p, e) < splashRSq) {
                             let grav = e.inGraviton > 0 ? 0.6 : 1.0;
                             e.hp -= p.dmg * grav;
                         }
@@ -2031,6 +2103,7 @@ function updateLogic() {
         }
     }
 
+    let endRSq = (G.hexR || 20) * (G.hexR || 20);
     for(let i=G.enemies.length-1; i>=0; i--) {
         let e=G.enemies[i];
         if(e.hp<=0) { 
@@ -2044,7 +2117,7 @@ function updateLogic() {
         // Pathing
         let target = e.path[e.pi];
         // Check end condition
-        if(dist(e, G.end) < G.hexR) {
+        if(distSq(e, G.end) < endRSq) {
             e.reached = true; // Mark as reached so towers ignore it
             G.enemies.splice(i,1); loseLife();
             playSound('breach');
@@ -2075,8 +2148,9 @@ function updateLogic() {
                 if(G.enableFX && G.frame % 4 === 0) fx(e.x, e.y, '#cc33ff', 1);
             }
 
-            let dx=tx-e.x, dy=ty-e.y, d=Math.hypot(dx,dy);
-            if(d<moveSpd) {
+            let dx=tx-e.x, dy=ty-e.y, dSq=dx*dx + dy*dy;
+            let spdSq = moveSpd * moveSpd;
+            if(dSq < spdSq) {
                 e.prev = target;
                 if(target.type === 'speed_pad') {
                     e.speedBoost = 50;
@@ -2106,7 +2180,8 @@ function updateLogic() {
                     e.pi++;
                 }
             } else {
-                e.x+=dx/d*moveSpd; e.y+=dy/d*moveSpd; e.angle=Math.atan2(dy,dx);
+                let d = Math.sqrt(dSq);
+                e.x += dx / d * moveSpd; e.y += dy / d * moveSpd; e.angle = Math.atan2(dy, dx);
                 e.distToEnd = G.end ? Math.hypot(G.end.x - e.x, G.end.y - e.y) : 0;
             }
         } else { 
@@ -2498,8 +2573,8 @@ function draw() {
                 ctx.rotate(spin);
                 ctx.beginPath();
                 for(let k = 0; k < 6; k++) {
-                    let a = k * Math.PI / 3;
-                    let hx = Math.cos(a) * s, hy = Math.sin(a) * s;
+                    let v = HEX_VERTS[k];
+                    let hx = v.c * s, hy = v.s * s;
                     k === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
                     addEnemyNode(hx, hy, spin);
                 }
@@ -2510,9 +2585,9 @@ function draw() {
                 // Diagonal cross-spokes
                 ctx.beginPath();
                 for(let k = 0; k < 3; k++) {
-                    let a = k * Math.PI / 3;
-                    ctx.moveTo(Math.cos(a)*s*0.9, Math.sin(a)*s*0.9);
-                    ctx.lineTo(-Math.cos(a)*s*0.9, -Math.sin(a)*s*0.9);
+                    let v = HEX_VERTS[k];
+                    ctx.moveTo(v.c * s * 0.9, v.s * s * 0.9);
+                    ctx.lineTo(-v.c * s * 0.9, -v.s * s * 0.9);
                 }
                 ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 0.9; ctx.stroke();
                 ctx.restore();
@@ -2539,8 +2614,8 @@ function draw() {
                 ctx.rotate(spin * 0.7);
                 ctx.beginPath();
                 for(let k = 0; k < 8; k++) {
-                    let a = k * Math.PI / 4;
-                    let ox = Math.cos(a) * s, oy = Math.sin(a) * s;
+                    let v = OCT_VERTS[k];
+                    let ox = v.c * s, oy = v.s * s;
                     k === 0 ? ctx.moveTo(ox, oy) : ctx.lineTo(ox, oy);
                     addEnemyNode(ox, oy, spin * 0.7);
                 }
@@ -2551,9 +2626,9 @@ function draw() {
                 // 8 Radial armor-chassis struts
                 ctx.beginPath();
                 for(let k = 0; k < 8; k++) {
-                    let a = k * Math.PI / 4;
-                    ctx.moveTo(Math.cos(a)*s*0.4, Math.sin(a)*s*0.4);
-                    ctx.lineTo(Math.cos(a)*s*0.95, Math.sin(a)*s*0.95);
+                    let v = OCT_VERTS[k];
+                    ctx.moveTo(v.c * s * 0.4, v.s * s * 0.4);
+                    ctx.lineTo(v.c * s * 0.95, v.s * s * 0.95);
                 }
                 ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.1; ctx.stroke();
                 ctx.restore();
@@ -2563,8 +2638,8 @@ function draw() {
                 ctx.rotate(-spin * 1.2);
                 ctx.beginPath();
                 for(let k = 0; k < 8; k++) {
-                    let a = k * Math.PI / 4;
-                    let mx = Math.cos(a) * (s * 0.55), my = Math.sin(a) * (s * 0.55);
+                    let v = OCT_VERTS[k];
+                    let mx = v.c * (s * 0.55), my = v.s * (s * 0.55);
                     k === 0 ? ctx.moveTo(mx, my) : ctx.lineTo(mx, my);
                 }
                 ctx.closePath();
@@ -2587,8 +2662,8 @@ function draw() {
                 ctx.rotate(spin * 0.5);
                 ctx.beginPath();
                 for(let k = 0; k < 10; k++) {
-                    let a = k * (Math.PI * 2 / 10);
-                    let dx = Math.cos(a) * s, dy = Math.sin(a) * s;
+                    let v = DEC_VERTS[k];
+                    let dx = v.c * s, dy = v.s * s;
                     k === 0 ? ctx.moveTo(dx, dy) : ctx.lineTo(dx, dy);
                     addEnemyNode(dx, dy, spin * 0.5, 1.8);
                 }
@@ -2599,9 +2674,9 @@ function draw() {
                 // 10 Radial power pylons
                 ctx.beginPath();
                 for(let k = 0; k < 10; k++) {
-                    let a = k * (Math.PI * 2 / 10);
-                    ctx.moveTo(Math.cos(a)*s*0.5, Math.sin(a)*s*0.5);
-                    ctx.lineTo(Math.cos(a)*s*0.95, Math.sin(a)*s*0.95);
+                    let v = DEC_VERTS[k];
+                    ctx.moveTo(v.c * s * 0.5, v.s * s * 0.5);
+                    ctx.lineTo(v.c * s * 0.95, v.s * s * 0.95);
                 }
                 ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1.2; ctx.stroke();
                 ctx.restore();
@@ -2611,9 +2686,9 @@ function draw() {
                 ctx.rotate(-spin * 0.9);
                 ctx.beginPath();
                 for(let k = 0; k < 10; k++) {
-                    let a = k * (Math.PI * 2 / 10);
+                    let v = DEC_VERTS[k];
                     let r = (k % 2 === 0) ? s * 0.68 : s * 0.38;
-                    let sx = Math.cos(a) * r, sy = Math.sin(a) * r;
+                    let sx = v.c * r, sy = v.s * r;
                     k === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
                 }
                 ctx.closePath();
@@ -2642,8 +2717,8 @@ function draw() {
                 ctx.rotate(spin * 1.1);
                 ctx.beginPath();
                 for(let k = 0; k < 5; k++) {
-                    let a = k * (Math.PI * 2 / 5);
-                    let px = Math.cos(a) * s, py = Math.sin(a) * s;
+                    let v = PENT_VERTS[k];
+                    let px = v.c * s, py = v.s * s;
                     k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
                     addEnemyNode(px, py, spin * 1.1);
                 }
@@ -2654,10 +2729,10 @@ function draw() {
                 // Intersecting sacred geometry pentagram (Weaver lines)
                 ctx.beginPath();
                 for(let k = 0; k < 5; k++) {
-                    let a1 = k * (Math.PI * 2 / 5);
-                    let a2 = (k + 2) * (Math.PI * 2 / 5);
-                    ctx.moveTo(Math.cos(a1)*s*0.92, Math.sin(a1)*s*0.92);
-                    ctx.lineTo(Math.cos(a2)*s*0.92, Math.sin(a2)*s*0.92);
+                    let v1 = PENT_VERTS[k];
+                    let v2 = PENT_VERTS[(k + 2) % 5];
+                    ctx.moveTo(v1.c * s * 0.92, v1.s * s * 0.92);
+                    ctx.lineTo(v2.c * s * 0.92, v2.s * s * 0.92);
                 }
                 ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.1; ctx.stroke();
                 ctx.restore();
@@ -2667,8 +2742,8 @@ function draw() {
                 ctx.rotate(-spin * 1.8);
                 ctx.beginPath();
                 for(let k = 0; k < 5; k++) {
-                    let a = k * (Math.PI * 2 / 5);
-                    let px = Math.cos(a) * (s * 0.38), py = Math.sin(a) * (s * 0.38);
+                    let v = PENT_VERTS[k];
+                    let px = v.c * (s * 0.38), py = v.s * (s * 0.38);
                     k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
                 }
                 ctx.closePath();
@@ -2831,12 +2906,13 @@ function draw() {
         }
     });
 
-    // Flying single-pixel energy particles homing into Collector
-    if(G.energyOrbs && G.energyOrbs.length > 0) {
-        G.energyOrbs.forEach(orb => {
+    // Flying single-pixel energy particles homing into Collector (Zero-GC Pool)
+    for(let i = 0; i < MAX_ENERGY_ORBS; i++) {
+        let orb = energyOrbPool[i];
+        if(orb.active) {
             ctx.fillStyle = orb.color;
             ctx.fillRect(Math.round(orb.x), Math.round(orb.y), 1, 1);
-        });
+        }
     }
     
     if(G.enableFX) {
@@ -3346,7 +3422,17 @@ function pixelToHex(x, y) {
     return (minD < G.hexR*1.5) ? closest : null;
 }
 function dist(a,b) { return Math.hypot(a.x-b.x, a.y-b.y); }
+function distSq(a, b) { let dx = a.x - b.x, dy = a.y - b.y; return dx * dx + dy * dy; }
 function distToSegment(A, B, P) { const l2 = (A.x-B.x)**2 + (A.y-B.y)**2; if(l2==0) return dist(P,A); let t = ((P.x-A.x)*(B.x-A.x) + (P.y-A.y)*(B.y-A.y)) / l2; t = Math.max(0, Math.min(1, t)); return dist(P, { x: A.x + t*(B.x-A.x), y: A.y + t*(B.y-A.y) }); }
+function distToSegmentSq(A, B, P) {
+    const l2 = (A.x - B.x)**2 + (A.y - B.y)**2;
+    if(l2 === 0) return distSq(P, A);
+    let t = ((P.x - A.x) * (B.x - A.x) + (P.y - A.y) * (B.y - A.y)) / l2;
+    t = Math.max(0, Math.min(1, t));
+    let qx = A.x + t * (B.x - A.x), qy = A.y + t * (B.y - A.y);
+    let dx = P.x - qx, dy = P.y - qy;
+    return dx * dx + dy * dy;
+}
 function fx(x,y,c,n) { 
     if(!G.enableFX) return;
     for(let i=0; i<n; i++) {
@@ -3361,23 +3447,26 @@ function fxEnemyDestroy(e) {
     let isBoss = (e.shape === 'decagon');
     let isHeavy = (e.shape === 'octagon');
 
-    // 1. Energy Orbs Spawned for Collector Absorption (Performance Capped at 60 active orbs)
+    // 1. Energy Orbs Spawned for Collector Absorption (Zero-GC pool capped at 60 active orbs)
     let collectors = G.towers.filter(to => to.type === 'buff');
     if(collectors.length > 0) {
         let closestCol = collectors.reduce((best, c) => {
-            let d = dist(e, c);
-            return (!best || d < best.d) ? { c, d } : best;
+            let dSq = distSq(e, c);
+            return (!best || dSq < best.dSq) ? { c, dSq } : best;
         }, null)?.c;
 
         if(closestCol) {
             let orbVal = isBoss ? 2.5 : (isHeavy ? 1.5 : 1.0);
             let rawCount = isBoss ? 24 : (isHeavy ? 16 : 8);
-            if(G.energyOrbs.length >= 60) {
+            let activeCount = 0;
+            for(let i = 0; i < MAX_ENERGY_ORBS; i++) if(energyOrbPool[i].active) activeCount++;
+
+            if(activeCount >= MAX_ENERGY_ORBS) {
                 // Instantly absorb energy directly into Collector when particle limit reached
                 closestCol.energy = Math.min(closestCol.maxEnergy || 100, (closestCol.energy || 0) + rawCount * orbVal);
                 if(G.enableFX) fx(closestCol.x, closestCol.y, '#ff00aa', 2);
             } else {
-                let allowed = Math.min(rawCount, 60 - G.energyOrbs.length);
+                let allowed = Math.min(rawCount, MAX_ENERGY_ORBS - activeCount);
                 let overflow = rawCount - allowed;
                 if(overflow > 0) {
                     closestCol.energy = Math.min(closestCol.maxEnergy || 100, (closestCol.energy || 0) + overflow * orbVal);
@@ -3385,15 +3474,13 @@ function fxEnemyDestroy(e) {
                 for(let k = 0; k < allowed; k++) {
                     let a = Math.random() * Math.PI * 2;
                     let spd = 2.0 + Math.random() * 4.0;
-                    G.energyOrbs.push({
-                        x: e.x, y: e.y,
-                        vx: Math.cos(a) * spd,
-                        vy: Math.sin(a) * spd,
-                        target: closestCol,
-                        color: `hsl(${(G.frame * 7 + k * 35) % 360}, 100%, 65%)`,
-                        life: 140,
-                        val: orbVal
-                    });
+                    spawnEnergyOrb(
+                        e.x, e.y,
+                        Math.cos(a) * spd, Math.sin(a) * spd,
+                        closestCol,
+                        `hsl(${(G.frame * 7 + k * 35) % 360}, 100%, 65%)`,
+                        orbVal
+                    );
                 }
             }
         }
@@ -3531,32 +3618,56 @@ function selectTower(t) {
     m.style.top = Math.round(my)+'px';
 }
 function closeMenu() { G.selected=null; document.getElementById('upg-menu').style.display='none'; }
+let domCached = false;
+let uiCashEl = null, uiWaveEl = null, uiScoreEl = null, uiHiEl = null, uiDiffEl = null, uiTimerEl = null, btnWaveEl = null;
+let cachedTowerCards = [];
+let lastCash = -1, lastWave = -1, lastScore = -1, lastHi = -1, lastDiff = '', lastTimerSec = -1;
+
+function initDomCache() {
+    if(domCached) return;
+    uiCashEl = document.getElementById('ui-cash');
+    uiWaveEl = document.getElementById('ui-wave');
+    uiScoreEl = document.getElementById('ui-score');
+    uiHiEl = document.getElementById('ui-hi');
+    uiDiffEl = document.getElementById('ui-diff');
+    uiTimerEl = document.getElementById('ui-timer');
+    btnWaveEl = document.getElementById('btn-wave');
+    cachedTowerCards = Array.from(document.querySelectorAll('.tower-card'));
+    domCached = true;
+}
+
 function updateTowerCardsUI() {
-    let cards = document.querySelectorAll('.tower-card');
-    cards.forEach(card => {
+    initDomCache();
+    let curCash = Math.floor(G.cash);
+    cachedTowerCards.forEach(card => {
         let type = card.dataset.type;
         let data = TOWER_DATA[type];
         if(data) {
-            let canAfford = G.cash >= data.cost;
-            card.classList.toggle('cant-afford', !canAfford);
+            let canAfford = curCash >= data.cost;
+            if(card._canAfford !== canAfford) {
+                card._canAfford = canAfford;
+                card.classList.toggle('cant-afford', !canAfford);
+            }
         }
     });
 }
+
 function updateUI() { 
+    initDomCache();
     if(G.active) updateRecord(G.difficulty, G.score, G.wave);
-    document.getElementById('ui-cash').innerText = Math.floor(G.cash); 
-    document.getElementById('ui-wave').innerText = G.wave; 
-    document.getElementById('ui-score').innerText = G.score; 
-    let hiEl = document.getElementById('ui-hi');
-    if(hiEl) {
+    let curCash = Math.floor(G.cash);
+    if(curCash !== lastCash && uiCashEl) { uiCashEl.innerText = curCash; lastCash = curCash; }
+    if(G.wave !== lastWave && uiWaveEl) { uiWaveEl.innerText = G.wave; lastWave = G.wave; }
+    if(G.score !== lastScore && uiScoreEl) { uiScoreEl.innerText = G.score; lastScore = G.score; }
+    if(uiHiEl) {
         let best = Math.max(G.score, (gameRecords[G.difficulty]?.score || 0));
-        hiEl.innerText = best;
+        if(best !== lastHi) { uiHiEl.innerText = best; lastHi = best; }
     }
-    let diffEl = document.getElementById('ui-diff');
-    if(diffEl) {
+    if(uiDiffEl && G.difficulty !== lastDiff) {
         let diffKey = G.difficulty || 'normal';
-        diffEl.innerText = diffKey.toUpperCase();
-        diffEl.className = 'stat-diff ' + diffKey;
+        uiDiffEl.innerText = diffKey.toUpperCase();
+        uiDiffEl.className = 'stat-diff ' + diffKey;
+        lastDiff = diffKey;
     }
     updateTowerCardsUI();
     updateMenuUI(); 
@@ -3632,7 +3743,8 @@ function fireLaser(t, buff) {
     t.firing = true;
     let hitCount = 0;
     G.enemies.forEach(e => {
-        if(e.hp > 0 && !e.reached && distToSegment({x:t.x, y:t.y}, {x:ex, y:ey}, e) < (e.size || 10)) {
+        let eSize = e.size || 10;
+        if(e.hp > 0 && !e.reached && distToSegmentSq({x:t.x, y:t.y}, {x:ex, y:ey}, e) < eSize * eSize) {
             let grav = (e.inGraviton > 0 ? 0.6 : 1.0);
             e.hp -= t.dmg * (1 + t.lvl * 0.5) * buff * grav;
             hitCount++;
@@ -3645,7 +3757,8 @@ function handleClick(e) {
     if(G.dragType) return;
     let p = toWorld(e.clientX, e.clientY);
     let hex = pixelToHex(p.x, p.y);
-    let t = (hex && hex.tower) || G.towers.find(to => (hex && to.q === hex.q && to.r === hex.r) || dist(to, p) < G.hexR * 0.95);
+    let clickRSq = G.hexR * 0.95 * G.hexR * 0.95;
+    let t = (hex && hex.tower) || G.towers.find(to => (hex && to.q === hex.q && to.r === hex.r) || distSq(to, p) < clickRSq);
     if(t) { selectTower(t); } else closeMenu();
 }
 const drags = document.querySelectorAll('.tower-card');
