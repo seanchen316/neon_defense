@@ -1272,14 +1272,15 @@ function startNextLevel() {
     updateRecordsUI();
     
     const diffData = DIFFICULTY[currentDiff];
-    money = diffData.money + Math.floor(money * diffData.keep);
+    money = Math.floor(diffData.money * 0.5) + Math.floor(money * diffData.keep);
     
     while (particles.length > 0) {
         const p = particles.pop();
         p.active = false;
         particlePool.push(p);
     }
-    towers = []; projectiles = []; enemies = []; shockwaves = []; halos = [];
+    towers.forEach(t => { t.affected = []; t.laserTime = 0; });
+    projectiles = []; enemies = []; shockwaves = []; halos = [];
     floatText.push({x: width/2, y: height/2, text: "SECTOR CLEARED", color: "#0f0", life: 180});
     setTimeout(() => { gameActive = true; initNextWave(); }, 2000);
 }
@@ -1382,6 +1383,7 @@ class Tower {
         this.cooldownMax = this.info.cooldown / 60; this.cooldown = 0; this.level = 1; this.angle = 0;
         this.locked = false; this.affected = []; this.absorbPulse = 0;
         this.buffTimer = 0; this.energy = 0; this.maxEnergy = 100;
+        this.totalSpent = this.info.cost;
     }
     update(dt) {
         const rateMult = this.buffTimer > 0 ? 2.5 : 1.0;
@@ -1486,7 +1488,7 @@ class Tower {
             this.laserTime = 0.2; this.laserEnd = {x: lx, y: ly}; sfx.play('laser');
         } else if (this.typeKey === 'missile') {
              let count = 1; 
-             if(this.level>=3) count=2; if(this.level>=5) count=4;
+             if(this.level>=3) count=2; if(this.level>=5) count=3;
              for(let i=0; i<count; i++) {
                  const spreadAngle = this.angle + (i - (count-1)/2) * 0.5;
                  projectiles.push(new Projectile(this.x, this.y, target, this.damage, this.info.color, this.typeKey, this.info.splash, this.level, spreadAngle));
@@ -1572,7 +1574,7 @@ class Tower {
             this.laserTime -= 0.016 * gameSpeed; ctx.restore(); return;
         }
     }
-    upgrade() { if(this.level >= 6) return; this.level++; this.damage *= 1.35; this.range *= 1.25; this.cooldownMax *= 0.9; if (this.typeKey === 'energy') this.maxEnergy += 25; if(particlesEnabled) createExplosion(this.x, this.y, '#fff', 30); }
+    upgrade() { if(this.level >= 6) return; this.level++; this.damage *= 1.35; this.range *= 1.14; this.cooldownMax *= 0.9; if (this.typeKey === 'energy') this.maxEnergy += 25; if(particlesEnabled) createExplosion(this.x, this.y, '#fff', 30); }
     toggleLock() { if (this.typeKey === 'sniper') { this.locked = !this.locked; floatText.push({x:this.x, y:this.y-20, text: this.locked ? "LOCKED" : "AUTO", color: "#fff", life: 40}); } }
 }
 
@@ -1678,7 +1680,7 @@ class Enemy {
         this.speed = 90 * diffMult * spdM; 
         
         let baseHp = 20; if (lvl === 1 && wv < 5) baseHp = 10;
-        this.maxHp = baseHp * Math.pow(1.15, (lvl-1)*10 + wv) * hpM; 
+        this.maxHp = baseHp * Math.pow(1.15, (lvl-1)*WAVES_PER_LEVEL + wv) * hpM; 
         this.hp = this.maxHp;
         this.radius = r; this.speedMult = 1; 
         this.color = `hsl(${(lvl*60 + wv*15 + typeColor)%360}, 100%, 50%)`;
@@ -2012,7 +2014,7 @@ function updateUpgradeUI() {
     if(!selectedTower) return;
     upgTitle.innerText = `${selectedTower.info.name.toUpperCase()} LV.${selectedTower.level}`;
     const c = Math.floor(selectedTower.info.cost * selectedTower.level * 0.8);
-    const s = Math.floor(selectedTower.info.cost * 0.5);
+    const s = Math.floor((selectedTower.totalSpent || selectedTower.info.cost) * 0.5);
     
     // Lock Button Visibility
     const btnLock = document.getElementById('btnLock');
@@ -2049,13 +2051,14 @@ btnUpgrade.onclick = () => {
     if(selectedTower) {
         const cost = Math.floor(selectedTower.info.cost * selectedTower.level * 0.8);
         if(money >= cost && selectedTower.level < 6) {
-            money -= cost; selectedTower.upgrade(); updateUpgradeUI();
+            money -= cost; selectedTower.totalSpent = (selectedTower.totalSpent || selectedTower.info.cost) + cost;
+            selectedTower.upgrade(); updateUpgradeUI();
         }
     }
 };
 document.getElementById('btnSell').onclick = () => {
     if(selectedTower) {
-        money += Math.floor(selectedTower.info.cost * 0.5);
+        money += Math.floor((selectedTower.totalSpent || selectedTower.info.cost) * 0.5);
         towers = towers.filter(t => t!==selectedTower);
         createExplosion(selectedTower.x, selectedTower.y, '#fff', 10);
         toggleBottomPanel(false);

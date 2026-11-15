@@ -159,8 +159,8 @@
 </div>
 
 <div id="overlay">
-    <div id="ov-title">GEODEFENSE SWARM V2.15</div>
-    <div id="ov-sub" style="font-size:12px; color:#aaa; margin-top:10px">7 Towers · EMP Shock Waves · Missile Reload System · Collector Burst</div>
+    <div id="ov-title">GEODEFENSE SWARM V2.17</div>
+    <div id="ov-sub" style="font-size:12px; color:#aaa; margin-top:10px">Smart Trail Placement Warning · Wave 200 Endless Balance · 7 Neon Towers</div>
     <div class="diff-container" id="diff-selector">
         <button class="diff-btn" data-diff="easy">EASY</button>
         <button class="diff-btn selected" data-diff="normal">NORMAL</button>
@@ -1154,6 +1154,36 @@ function planEnemyRoutes(tempBlock=null) {
 }
 function applyEnemyRoutes(plans) { G.enemies.forEach((e,i) => { e.path = plans[i]; e.pi = 0; }); }
 
+// Check if placing a tower on hex is valid and keeps a valid trail for enemies
+let dragPlacementCache = { hex: null, lastCheck: -1, valid: false, mainPath: null, plans: null };
+
+function testPlacement(hex) {
+    if(!hex || !canBuildOn(hex)) {
+        return { canBuild: false, hasTrail: false, valid: false, mainPath: null, plans: null };
+    }
+    if(dragPlacementCache.hex === hex && (G.frame - dragPlacementCache.lastCheck < 10)) {
+        return dragPlacementCache;
+    }
+    hex.occ = true;
+    let mainPath = findPath(G.start, G.end);
+    let plans = mainPath ? planEnemyRoutes() : null;
+    hex.occ = false;
+    let hasTrail = !!(mainPath && plans);
+    let result = {
+        canBuild: true,
+        hasTrail: hasTrail,
+        valid: hasTrail,
+        mainPath: mainPath,
+        plans: plans
+    };
+    dragPlacementCache = {
+        hex: hex,
+        lastCheck: G.frame,
+        ...result
+    };
+    return result;
+}
+
 // --- Logic ---
 function loop() {
     requestAnimationFrame(loop);
@@ -1201,8 +1231,8 @@ function updateLogic() {
             
             connected.forEach(t => {
                 t.burstBoost = true;
-                // Burst fire boost: higher damage and super speed
-                t.buffVal = Math.max(t.buffVal, 1.4 + c.lvl * 0.15);
+                // Burst fire boost: calibrated high damage and rapid rate
+                t.buffVal = Math.max(t.buffVal, 1.25 + c.lvl * 0.08);
             });
             if(G.frame % 30 === 0 && G.enableFX) {
                 fx(c.x, c.y, '#ff00aa', 2);
@@ -1212,7 +1242,7 @@ function updateLogic() {
             c.bursting = false;
             // Baseline passive buff even without energy
             connected.forEach(t => {
-                t.buffVal = Math.max(t.buffVal, 1.15 + c.lvl * 0.05);
+                t.buffVal = Math.max(t.buffVal, 1.08 + c.lvl * 0.04);
             });
         }
     });
@@ -1419,7 +1449,7 @@ function updateLogic() {
                     let dmg = t.dmg * Math.pow(1.4, t.lvl-1) * buff;
                     let scale = G.hexR / 20;
                     let baseRate = t.rate / (1 + (t.lvl - 1) * 0.15);
-                    let effectiveRate = t.burstBoost ? Math.max(3, Math.round(baseRate * 0.4)) : baseRate;
+                    let effectiveRate = t.burstBoost ? Math.max(4, Math.round(baseRate * 0.6)) : baseRate;
 
                     if(t.type === 'missile') {
                         let bDist = 12 * scale;
@@ -1541,7 +1571,7 @@ function updateLogic() {
         if(e.hp<=0) { 
             let sMult = (DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal).scoreMult;
             G.cash += e.val; 
-            G.score += Math.round(e.val * 10 * sMult); 
+            G.score += Math.round(e.val * 10 * sMult * (1 + G.wave * 0.04)); 
             fxEnemyDestroy(e);
             updateUI(); G.enemies.splice(i,1); continue; 
         }
@@ -1569,9 +1599,16 @@ function updateLogic() {
 
         if(target) {
             let tx=target.x+e.ox, ty=target.y+e.oy;
-            let moveSpd = e.spd * (e.slow>0 ? 0.4 : 1); if(e.slow>0) e.slow--;
+            let slowFactor = e.slow > 0 ? (0.42 + (e.ccResist || 0) * 0.28) : 1;
+            if(e.slow > 0) e.slow--;
+            let moveSpd = e.spd * slowFactor;
             if(e.speedBoost > 0) { moveSpd *= 1.75; e.speedBoost--; if(G.enableFX && G.frame % 3 === 0) fx(e.x, e.y, '#ffdd00', 1); }
-            if(e.inGraviton > 0) { moveSpd *= 0.55; e.inGraviton--; if(G.enableFX && G.frame % 4 === 0) fx(e.x, e.y, '#cc33ff', 1); }
+            if(e.inGraviton > 0) {
+                let gravFactor = 0.55 + (e.ccResist || 0) * 0.2;
+                moveSpd *= gravFactor;
+                e.inGraviton--;
+                if(G.enableFX && G.frame % 4 === 0) fx(e.x, e.y, '#cc33ff', 1);
+            }
 
             let dx=tx-e.x, dy=ty-e.y, d=Math.hypot(dx,dy);
             if(d<moveSpd) {
@@ -1644,7 +1681,7 @@ function updateLogic() {
 // --- Wave System ---
 function startWave() {
     G.wave++; 
-    G.spawnQ = 6 + Math.floor(G.wave * 1.5); 
+    G.spawnQ = Math.min(65, 6 + Math.floor(G.wave * 1.2)); 
     G.spawning = true; 
     G.waveTimer = 0; 
     updateUI();
@@ -1653,33 +1690,50 @@ function forceNextWave() {
     if(G.waveTimer > 0) G.score += Math.ceil(G.waveTimer/60)*50; 
     startWave(); 
 }
+function calcEnemyBaseHp(wave, hpMult) {
+    let w = wave;
+    let growth;
+    if(w <= 20) {
+        growth = Math.pow(1.08, w - 1);
+    } else if(w <= 50) {
+        growth = Math.pow(1.08, 19) * Math.pow(1.045, w - 20);
+    } else if(w <= 100) {
+        growth = Math.pow(1.08, 19) * Math.pow(1.045, 30) * Math.pow(1.032, w - 50);
+    } else {
+        growth = Math.pow(1.08, 19) * Math.pow(1.045, 30) * Math.pow(1.032, 50) * Math.pow(1.020, w - 100);
+    }
+    let raw = (20 + w * 6) * growth;
+    return Math.round(raw * hpMult);
+}
 function spawnEnemy() {
     let cfg = DIFFICULTY_CONFIG[G.difficulty] || DIFFICULTY_CONFIG.normal;
-    let stage = Math.floor((G.wave-1)/5); let baseHp = (20 + (G.wave*5)) * cfg.hpMult;
-    if(stage>=1) baseHp*=1.5; if(stage>=2) baseHp*=2.0;
+    let baseHp = calcEnemyBaseHp(G.wave, cfg.hpMult);
     let hr = G.hexR || 20;
-    let shape='hexagon', spd=(1.0+(G.wave*0.03)) * cfg.spdMult, size = Math.round(hr * 0.46);
+    let spd = Math.min(2.4, 1.0 + (G.wave * 0.015)) * cfg.spdMult;
+    let shape = 'hexagon', size = Math.round(hr * 0.46), ccResist = 0;
+    let stage = Math.floor((G.wave - 1) / 5);
 
-    if(G.wave%5===0) { 
+    if(G.wave % 5 === 0) { 
         // Boss: Massive Decagon (0.80R giant fortress unit)
-        shape='decagon'; baseHp*=4.5; spd*=0.48; size = Math.round(hr * 0.80); 
+        shape = 'decagon'; baseHp *= 8.0; spd *= 0.45; size = Math.round(hr * 0.80); ccResist = 0.5;
     }
-    else if(stage>=2 && Math.random()>0.6) { 
+    else if(stage >= 2 && Math.random() > 0.55) { 
         // Armored Heavy: Octagon fortress (0.66R)
-        shape='octagon'; baseHp*=3.0; spd*=0.6; size = Math.round(hr * 0.66); 
+        shape = 'octagon'; baseHp *= 3.5; spd *= 0.58; size = Math.round(hr * 0.66); ccResist = 0.3;
     }
-    else if(stage>=1 && Math.random()>0.65) { 
+    else if(stage >= 1 && Math.random() > 0.60) { 
         // Infiltrator: Fast Dart Rhombus (0.40R agile speedster)
-        shape='dart'; baseHp*=0.7; spd*=1.55; size = Math.round(hr * 0.40); 
+        shape = 'dart'; baseHp *= 0.75; spd *= 1.45; size = Math.round(hr * 0.40); ccResist = 0.1;
     }
-    else if(Math.random()>0.5) {
+    else if(Math.random() > 0.5) {
         // Heavy Drone: Pentagon combat unit (0.54R)
-        shape='pentagon'; baseHp*=1.3; spd*=0.9; size = Math.round(hr * 0.54); 
+        shape = 'pentagon'; baseHp *= 1.4; spd *= 0.88; size = Math.round(hr * 0.54); ccResist = 0.15;
     }
+    let bounty = Math.min(25, 5 + Math.floor(G.wave / 3));
     let e = { 
         x:G.start.x, y:G.start.y, pi:0, slow:0, speedBoost:0, inGraviton:0, hp:baseHp, max:baseHp, spd:spd, size:size,
-        path:G.path, prev:G.start, // own route + last cell reached (for rerouting)
-        val: Math.max(1, Math.floor((5+Math.floor(G.wave/2)) * (G.difficulty==='easy'?1.2:(G.difficulty==='hell'?0.8:1.0)))), shape: shape, 
+        path:G.path, prev:G.start, ccResist: ccResist,
+        val: Math.max(1, Math.floor(bounty * (G.difficulty==='easy'?1.2:(G.difficulty==='hell'?0.8:1.0)))), shape: shape, 
         color: `hsl(${(G.wave*25)%360},100%,60%)`, angle: 0, 
         ox: (Math.random()-0.5)*(G.hexR*0.5), oy: (Math.random()-0.5)*(G.hexR*0.5), 
         reached:false // Flag for targeting logic
@@ -2336,12 +2390,26 @@ function draw() {
         let ghostY = G.dragPos.y - dragLift();
         let hex = pixelToHex(G.dragPos.x, ghostY); 
         let data = TOWER_DATA[G.dragType];
-        ctx.strokeStyle = data.color; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.arc(G.dragPos.x, ghostY, data.range, 0, 6.28); ctx.stroke(); ctx.setLineDash([]);
+        let placeCheck = hex ? testPlacement(hex) : { canBuild: false, hasTrail: false, valid: false };
+        let isValid = hex && placeCheck.valid;
+        let previewColor = isValid ? data.color : '#ff0033';
+
+        ctx.strokeStyle = previewColor; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.arc(G.dragPos.x, ghostY, data.range, 0, 6.28); ctx.stroke(); ctx.setLineDash([]);
         ctx.save(); ctx.translate(G.dragPos.x, ghostY);
         let scale = G.hexR / 20; ctx.scale(scale, scale);
-        drawTowerShape(ctx, data.type, 1, data.color);
+        drawTowerShape(ctx, data.type, 1, previewColor);
         ctx.restore();
-        if(hex) drawHexSolid(hex.x, hex.y, G.hexR, canBuildOn(hex) ? data.color : '#ff0033', 0.45);
+        if(hex) {
+            drawHexSolid(hex.x, hex.y, G.hexR, previewColor, isValid ? 0.45 : 0.6);
+            if(!isValid) {
+                ctx.strokeStyle = '#ff0033';
+                ctx.lineWidth = 2.0;
+                ctx.beginPath();
+                hexPath(hex.x, hex.y, G.hexR * 0.95);
+                ctx.stroke();
+                ctx.lineWidth = 1.0;
+            }
+        }
     }
     
     if(G.selected) {
@@ -2861,6 +2929,17 @@ let isTouchDrag = false;
 function dragLift() { return isTouchDrag ? (80 / G.view.s) : 0; } // ghost floats 80 screen px above the finger only on touch
 function getNeighbors(c) { return c.nb || G.grid.filter(n => dist(c,n) < G.hexR*2.1 && n!==c); }
 
+function getUpgradeCost(t) {
+    return Math.floor(t.cost * Math.pow(1.36, t.lvl - 1) * 0.85);
+}
+function getSellRefund(t) {
+    let invested = t.cost;
+    for(let l = 1; l < t.lvl; l++) {
+        invested += Math.floor(t.cost * Math.pow(1.36, l - 1) * 0.85);
+    }
+    return Math.floor(invested * 0.6);
+}
+
 // Bound once at game start (bindTouch handles both touch and mouse).
 function setupMenuListeners() {
     const upgMenu = document.getElementById('upg-menu');
@@ -2874,7 +2953,7 @@ function setupMenuListeners() {
         if(e) { e.stopPropagation(); }
         if(!G.selected) return;
         let t = G.selected; let isMax = t.lvl >= 6;
-        let cost = Math.floor(t.cost * t.lvl * 0.7);
+        let cost = getUpgradeCost(t);
         if(!isMax && G.cash >= cost) {
             G.cash -= cost; t.lvl++; 
             if(t.type === 'buff') {
@@ -2887,7 +2966,7 @@ function setupMenuListeners() {
     bindTouch('m-sell', (e) => {
         if(e) { e.stopPropagation(); }
         if(!G.selected) return;
-        let t = G.selected; let sell = Math.floor(t.cost * 0.5 * t.lvl);
+        let t = G.selected; let sell = getSellRefund(t);
         G.cash += sell; 
         let cell = G.grid.find(g=>g.q===t.q && g.r===t.r);
         if(cell) { cell.occ = false; cell.tower = null; }
@@ -2905,7 +2984,7 @@ function setupMenuListeners() {
 }
 function updateMenuUI() {
     if(!G.selected) return; let t = G.selected;
-    let isMax = t.lvl >= 6; let cost = Math.floor(t.cost * t.lvl * 0.7); let sell = Math.floor(t.cost * 0.5 * t.lvl);
+    let isMax = t.lvl >= 6; let cost = getUpgradeCost(t); let sell = getSellRefund(t);
     let statusText = "";
     if(t.type === 'laser') {
         if(t.cooldownTimer > 0) statusText = " [COOLING]";
@@ -2996,6 +3075,7 @@ function startDrag(e, type) {
     isTouchDrag = !!(e.touches && e.touches.length);
     if(G.selected) closeMenu(); 
     G.dragType = type; 
+    dragPlacementCache.hex = null;
     updateDragPos(e); 
 }
 function moveDrag(e) { if(G.dragType) { e.preventDefault(); updateDragPos(e); } }
@@ -3006,10 +3086,8 @@ function endDrag(e) {
     let data = TOWER_DATA[G.dragType];
     if(hex && canBuildOn(hex)) {
         if(G.cash >= data.cost) {
-            hex.occ = true;
-            let mainPath = findPath(G.start, G.end);
-            let plans = mainPath ? planEnemyRoutes() : null; // null if any live enemy would be trapped
-            if(mainPath && plans) {
+            let check = testPlacement(hex);
+            if(check.valid) {
                 hex.occ = true;
                 let newTower = {
                     q:hex.q, r:hex.r, x:hex.x, y:hex.y, ...data,
@@ -3020,16 +3098,17 @@ function endDrag(e) {
                 };
                 hex.tower = newTower;
                 G.towers.push(newTower);
-                G.path = mainPath;
-                applyEnemyRoutes(plans);
+                G.path = check.mainPath || findPath(G.start, G.end);
+                applyEnemyRoutes(check.plans || planEnemyRoutes());
                 G.cash -= data.cost;
                 playSound('place'); fxExplode(hex.x, hex.y, '#fff', 8); updateUI();
             } else {
                 hex.occ = false; hex.tower = null;
-                playSound('boom'); fxExplode(hex.x, hex.y, '#f00', 5);
+                playSound('boom'); fxExplode(hex.x, hex.y, '#ff0033', 5);
             }
         } else playSound('boom');
     }
+    dragPlacementCache.hex = null;
     G.dragType = null;
 }
 function fireLaser(t, buff) {
