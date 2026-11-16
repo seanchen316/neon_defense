@@ -235,7 +235,14 @@
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
             overflow-y: auto; padding: 16px 0; box-sizing: border-box;
+            touch-action: pan-y;
             pointer-events: auto; z-index: 200;
+        }
+        #gameOverSnapshotImg, #snapshotViewerImg {
+            -webkit-user-select: auto;
+            user-select: auto;
+            -webkit-touch-callout: default;
+            touch-action: auto;
         }
         
         .diff-container { display: flex; flex-direction: column; gap: 8px; width: 280px; margin-bottom: 15px; }
@@ -1340,7 +1347,7 @@ function initNextWave() {
 }
 
 function startNextLevel() {
-    gameActive = false; level++; waveCurrent = 0;
+    level++; waveCurrent = 0;
     checkAndUpdateRecord();
     updateRecordsUI();
     
@@ -1355,7 +1362,7 @@ function startNextLevel() {
     towers.forEach(t => { t.affected = []; t.laserTime = 0; });
     projectiles = []; enemies = []; shockwaves = []; halos = [];
     floatText.push({x: width/2, y: height/2, text: "SECTOR CLEARED", color: "#0f0", life: 180});
-    setTimeout(() => { gameActive = true; initNextWave(); ensureLoop(); }, 2000);
+    setTimeout(() => { if (gameActive) { initNextWave(); ensureLoop(); } }, 2000);
 }
 
 function startWaveSpawn() {
@@ -2372,10 +2379,65 @@ function resetGame() {
     btn.onclick = onStartGame;
     startGameSession();
 }
+function dataUrlToBlob(dataUrl) {
+    const parts = dataUrl.split(',');
+    const mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/png';
+    const bin = atob(parts[1]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+}
+function showSnapshotViewer(src) {
+    let viewer = document.getElementById('snapshotViewer');
+    if (!viewer) {
+        viewer = document.createElement('div');
+        viewer.id = 'snapshotViewer';
+        viewer.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;touch-action:auto;';
+        viewer.innerHTML = `
+            <div style="color:#0cf;font-family:monospace;font-size:13px;margin-bottom:10px;text-align:center;">長按圖片即可儲存至相簿 (Long-press image to Save)</div>
+            <img id="snapshotViewerImg" alt="Game Over Snapshot" style="max-width:95%;max-height:75vh;border:2px solid #0cf;border-radius:6px;box-shadow:0 0 20px rgba(0,204,255,0.4);">
+            <button id="btnCloseSnapshotViewer" class="pause-btn" style="margin-top:14px;min-width:140px;">CLOSE</button>
+        `;
+        document.body.appendChild(viewer);
+        document.getElementById('btnCloseSnapshotViewer').onclick = () => { viewer.style.display = 'none'; };
+    }
+    document.getElementById('snapshotViewerImg').src = src;
+    viewer.style.display = 'flex';
+}
+async function saveSnapshotFile(snap) {
+    if (!snap || !snap.dataUrl) return;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const blob = snap.blob || dataUrlToBlob(snap.dataUrl);
+    if (isIOS && navigator.share && navigator.canShare) {
+        try {
+            const file = new File([blob], snap.filename, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: 'Neon Defense - Game Over' });
+                return;
+            }
+        } catch (err) {
+            if (err && err.name === 'AbortError') return;
+        }
+    }
+    if (isIOS) {
+        const objUrl = URL.createObjectURL(blob);
+        showSnapshotViewer(objUrl);
+        return;
+    }
+    const objUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = snap.filename;
+    link.href = objUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
+}
 function captureFullScreenSnapshot() {
     updateUI();
     renderSingleFrame();
     let dataUrl = '';
+    let blob = null;
     const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const filename = `neon-defense-gameover-${ts}.png`;
     try {
@@ -2401,14 +2463,20 @@ function captureFullScreenSnapshot() {
         sCtx.fillText(`NEON DEFENSE  |  ${currentDiff}  |  LV.${level}  W${waveCurrent}/${WAVES_PER_LEVEL}  |  PTS: ${Math.floor(score)}  |  HOME: 0`, 12, 17);
 
         dataUrl = snapCanvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        blob = dataUrlToBlob(dataUrl);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (!isIOS) {
+            const objUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = objUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
+        }
     } catch (err) {}
-    return { dataUrl, filename };
+    return { dataUrl, blob, filename };
 }
 function gameOver() {
     const snap = captureFullScreenSnapshot();
@@ -2430,8 +2498,12 @@ function gameOver() {
             <div style="font-size:14px; color:#ff4444; margin-bottom:4px; font-weight:bold;">GAME OVER - HOME DESTROYED</div>
             <div style="font-size:12px; color:#ccc; margin-bottom:4px;">DIFF: <span style="color:#0f0;">${currentDiff}</span> | LV: <span style="color:#d0f;">${level}</span> | PTS: <span style="color:#fa0;">${Math.floor(score)}</span></div>
             ${recResult.isNew ? '<div style="font-size:12px; color:#0f0; text-shadow:0 0 10px #0f0; font-weight:bold;">🏆 NEW RECORD SET!</div>' : `<div style="font-size:11px; color:#0cf;">BEST: LV.${recResult.record.level} / ${recResult.record.score} PTS</div>`}
-            ${snap.dataUrl ? `<img src="${snap.dataUrl}" alt="Game Over Snapshot" style="max-height:110px; max-width:100%; margin:8px auto 4px; display:block; border:1px solid #0cf; border-radius:4px;"><a href="${snap.dataUrl}" download="${snap.filename}" style="display:inline-block; margin-top:2px; font-size:11px; color:#0cf; text-decoration:underline;">SAVE SNAPSHOT</a>` : ''}
+            ${snap.dataUrl ? `<img id="gameOverSnapshotImg" src="${snap.dataUrl}" alt="Game Over Snapshot" style="max-height:110px; max-width:100%; margin:8px auto 6px; display:block; border:1px solid #0cf; border-radius:4px; cursor:pointer;"><button type="button" id="btnSaveSnapshot" class="pause-btn" style="padding:6px 12px; font-size:11px; margin-top:2px;">SAVE SNAPSHOT</button><div style="font-size:10px; color:#888; margin-top:4px;">iPhone/iPad: 點擊 SAVE SNAPSHOT 或長按圖片儲存</div>` : ''}
         `;
+        const saveBtn = document.getElementById('btnSaveSnapshot');
+        if (saveBtn) saveBtn.onclick = () => saveSnapshotFile(snap);
+        const snapImg = document.getElementById('gameOverSnapshotImg');
+        if (snapImg) snapImg.onclick = () => saveSnapshotFile(snap);
     }
 
     const btn = document.getElementById('startBtn');

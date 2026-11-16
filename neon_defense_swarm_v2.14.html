@@ -196,9 +196,19 @@
             margin-top: -4px; margin-bottom: 2px;
         }
         .gameover-snap {
-            width: 100%; max-height: 110px; object-fit: contain; border-radius: 4px;
+            width: 100%; max-height: 125px; object-fit: contain; border-radius: 4px;
             border: 1px solid #ff3366; background: #000; display: none;
             box-shadow: 0 0 10px rgba(255, 51, 102, 0.35);
+            -webkit-touch-callout: default !important;
+            user-select: auto !important;
+            -webkit-user-select: auto !important;
+            touch-action: auto !important;
+            pointer-events: auto !important;
+            cursor: pointer;
+        }
+        .gameover-hint {
+            font-size: 9px; color: #ff88aa; margin-top: -2px; margin-bottom: 3px;
+            letter-spacing: 0.3px; opacity: 0.9;
         }
         .gameover-stats {
             font-size: 11px; color: #d0dbe5; line-height: 1.5; margin: 2px 0 6px 0;
@@ -347,9 +357,10 @@
         <div class="gameover-title">GAME OVER</div>
         <div class="gameover-subtitle">HOME BASE DESTROYED</div>
         <img id="go-snap-img" class="gameover-snap" alt="Game Snapshot" />
+        <div id="go-snap-hint" class="gameover-hint" style="display:none;"></div>
         <div class="gameover-stats" id="go-stats"></div>
         <button class="gameover-btn btn-restart" id="go-restart">RESTART LEVEL</button>
-        <button class="gameover-btn" id="go-download">DOWNLOAD SNAPSHOT</button>
+        <button class="gameover-btn" id="go-download">SAVE / SHARE SNAPSHOT</button>
         <button class="gameover-btn btn-exit" id="go-exit">EXIT TO TITLE</button>
     </div>
 </div>
@@ -1383,17 +1394,72 @@ function hideGameOverModal() {
     if(m) m.style.display = 'none';
 }
 
-function downloadCurrentSnapshot() {
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function dataURLtoBlob(dataurl) {
+    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
+    let bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], { type: mime });
+}
+
+function dataURLtoFile(dataurl, filename) {
+    let blob = dataURLtoBlob(dataurl);
+    return new File([blob], filename, { type: blob.type });
+}
+
+async function saveOrDownloadSnapshot() {
     if(!lastGameOverSnapshot) return;
+    let filename = `GeoDefense_GameOver_${(G.difficulty||'normal').toUpperCase()}_W${G.wave}_Score${G.score}_${Date.now()}.png`;
+
+    // 1. Native Web Share API with File (iOS 15+ iPhone/iPad standard: opens native Share Sheet with 'Save Image' into Photos)
+    if(navigator.canShare) {
+        try {
+            let file = dataURLtoFile(lastGameOverSnapshot, filename);
+            if(navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: 'GeoDefense Swarm Record Snapshot',
+                    text: `GeoDefense Swarm [${(G.difficulty||'normal').toUpperCase()}] Wave ${G.wave} · Score ${G.score.toLocaleString()}`,
+                    files: [file]
+                });
+                return;
+            }
+        } catch(shareErr) {
+            if(shareErr && shareErr.name === 'AbortError') {
+                return; // User canceled iOS share sheet
+            }
+            console.warn("Web Share failed, trying fallback:", shareErr);
+        }
+    }
+
+    // 2. iOS Fallback: Open Blob URL in a new tab so user can press and hold to Save to Photos
     try {
+        let blob = dataURLtoBlob(lastGameOverSnapshot);
+        let blobUrl = URL.createObjectURL(blob);
+        if(isIOS()) {
+            let win = window.open(blobUrl, '_blank');
+            if(!win) location.href = blobUrl;
+            return;
+        }
+
+        // 3. Desktop / Android standard anchor download
         let a = document.createElement('a');
-        a.download = `GeoDefense_GameOver_${(G.difficulty||'normal').toUpperCase()}_W${G.wave}_Score${G.score}_${Date.now()}.png`;
+        a.download = filename;
+        a.href = blobUrl;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } catch(e) {
+        let a = document.createElement('a');
+        a.download = filename;
         a.href = lastGameOverSnapshot;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-    } catch(e) {
-        console.warn("Manual snapshot download failed:", e);
     }
 }
 
@@ -1464,8 +1530,15 @@ bindTouch('p-exit', exitGame);
 
 // Bind game over modal action buttons
 bindTouch('go-restart', restartLevel);
-bindTouch('go-download', downloadCurrentSnapshot);
+bindTouch('go-download', saveOrDownloadSnapshot);
 bindTouch('go-exit', exitGame);
+
+const snapImgEl = document.getElementById('go-snap-img');
+if(snapImgEl) {
+    snapImgEl.addEventListener('click', () => {
+        saveOrDownloadSnapshot();
+    });
+}
 
 const pauseModalEl = document.getElementById('pause-modal');
 if(pauseModalEl) {
@@ -1629,12 +1702,15 @@ function gameOver() {
         snapshotUrl = createRecordSnapshot(res, cfg);
         lastGameOverSnapshot = snapshotUrl;
 
-        let a = document.createElement('a');
-        a.download = `GeoDefense_GameOver_${(G.difficulty||'normal').toUpperCase()}_W${G.wave}_Score${G.score}_${Date.now()}.png`;
-        a.href = snapshotUrl;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // On desktop browsers, trigger automatic background download task (iOS requires user gesture)
+        if(!isIOS()) {
+            let a = document.createElement('a');
+            a.download = `GeoDefense_GameOver_${(G.difficulty||'normal').toUpperCase()}_W${G.wave}_Score${G.score}_${Date.now()}.png`;
+            a.href = snapshotUrl;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
     } catch(e) {
         console.warn("Full-screen snapshot auto task failed:", e);
     }
@@ -1653,6 +1729,19 @@ function gameOver() {
             snapImg.style.display = 'block';
         } else {
             snapImg.style.display = 'none';
+        }
+    }
+    let dlBtn = document.getElementById('go-download');
+    if(dlBtn) {
+        dlBtn.innerText = isIOS() ? 'SAVE TO PHOTOS / SHARE' : 'DOWNLOAD SNAPSHOT';
+    }
+    let hintEl = document.getElementById('go-snap-hint');
+    if(hintEl) {
+        if(isIOS()) {
+            hintEl.innerText = '(Tap button or press & hold image to Save to Photos)';
+            hintEl.style.display = 'block';
+        } else {
+            hintEl.style.display = 'none';
         }
     }
     let modal = document.getElementById('game-over-modal');
