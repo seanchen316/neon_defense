@@ -472,61 +472,84 @@ const DIFFICULTY = {
     HELL:   { name:'HELL',   money:150, hp:1,  keep:0.00 }
 };
 let currentDiff = 'EASY';
+let selectedTrailMode = 'random';
 let useDragOffset = false;
 let particlesEnabled = true;
 
-const STORAGE_KEY = 'neon_defense_records';
+const STORAGE_KEY = 'neon_defense_records_v2';
+const LEGACY_STORAGE_KEY = 'neon_defense_records';
+
+function getRecordKey(diff = currentDiff, trail = selectedTrailMode) {
+    return `${diff}__${trail}`;
+}
+
 function getRecords() {
+    let result = {};
     try {
         const data = localStorage.getItem(STORAGE_KEY);
         if (data) {
             const parsed = JSON.parse(data);
-            return {
-                EASY:   { score: parsed.EASY?.score || 0,   level: parsed.EASY?.level || 1 },
-                NORMAL: { score: parsed.NORMAL?.score || 0, level: parsed.NORMAL?.level || 1 },
-                HARD:   { score: parsed.HARD?.score || 0,   level: parsed.HARD?.level || 1 },
-                HELL:   { score: parsed.HELL?.score || 0,   level: parsed.HELL?.level || 1 }
-            };
+            if (parsed && typeof parsed === 'object') {
+                result = parsed;
+            }
+        } else {
+            // Backward compatibility: migrate from old records
+            const oldData = localStorage.getItem(LEGACY_STORAGE_KEY);
+            if (oldData) {
+                const oldParsed = JSON.parse(oldData);
+                ['EASY', 'NORMAL', 'HARD', 'HELL'].forEach(diff => {
+                    if (oldParsed && oldParsed[diff]) {
+                        result[`${diff}__random`] = {
+                            score: oldParsed[diff].score || 0,
+                            level: oldParsed[diff].level || 1
+                        };
+                    }
+                });
+            }
         }
     } catch(e) {}
-    return {
-        EASY:   { score: 0, level: 1 },
-        NORMAL: { score: 0, level: 1 },
-        HARD:   { score: 0, level: 1 },
-        HELL:   { score: 0, level: 1 }
-    };
+    return result;
 }
 let records = getRecords();
 
+function getRecord(diff = currentDiff, trail = selectedTrailMode) {
+    const key = getRecordKey(diff, trail);
+    if (!records[key]) {
+        records[key] = { score: 0, level: 1 };
+    }
+    return records[key];
+}
+
 function checkAndUpdateRecord() {
-    if (!records[currentDiff]) records[currentDiff] = { score: 0, level: 1 };
+    const curRecord = getRecord(currentDiff, selectedTrailMode);
     let isNew = false;
     const currentIntScore = Math.floor(score);
-    if (currentIntScore > records[currentDiff].score) {
-        records[currentDiff].score = currentIntScore;
+    if (currentIntScore > curRecord.score) {
+        curRecord.score = currentIntScore;
         isNew = true;
     }
-    if (level > records[currentDiff].level) {
-        records[currentDiff].level = level;
+    if (level > curRecord.level) {
+        curRecord.level = level;
         isNew = true;
     }
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
     } catch(e) {}
-    return { isNew, record: records[currentDiff] };
+    return { isNew, record: curRecord };
 }
 
 function updateRecordsUI() {
     records = getRecords();
     ['EASY', 'NORMAL', 'HARD', 'HELL'].forEach(diff => {
         const el = document.getElementById(`rec-${diff}`);
-        if (el && records[diff]) {
-            el.innerText = `BEST: LV.${records[diff].level} / ${records[diff].score} PTS`;
+        if (el) {
+            const rec = getRecord(diff, selectedTrailMode);
+            el.innerText = `BEST: LV.${rec.level} / ${rec.score} PTS`;
         }
     });
     const hiEl = document.getElementById('hiScoreDisplay');
     if (hiEl) {
-        const curBest = records[currentDiff] ? Math.max(records[currentDiff].score, Math.floor(score)) : Math.floor(score);
+        const curBest = Math.max(getRecord(currentDiff, selectedTrailMode).score, Math.floor(score));
         hiEl.innerText = curBest;
     }
 }
@@ -590,9 +613,21 @@ let safeZone = { top: 60, bottom: height - 120, left: 20, right: width - 20 };
 function initAudio() {
     try {
         if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if(audioCtx.state === 'suspended') audioCtx.resume();
+        if(audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
     } catch(e) {}
 }
+
+function unlockAudio() {
+    initAudio();
+    if(audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+window.addEventListener('click', unlockAudio, { passive: true });
+window.addEventListener('touchstart', unlockAudio, { passive: true });
+window.addEventListener('keydown', unlockAudio, { passive: true });
 
 function createNoiseBuffer() {
     if(!audioCtx) return;
@@ -604,7 +639,13 @@ function createNoiseBuffer() {
 let soundEnabled = true;
 const sfx = {
     play: (type) => {
-        if(!soundEnabled || !audioCtx || audioCtx.state === 'suspended') return;
+        if(!soundEnabled) return;
+        if(!audioCtx) initAudio();
+        if(!audioCtx) return;
+        if(audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+            return;
+        }
         try {
             const t = audioCtx.currentTime;
             const g = audioCtx.createGain(); g.connect(audioCtx.destination);
@@ -1092,6 +1133,7 @@ function init() {
             const mode = e.target.value;
             selectedTrailMode = mode;
             if (trailLabel) trailLabel.innerText = mode.toUpperCase();
+            updateRecordsUI();
             generatePath();
             renderSingleFrame();
         });
@@ -1295,7 +1337,6 @@ const ONE_LINE_ARTS = {
         pts: [[20,25],[235,25],[235,60],[20,60],[20,95],[235,95],[235,130],[20,130],[20,165],[235,165],[235,200],[20,200],[20,235],[235,235]]
     }
 };
-let selectedTrailMode = 'random';
 
 function generateOneLineArtPath(artKey) {
     pathPoints = []; drawPathCommands = [];
@@ -1431,7 +1472,12 @@ function ensureLoop() {
 }
 
 document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) ensureLoop();
+    if (!document.hidden) {
+        ensureLoop();
+        if (soundEnabled && audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+        }
+    }
 });
 
 function loop(timestamp) {
@@ -2517,8 +2563,8 @@ function updateUI() {
     if (s !== uiCache.score) {
         uiCache.score = s;
         scoreEl.innerText = s;
-        if (hiEl && records[currentDiff]) {
-            const hi = Math.max(records[currentDiff].score, s);
+        if (hiEl) {
+            const hi = Math.max(getRecord(currentDiff, selectedTrailMode).score, s);
             if (hi !== uiCache.hi) {
                 uiCache.hi = hi;
                 hiEl.innerText = hi;
@@ -2620,13 +2666,11 @@ document.getElementById('btnSoundToggle').onclick = () => {
 };
 
 document.getElementById('btnResetHiScore').onclick = (e) => {
-    records = {
-        EASY:   { score: 0, level: 1 },
-        NORMAL: { score: 0, level: 1 },
-        HARD:   { score: 0, level: 1 },
-        HELL:   { score: 0, level: 1 }
-    };
-    try { localStorage.removeItem(STORAGE_KEY); } catch(err) {}
+    const curKey = getRecordKey(currentDiff, selectedTrailMode);
+    records[curKey] = { score: 0, level: 1 };
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    } catch(err) {}
     updateRecordsUI();
     updateUI();
     e.target.innerText = 'HIGHSCORE RESET!';
@@ -2787,7 +2831,8 @@ function gameOver() {
         summary.style.display = 'block';
         summary.innerHTML = `
             <div style="font-size:14px; color:#ff4444; margin-bottom:4px; font-weight:bold;">GAME OVER - HOME DESTROYED</div>
-            <div style="font-size:12px; color:#ccc; margin-bottom:4px;">DIFF: <span style="color:#0f0;">${currentDiff}</span> | LV: <span style="color:#d0f;">${level}</span> | PTS: <span style="color:#fa0;">${Math.floor(score)}</span></div>
+            <div style="font-size:12px; color:#ccc; margin-bottom:4px;">DIFF: <span style="color:#0f0;">${currentDiff}</span> | TRAIL: <span style="color:#0ff;">${selectedTrailMode.toUpperCase()}</span></div>
+            <div style="font-size:12px; color:#ccc; margin-bottom:4px;">LV: <span style="color:#d0f;">${level}</span> | PTS: <span style="color:#fa0;">${Math.floor(score)}</span></div>
             ${recResult.isNew ? '<div style="font-size:12px; color:#0f0; text-shadow:0 0 10px #0f0; font-weight:bold;">🏆 NEW RECORD SET!</div>' : `<div style="font-size:11px; color:#0cf;">BEST: LV.${recResult.record.level} / ${recResult.record.score} PTS</div>`}
             ${snap.dataUrl ? `<img id="gameOverSnapshotImg" src="${snap.dataUrl}" alt="Game Over Snapshot" style="max-height:110px; max-width:100%; margin:8px auto 6px; display:block; border:1px solid #0cf; border-radius:4px; cursor:pointer;"><button type="button" id="btnSaveSnapshot" class="pause-btn" style="padding:6px 12px; font-size:11px; margin-top:2px;">SAVE SNAPSHOT</button><div style="font-size:10px; color:#888; margin-top:4px;">iPhone/iPad: 點擊 SAVE SNAPSHOT 或長按圖片儲存</div>` : ''}
         `;

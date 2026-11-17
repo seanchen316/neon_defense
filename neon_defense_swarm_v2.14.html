@@ -196,7 +196,7 @@
             margin-top: -4px; margin-bottom: 2px;
         }
         .gameover-snap {
-            width: 100%; max-height: 125px; object-fit: contain; border-radius: 4px;
+            width: 100%; max-height: 140px; object-fit: contain; border-radius: 4px;
             border: 1px solid #ff3366; background: #000; display: none;
             box-shadow: 0 0 10px rgba(255, 51, 102, 0.35);
             -webkit-touch-callout: default !important;
@@ -226,6 +226,10 @@
             box-shadow: 0 0 10px rgba(255, 0, 85, 0.45);
         }
         .gameover-btn:active { transform: scale(0.97); }
+        .gameover-btn.btn-action-ok {
+            background: #002b18 !important; border-color: #00ff88 !important; color: #00ff88 !important;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.45) !important;
+        }
         .gameover-btn.btn-restart {
             background: #003322; border-color: #00ff88; color: #00ff88;
             box-shadow: 0 0 8px rgba(0, 255, 136, 0.25);
@@ -359,8 +363,11 @@
         <img id="go-snap-img" class="gameover-snap" alt="Game Snapshot" />
         <div id="go-snap-hint" class="gameover-hint" style="display:none;"></div>
         <div class="gameover-stats" id="go-stats"></div>
+        <div style="display: flex; gap: 6px; width: 100%;">
+            <button class="gameover-btn" id="go-download" style="flex: 1.1; padding: 10px 4px; font-size: 10px;">SAVE SNAPSHOT</button>
+            <button class="gameover-btn" id="go-copy" style="flex: 0.9; padding: 10px 4px; font-size: 10px;">COPY IMAGE</button>
+        </div>
         <button class="gameover-btn btn-restart" id="go-restart">RESTART LEVEL</button>
-        <button class="gameover-btn" id="go-download">SAVE / SHARE SNAPSHOT</button>
         <button class="gameover-btn btn-exit" id="go-exit">EXIT TO TITLE</button>
     </div>
 </div>
@@ -1547,6 +1554,19 @@ function dataURLtoFile(dataurl, filename) {
 async function saveOrDownloadSnapshot() {
     if(!lastGameOverSnapshot) return;
     let filename = `GeoDefense_GameOver_${(G.difficulty||'normal').toUpperCase()}_W${G.wave}_Score${G.score}_${Date.now()}.png`;
+    let btn = document.getElementById('go-download');
+
+    function showBtnOk(msg) {
+        if(btn) {
+            let orig = btn.innerText;
+            btn.innerText = msg;
+            btn.classList.add('btn-action-ok');
+            setTimeout(() => {
+                btn.innerText = orig;
+                btn.classList.remove('btn-action-ok');
+            }, 1800);
+        }
+    }
 
     // 1. Native Web Share API with File (iOS 15+ iPhone/iPad standard: opens native Share Sheet with 'Save Image' into Photos)
     if(navigator.canShare) {
@@ -1558,6 +1578,7 @@ async function saveOrDownloadSnapshot() {
                     text: `GeoDefense Swarm [${(G.difficulty||'normal').toUpperCase()}] Wave ${G.wave} · Score ${G.score.toLocaleString()}`,
                     files: [file]
                 });
+                showBtnOk('✓ SHARED!');
                 return;
             }
         } catch(shareErr) {
@@ -1573,12 +1594,14 @@ async function saveOrDownloadSnapshot() {
         let blob = dataURLtoBlob(lastGameOverSnapshot);
         let blobUrl = URL.createObjectURL(blob);
         if(isIOS()) {
+            showBtnOk('✓ OPENING...');
             let win = window.open(blobUrl, '_blank');
             if(!win) location.href = blobUrl;
             return;
         }
 
         // 3. Desktop / Android standard anchor download
+        showBtnOk('✓ SAVED!');
         let a = document.createElement('a');
         a.download = filename;
         a.href = blobUrl;
@@ -1587,6 +1610,7 @@ async function saveOrDownloadSnapshot() {
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
     } catch(e) {
+        showBtnOk('✓ SAVED!');
         let a = document.createElement('a');
         a.download = filename;
         a.href = lastGameOverSnapshot;
@@ -1594,6 +1618,33 @@ async function saveOrDownloadSnapshot() {
         a.click();
         document.body.removeChild(a);
     }
+}
+
+async function copySnapshotToClipboard() {
+    let btn = document.getElementById('go-copy');
+    if(!lastGameOverSnapshot) return;
+    try {
+        let blob = dataURLtoBlob(lastGameOverSnapshot);
+        if(navigator.clipboard && window.ClipboardItem) {
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+            ]);
+            if(btn) {
+                let orig = btn.innerText;
+                btn.innerText = '✓ COPIED!';
+                btn.classList.add('btn-action-ok');
+                setTimeout(() => {
+                    btn.innerText = orig;
+                    btn.classList.remove('btn-action-ok');
+                }, 1800);
+            }
+            return;
+        }
+    } catch(err) {
+        console.warn("Clipboard copy failed, falling back to download:", err);
+    }
+    // Fallback if clipboard write fails or not supported: trigger save
+    saveOrDownloadSnapshot();
 }
 
 function restartLevel() {
@@ -1668,6 +1719,7 @@ bindTouch('p-exit', exitGame);
 // Bind game over modal action buttons
 bindTouch('go-restart', restartLevel);
 bindTouch('go-download', saveOrDownloadSnapshot);
+bindTouch('go-copy', copySnapshotToClipboard);
 bindTouch('go-exit', exitGame);
 
 const snapImgEl = document.getElementById('go-snap-img');
@@ -1708,24 +1760,44 @@ function createRecordSnapshot(res, cfg) {
     let w = canvas.width, h = canvas.height;
     if(!w || !h) return '';
 
-    // Create an offscreen canvas to composite the final battle view with the Record HUD banner
-    let snapCvs = document.createElement('canvas');
-    snapCvs.width = w; snapCvs.height = h;
-    let sc = snapCvs.getContext('2d');
-
-    // 1. Draw final game board state
-    sc.drawImage(canvas, 0, 0);
-
-    // 2. High-Tech Cyber Neon Record HUD Overlay Banner
-    sc.save();
     let isCompact = w < 540;
     let bannerH = isCompact ? 76 : 64;
-    let bannerY = 12;
+    let bannerPadding = 10;
+    let headerHeight = bannerH + bannerPadding * 2;
+
+    // Create an offscreen canvas to composite the Header Banner strictly OVER the map
+    let snapCvs = document.createElement('canvas');
+    snapCvs.width = w;
+    snapCvs.height = h + headerHeight;
+    let sc = snapCvs.getContext('2d');
+
+    // 1. Fill base canvas background
+    sc.fillStyle = '#023814';
+    sc.fillRect(0, 0, w, h + headerHeight);
+
+    // 1.1 Header background bar (sleek cyber obsidian panel)
+    sc.fillStyle = '#060a0f';
+    sc.fillRect(0, 0, w, headerHeight);
+
+    // Glowing cyan accent divider separating the banner from the battle map
+    sc.strokeStyle = '#00f5ff';
+    sc.lineWidth = 1.5;
+    sc.beginPath();
+    sc.moveTo(0, headerHeight);
+    sc.lineTo(w, headerHeight);
+    sc.stroke();
+
+    // 1.2 Draw the battle map strictly below the header (100% full trail map with zero obstruction)
+    sc.drawImage(canvas, 0, headerHeight);
+
+    // 2. High-Tech Cyber Neon Record HUD Overlay Banner (rendered inside the top header space)
+    sc.save();
+    let bannerY = bannerPadding;
     let margin = 12;
     let cardW = w - margin * 2;
 
-    // Dark cyberpunk translucent glass background
-    sc.fillStyle = 'rgba(5, 10, 18, 0.90)';
+    // Dark cyberpunk glass card background
+    sc.fillStyle = 'rgba(8, 14, 22, 0.95)';
     sc.beginPath();
     let r = 8;
     if(typeof sc.roundRect === 'function') {
@@ -1870,7 +1942,11 @@ function gameOver() {
     }
     let dlBtn = document.getElementById('go-download');
     if(dlBtn) {
-        dlBtn.innerText = isIOS() ? 'SAVE TO PHOTOS / SHARE' : 'DOWNLOAD SNAPSHOT';
+        dlBtn.innerText = isIOS() ? 'SAVE TO PHOTOS' : 'SAVE SNAPSHOT';
+    }
+    let copyBtn = document.getElementById('go-copy');
+    if(copyBtn) {
+        copyBtn.innerText = 'COPY IMAGE';
     }
     let hintEl = document.getElementById('go-snap-hint');
     if(hintEl) {
@@ -1878,7 +1954,8 @@ function gameOver() {
             hintEl.innerText = '(Tap button or press & hold image to Save to Photos)';
             hintEl.style.display = 'block';
         } else {
-            hintEl.style.display = 'none';
+            hintEl.innerText = '(Tap to Save / Copy image to clipboard)';
+            hintEl.style.display = 'block';
         }
     }
     let modal = document.getElementById('game-over-modal');
@@ -3403,6 +3480,7 @@ function draw() {
             ctx.beginPath();
             ctx.arc(4, 0, 0.8, 0, 6.28);
             ctx.fill();
+            ctx.restore();
 
         } else if(p.type === 'bolt') {
             // Blaster cannon shell: elongated vector slug with bright core & tracer tail strictly aligned to barrel angle
