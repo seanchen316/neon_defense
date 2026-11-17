@@ -245,7 +245,7 @@
             touch-action: auto;
         }
         
-        .diff-container { display: flex; flex-direction: column; gap: 8px; width: 280px; margin-bottom: 15px; }
+        .diff-container { display: flex; flex-direction: column; gap: 8px; width: 280px; margin-bottom: 12px; }
         .diff-btn {
             padding: 8px 12px; background: transparent; border: 1px solid #555; color: #888;
             cursor: pointer; font-family: monospace; font-weight: bold; transition: 0.2s; width: 100%; text-align: left;
@@ -256,6 +256,25 @@
         .diff-row-main { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 13px; }
         .diff-sub { font-size: 10px; color: #888; font-weight: normal; }
         .diff-record { font-size: 10px; color: #0cf; font-weight: normal; letter-spacing: 0.5px; }
+
+        .trail-section { width: 280px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 6px; box-sizing: border-box; }
+        .trail-header { font-size: 11px; color: #0cf; font-family: monospace; letter-spacing: 1.5px; display: flex; justify-content: space-between; align-items: center; }
+        .trail-select-wrap { width: 100%; position: relative; }
+        .trail-dropdown {
+            width: 100%; padding: 9px 12px; background: rgba(10, 20, 30, 0.9);
+            border: 1px solid #0cf; color: #0ff; font-family: monospace; font-size: 12px; font-weight: bold;
+            border-radius: 6px; outline: none; cursor: pointer; box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 204, 255, 0.25);
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300ffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
+        }
+        .trail-dropdown:hover, .trail-dropdown:focus {
+            border-color: #00ffcc; box-shadow: 0 0 14px rgba(0, 255, 204, 0.5);
+        }
+        .trail-dropdown option {
+            background: #0a1118; color: #eee; font-family: monospace; font-size: 12px;
+        }
         
         .options { margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px; color: #ccc; font-size: 14px; }
         .opt-row { display: flex; align-items: center; gap: 10px; }
@@ -381,6 +400,53 @@
             </button>
         </div>
 
+        <div class="trail-section">
+            <div class="trail-header"><span>TRAIL / MAP (路徑模式)</span><span id="selectedTrailLabel" style="color:#0f0;">RANDOM</span></div>
+            <div class="trail-select-wrap">
+                <select id="trailSelect" class="trail-dropdown">
+                    <option value="random">🎲 RANDOM (隨機生成)</option>
+                    <optgroup label="── 經典單線 (Classic Arts) ──">
+                        <option value="snake">🐍 SNAKE (迴蛇)</option>
+                        <option value="lightning">⚡ LIGHTNING (閃電)</option>
+                        <option value="star">⭐ STAR (星形)</option>
+                        <option value="tornado">🌪️ TORNADO (旋渦)</option>
+                        <option value="wave">🌊 WAVE (海浪)</option>
+                    </optgroup>
+                    <optgroup label="── 機具與物件 (Machines & Items) ──">
+                        <option value="airplane">✈️ AIRPLANE (飛機)</option>
+                        <option value="ufo">🛸 UFO (幽浮)</option>
+                        <option value="guitar">🎸 GUITAR (吉他)</option>
+                        <option value="key">🔑 KEY (鑰匙)</option>
+                        <option value="anchor">⚓ ANCHOR (鐵錨)</option>
+                        <option value="umbrella">☂️ UMBRELLA (雨傘)</option>
+                        <option value="hourglass">⌛ HOURGLASS (沙漏)</option>
+                        <option value="crown">👑 CROWN (皇冠)</option>
+                        <option value="diamond">💎 DIAMOND (鑽石)</option>
+                        <option value="shield">🛡️ SHIELD (盾牌)</option>
+                        <option value="sword">⚔️ SWORD (寶劍)</option>
+                    </optgroup>
+                    <optgroup label="── 生物與自然 (Nature & Creatures) ──">
+                        <option value="butterfly">🦋 BUTTERFLY (蝴蝶)</option>
+                        <option value="cat">🐱 CAT (貓臉)</option>
+                        <option value="fish">🐟 FISH (游魚)</option>
+                        <option value="dragon">🐉 DRAGON (飛龍)</option>
+                        <option value="heart">💖 HEART (愛心)</option>
+                        <option value="tree">🌲 TREE (松樹)</option>
+                        <option value="mountain">🏔️ MOUNTAIN (連峰)</option>
+                        <option value="clover">🍀 CLOVER (幸運草)</option>
+                        <option value="skull">💀 SKULL (骷髏)</option>
+                    </optgroup>
+                    <optgroup label="── 幾何與迷宮 (Geometry & Mazes) ──">
+                        <option value="infinity">♾️ INFINITY (無限)</option>
+                        <option value="spiral">🌀 SPIRAL (螺旋)</option>
+                        <option value="maze">🧩 MAZE (迷宮)</option>
+                        <option value="hexagon">⬡ HEXAGON (六角蜂巢)</option>
+                        <option value="zig_zag">⚡ ZIGZAG (超折返)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+
         <div id="gameSummary" style="display:none; margin-bottom:15px; text-align:center; font-family:monospace; padding:8px 12px; border:1px solid #333; background:rgba(20,20,20,0.8); border-radius:4px; width:280px; box-sizing:border-box;"></div>
 
         <button id="startBtn">INITIALIZE</button>
@@ -482,6 +548,7 @@ let particles = [];
 let shockwaves = []; // New visual array
 let halos = []; // New visual array
 let floatText = [];
+let coreFlash = 0;
 let pathPoints = [], drawPathCommands = []; 
 
 // --- PERFORMANCE CACHES ---
@@ -515,6 +582,8 @@ function getGlowTexture(color, radius) {
 } 
 
 let waveState = { active: false, countingDown: false, timer: 0, spawnCount: 0, spawnMax: 0, spawnTimer: 0 };
+let isLevelTransitioning = false;
+let nextLevelTimer = null;
 let safeZone = { top: 60, bottom: height - 120, left: 20, right: width - 20 };
 
 // --- AUDIO ---
@@ -1015,6 +1084,19 @@ function init() {
         }
         updateRecordsUI();
     };
+
+    const trailSelect = document.getElementById('trailSelect');
+    const trailLabel = document.getElementById('selectedTrailLabel');
+    if (trailSelect) {
+        trailSelect.addEventListener('change', (e) => {
+            const mode = e.target.value;
+            selectedTrailMode = mode;
+            if (trailLabel) trailLabel.innerText = mode.toUpperCase();
+            generatePath();
+            renderSingleFrame();
+        });
+    }
+
     resize();
     renderTowerPreviews();
     updateRecordsUI();
@@ -1027,6 +1109,8 @@ function startGameSession() {
     resize();
     const diffData = DIFFICULTY[currentDiff];
     
+    if (nextLevelTimer) { clearTimeout(nextLevelTimer); nextLevelTimer = null; }
+    isLevelTransitioning = false;
     gameActive = true; isPaused = false;
     money = diffData.money; lives = diffData.hp; score = 0; 
     level = 1; waveCurrent = 0;
@@ -1041,7 +1125,7 @@ function startGameSession() {
     toggleBottomPanel(false);
     updateRecordsUI();
     
-    if(pathPoints.length < 2) generatePath();
+    generatePath();
     
     initNextWave();
     lastTime = performance.now();
@@ -1082,7 +1166,169 @@ const MAP_CONSTRUCTION_RATIOS = [
 ];
 let currentMapRatio = MAP_CONSTRUCTION_RATIOS[2];
 
+const ONE_LINE_ARTS = {
+    // ── 經典單線 (Classic Arts) ──
+    snake: {
+        name: 'SNAKE (迴蛇)',
+        pts: [[20,35],[45,30],[75,45],[95,75],[85,110],[55,125],[30,150],[25,185],[50,215],[85,225],[120,210],[140,175],[135,140],[115,105],[130,70],[160,50],[195,55],[220,85],[220,125],[200,160],[185,200],[195,235],[230,245]]
+    },
+    lightning: {
+        name: 'LIGHTNING (閃電)',
+        pts: [[50,20],[140,20],[90,85],[170,85],[110,150],[190,150],[60,245]]
+    },
+    star: {
+        name: 'STAR (星形)',
+        pts: [[15,125],[94,95],[128,15],[162,95],[240,95],[178,145],[204,228],[128,178],[52,228],[78,145],[130,125]]
+    },
+    tornado: {
+        name: 'TORNADO (旋渦)',
+        pts: [[20,25],[235,25],[220,65],[35,65],[55,105],[205,105],[185,145],[75,145],[95,185],[165,185],[145,225],[115,225],[128,245]]
+    },
+    wave: {
+        name: 'WAVE (海浪)',
+        pts: [[20,130],[50,50],[85,130],[128,210],[170,130],[205,50],[235,130],[205,210],[128,230],[60,210]]
+    },
+
+    // ── 機具與物件 (Machines & Items) ──
+    airplane: {
+        name: 'AIRPLANE (飛機)',
+        pts: [[128,20],[136,70],[240,105],[240,130],[136,120],[134,195],[175,225],[175,245],[128,238],[81,245],[81,225],[122,195],[120,120],[16,130],[16,105],[120,70],[128,20]]
+    },
+    ufo: {
+        name: 'UFO (幽浮)',
+        pts: [[95,95],[128,50],[161,95],[235,125],[190,165],[66,165],[21,125],[235,125],[190,165],[145,225],[111,225],[66,165]]
+    },
+    guitar: {
+        name: 'GUITAR (吉他)',
+        pts: [[128,20],[136,25],[136,95],[165,115],[175,160],[155,185],[180,215],[165,245],[128,248],[91,245],[76,215],[101,185],[81,160],[91,115],[120,95],[120,25],[128,20]]
+    },
+    key: {
+        name: 'KEY (鑰匙)',
+        pts: [[80,75],[128,35],[176,75],[160,125],[138,135],[138,235],[170,235],[170,215],[138,215],[138,190],[160,190],[160,170],[138,170],[118,135],[96,125],[80,75]]
+    },
+    anchor: {
+        name: 'ANCHOR (鐵錨)',
+        pts: [[128,25],[140,37],[128,50],[116,37],[128,25],[128,80],[180,80],[180,95],[128,95],[128,205],[195,190],[215,150],[195,215],[128,235],[61,215],[41,150],[61,190],[128,205]]
+    },
+    umbrella: {
+        name: 'UMBRELLA (雨傘)',
+        pts: [[128,25],[128,45],[225,125],[185,115],[155,125],[128,115],[101,125],[71,115],[31,125],[128,45],[128,215],[150,215],[155,235],[140,245],[128,235]]
+    },
+    hourglass: {
+        name: 'HOURGLASS (沙漏)',
+        pts: [[40,30],[216,30],[148,110],[148,146],[216,226],[40,226],[108,146],[108,110],[40,30]]
+    },
+    crown: {
+        name: 'CROWN (皇冠)',
+        pts: [[30,215],[30,70],[80,140],[128,40],[176,140],[226,70],[226,215],[30,215]]
+    },
+    diamond: {
+        name: 'DIAMOND (鑽石)',
+        pts: [[75,40],[181,40],[235,95],[128,235],[21,95],[75,40],[128,95],[181,40],[128,95],[128,235]]
+    },
+    shield: {
+        name: 'SHIELD (盾牌)',
+        pts: [[45,45],[211,45],[211,125],[175,190],[128,235],[81,190],[45,125],[45,45]]
+    },
+    sword: {
+        name: 'SWORD (寶劍)',
+        pts: [[128,20],[138,35],[138,165],[185,165],[185,180],[138,180],[138,225],[148,230],[148,245],[128,248],[108,245],[108,230],[118,225],[118,180],[71,180],[71,165],[118,165],[118,35],[128,20]]
+    },
+
+    // ── 生物與自然 (Nature & Creatures) ──
+    butterfly: {
+        name: 'BUTTERFLY (蝴蝶)',
+        pts: [[128,235],[128,45],[105,25],[128,45],[151,25],[128,45],[128,110],[225,50],[240,125],[165,150],[215,220],[145,210],[128,160],[111,210],[41,220],[91,150],[16,125],[31,50],[128,110]]
+    },
+    cat: {
+        name: 'CAT (貓臉)',
+        pts: [[60,190],[35,115],[30,45],[80,75],[128,65],[176,75],[226,45],[221,115],[196,190],[140,215],[116,215],[60,190]]
+    },
+    fish: {
+        name: 'FISH (游魚)',
+        pts: [[245,65],[205,128],[245,190],[175,185],[110,210],[45,170],[20,128],[45,85],[110,45],[175,70],[205,128]]
+    },
+    dragon: {
+        name: 'DRAGON (飛龍)',
+        pts: [[25,65],[55,45],[90,65],[85,105],[125,115],[165,85],[195,105],[185,145],[225,155],[245,130],[235,185],[175,180],[150,215],[105,195],[75,225],[40,205],[65,165],[35,135],[25,65]]
+    },
+    heart: {
+        name: 'HEART (愛心)',
+        pts: [[128,235],[45,150],[25,95],[45,45],[85,40],[128,85],[171,40],[211,45],[231,95],[211,150],[128,235]]
+    },
+    tree: {
+        name: 'TREE (松樹)',
+        pts: [[128,20],[165,65],[145,65],[185,115],[160,115],[205,175],[145,175],[145,235],[111,235],[111,175],[51,175],[96,115],[71,115],[111,65],[91,65],[128,20]]
+    },
+    mountain: {
+        name: 'MOUNTAIN (連峰)',
+        pts: [[20,225],[75,95],[115,155],[165,55],[205,135],[235,95],[245,225],[20,225]]
+    },
+    clover: {
+        name: 'CLOVER (幸運草)',
+        pts: [[128,140],[85,155],[45,128],[60,85],[105,95],[128,140],[95,105],[85,60],[128,45],[155,60],[161,105],[128,140],[151,95],[196,85],[211,128],[171,155],[128,140],[125,235],[131,235],[128,140]]
+    },
+    skull: {
+        name: 'SKULL (骷髏)',
+        pts: [[50,115],[50,75],[90,35],[166,35],[206,75],[206,115],[180,160],[165,160],[165,225],[91,225],[91,160],[76,160],[50,115]]
+    },
+
+    // ── 幾何與迷宮 (Geometry & Mazes) ──
+    infinity: {
+        name: 'INFINITY (無限)',
+        pts: [[128,128],[175,65],[225,65],[245,128],[225,190],[175,190],[128,128],[81,65],[31,65],[11,128],[31,190],[81,190],[128,128]]
+    },
+    spiral: {
+        name: 'SPIRAL (螺旋)',
+        pts: [[128,128],[140,115],[140,140],[110,150],[100,110],[115,90],[160,90],[175,135],[160,175],[110,185],[75,165],[65,115],[85,70],[140,55],[195,70],[215,125],[195,195],[130,225],[60,215],[30,150],[45,80],[100,35],[180,30],[235,65],[245,140],[225,215],[150,245]]
+    },
+    maze: {
+        name: 'MAZE (迷宮)',
+        pts: [[20,20],[235,20],[235,235],[20,235],[20,55],[200,55],[200,200],[55,200],[55,90],[165,90],[165,165],[90,165],[90,125],[130,125]]
+    },
+    hexagon: {
+        name: 'HEXAGON (六角蜂巢)',
+        pts: [[128,30],[215,80],[215,176],[128,226],[41,176],[41,80],[128,30],[128,128],[215,176],[128,128],[41,176]]
+    },
+    zig_zag: {
+        name: 'ZIGZAG (超折返)',
+        pts: [[20,25],[235,25],[235,60],[20,60],[20,95],[235,95],[235,130],[20,130],[20,165],[235,165],[235,200],[20,200],[20,235],[235,235]]
+    }
+};
+let selectedTrailMode = 'random';
+
+function generateOneLineArtPath(artKey) {
+    pathPoints = []; drawPathCommands = [];
+    const art = ONE_LINE_ARTS[artKey];
+    if (!art || !art.pts || art.pts.length < 2) return false;
+
+    const w = safeZone.right - safeZone.left;
+    const h = safeZone.bottom - safeZone.top;
+    if (w <= 0 || h <= 0) return false;
+
+    const mapped = art.pts.map(p => ({
+        x: safeZone.left + (p[0] / 255) * w,
+        y: safeZone.top + (p[1] / 255) * h
+    }));
+
+    const p0 = mapped[0];
+    pathPoints.push(p0);
+    drawPathCommands.push({ type: 'move', x: p0.x, y: p0.y });
+
+    for (let i = 0; i < mapped.length - 1; i++) {
+        const startPt = mapped[i];
+        const endPt = mapped[i + 1];
+        addSegment(startPt, endPt);
+        drawPathCommands.push({ type: 'line', x: endPt.x, y: endPt.y });
+    }
+    updateBackgroundCache();
+    return true;
+}
+
 function generatePath() {
+    if (selectedTrailMode !== 'random' && ONE_LINE_ARTS[selectedTrailMode]) {
+        if (generateOneLineArtPath(selectedTrailMode)) return;
+    }
     pathPoints = []; drawPathCommands = [];
     const w = safeZone.right - safeZone.left;
     const h = safeZone.bottom - safeZone.top;
@@ -1207,6 +1453,7 @@ function loop(timestamp) {
 }
 
 function update(dt) {
+    if (coreFlash > 0) coreFlash = Math.max(0, coreFlash - dt * 2.5 * gameSpeed);
     if (lives <= 0) return;
     handleWaveLogic(dt);
 
@@ -1221,12 +1468,9 @@ function update(dt) {
                 enemies.pop();
                 if (e.finished) {
                     lives--; sfx.play('boom'); 
+                    coreFlash = 1.0;
                     if(particlesEnabled) {
-                        createExplosion(e.x, e.y, '#f00', 50);
-                        createExplosion(e.x, e.y, '#fa0', 30);
-                        createHalo(e.x, e.y, '#f00');
-                        createShockwave(e.x, e.y, '#f00');
-                        createShockwave(e.x, e.y, '#fff');
+                        createCatastrophicExplosion(e.x, e.y);
                     }
                     if (lives <= 0) gameOver();
                 } else {
@@ -1332,9 +1576,9 @@ function handleWaveLogic(dt) {
         if (waveState.spawnCount >= waveState.spawnMax) {
             waveState.active = false;
             if (waveCurrent < WAVES_PER_LEVEL) initNextWave();
-            else if (enemies.length === 0) startNextLevel();
+            else if (enemies.length === 0 && !isLevelTransitioning) startNextLevel();
         }
-    } else if (waveCurrent >= WAVES_PER_LEVEL && enemies.length === 0 && !waveState.countingDown) {
+    } else if (waveCurrent >= WAVES_PER_LEVEL && enemies.length === 0 && !waveState.countingDown && !isLevelTransitioning) {
         startNextLevel();
     }
 }
@@ -1347,7 +1591,12 @@ function initNextWave() {
 }
 
 function startNextLevel() {
+    if (isLevelTransitioning) return;
+    isLevelTransitioning = true;
     level++; waveCurrent = 0;
+    waveState.active = false;
+    waveState.countingDown = false;
+    document.getElementById('miniTimer').style.display = 'none';
     checkAndUpdateRecord();
     updateRecordsUI();
     
@@ -1362,7 +1611,12 @@ function startNextLevel() {
     towers.forEach(t => { t.affected = []; t.laserTime = 0; });
     projectiles = []; enemies = []; shockwaves = []; halos = [];
     floatText.push({x: width/2, y: height/2, text: "SECTOR CLEARED", color: "#0f0", life: 180});
-    setTimeout(() => { if (gameActive) { initNextWave(); ensureLoop(); } }, 2000);
+    if (nextLevelTimer) clearTimeout(nextLevelTimer);
+    nextLevelTimer = setTimeout(() => {
+        nextLevelTimer = null;
+        isLevelTransitioning = false;
+        if (gameActive) { initNextWave(); ensureLoop(); }
+    }, 2000);
 }
 
 function startWaveSpawn() {
@@ -1402,13 +1656,14 @@ function drawStartPortal() {
 }
 
 class Halo {
-    constructor(x, y, color) {
+    constructor(x, y, color, speed=200, decay=3) {
         this.x = x; this.y = y; this.color = color;
         this.r = 5; this.life = 1.0;
+        this.speed = speed; this.decay = decay;
     }
     update(dt) {
-        this.r += 200 * dt * gameSpeed;
-        this.life -= 3 * dt * gameSpeed;
+        this.r += this.speed * dt * gameSpeed;
+        this.life -= this.decay * dt * gameSpeed;
     }
     draw() {
         if(this.life<=0) return;
@@ -1422,13 +1677,14 @@ class Halo {
 }
 
 class Shockwave {
-    constructor(x, y, color) {
+    constructor(x, y, color, speed=150, decay=2, maxLineWidth=6) {
         this.x = x; this.y = y; this.color = color;
         this.r = 1; this.life = 1.0;
+        this.speed = speed; this.decay = decay; this.maxLineWidth = maxLineWidth;
     }
     update(dt) {
-        this.r += 150 * dt * gameSpeed;
-        this.life -= 2 * dt * gameSpeed;
+        this.r += this.speed * dt * gameSpeed;
+        this.life -= this.decay * dt * gameSpeed;
     }
     draw() {
         if(this.life<=0) return;
@@ -1436,17 +1692,17 @@ class Shockwave {
         ctx.globalCompositeOperation = 'lighter';
         
         // Multi-ring neon distortion without expensive shadowBlur
-        ctx.lineWidth = 6;
+        ctx.lineWidth = this.maxLineWidth;
         ctx.strokeStyle = this.color;
         ctx.globalAlpha = this.life * 0.35;
         ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.stroke();
 
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = Math.max(1.5, this.maxLineWidth * 0.4);
         ctx.strokeStyle = '#fff'; // White core
         ctx.globalAlpha = this.life * 0.9;
         ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.stroke();
         
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = Math.max(1, this.maxLineWidth * 0.25);
         ctx.strokeStyle = this.color; // Color rim
         ctx.globalAlpha = this.life * 0.6;
         ctx.beginPath(); ctx.arc(this.x, this.y, this.r * 0.8, 0, Math.PI*2); ctx.stroke();
@@ -1455,8 +1711,8 @@ class Shockwave {
     }
 }
 
-function createHalo(x, y, color) { halos.push(new Halo(x, y, color)); }
-function createShockwave(x, y, color) { shockwaves.push(new Shockwave(x, y, color)); }
+function createHalo(x, y, color, speed=200, decay=3) { halos.push(new Halo(x, y, color, speed, decay)); }
+function createShockwave(x, y, color, speed=150, decay=2, maxLineWidth=6) { shockwaves.push(new Shockwave(x, y, color, speed, decay, maxLineWidth)); }
 
 class Tower {
     constructor(x, y, typeKey) {
@@ -1843,10 +2099,10 @@ class Particle {
         this.absorbProx = 0;
         this.active = false;
     }
-    init(x, y, color, lifeScale=1, isEnergy=false) {
+    init(x, y, color, lifeScale=1, isEnergy=false, speedMult=1) {
         this.x = x; this.y = y; this.prevX = x; this.prevY = y; this.color = color;
         const a = Math.random() * 6.28;
-        const s = isEnergy ? (Math.random() * 25 + 10) : (Math.random() * 80 + 20);
+        const s = (isEnergy ? (Math.random() * 25 + 10) : (Math.random() * 80 + 20)) * speedMult;
         this.vx = Math.cos(a) * s;
         this.vy = Math.sin(a) * s;
         this.maxLife = this.life = (isEnergy ? 1.5 : 0.6) * lifeScale;
@@ -1902,23 +2158,40 @@ class Particle {
     }
 }
 
-const PARTICLE_POOL_MAX = 350;
+const PARTICLE_POOL_MAX = 450;
 const particlePool = [];
 for (let i = 0; i < PARTICLE_POOL_MAX; i++) particlePool.push(new Particle());
 
-function spawnParticle(x, y, color, lifeScale=1, isEnergy=false) {
+function spawnParticle(x, y, color, lifeScale=1, isEnergy=false, speedMult=1) {
     let p = particlePool.pop();
     if (!p) {
         p = particles.shift();
     }
-    p.init(x, y, color, lifeScale, isEnergy);
+    p.init(x, y, color, lifeScale, isEnergy, speedMult);
     particles.push(p);
     return p;
 }
 
-function createExplosion(x, y, c, n) {
-    const count = Math.min(n, 35);
-    for(let i = 0; i < count; i++) spawnParticle(x, y, c, 1, false);
+function createExplosion(x, y, c, n, speedMult=1) {
+    const count = Math.min(n, 60);
+    for(let i = 0; i < count; i++) spawnParticle(x, y, c, 1, false, speedMult);
+}
+function createCatastrophicExplosion(x, y) {
+    // Tier 1: Fast incandescent white/yellow sparks
+    createExplosion(x, y, '#ffffff', 40, 2.2);
+    createExplosion(x, y, '#ffea00', 35, 1.8);
+    // Tier 2: Heavy crimson core fire & debris
+    createExplosion(x, y, '#ff1744', 50, 1.2);
+    createExplosion(x, y, '#ff5252', 40, 0.8);
+    // Tier 3: Slow burning embers
+    createExplosion(x, y, '#ff9100', 30, 0.5);
+
+    // Multi-tier Overloaded Shockwaves & Halos
+    createHalo(x, y, '#ff1744', 320, 1.8);
+    createHalo(x, y, '#ffea00', 220, 2.4);
+    createShockwave(x, y, '#fff', 380, 1.4, 10);
+    createShockwave(x, y, '#ff1744', 280, 1.6, 8);
+    createShockwave(x, y, '#ff9100', 180, 2.0, 5);
 }
 function spawnEnergyParticles(x, y) {
     for(let i = 0; i < 3; i++) spawnParticle(x, y, '#d0f', 1, true);
@@ -1979,11 +2252,23 @@ function drawPath() {
 function drawEndPoint() {
     const end = pathPoints[pathPoints.length-1];
     if(!end) return;
-    const col = lives > 10 ? '#0f0' : '#f00';
+    const isBreached = coreFlash > 0.05;
+    const col = isBreached ? '#ff0033' : (lives > 10 ? '#0f0' : '#f00');
     ctx.save(); ctx.translate(end.x, end.y);
-    ctx.globalAlpha = 0.25; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, 21, 0, Math.PI*2); ctx.fill();
+
+    if (isBreached) {
+        // High-energy alert ring during breach
+        ctx.globalAlpha = coreFlash * 0.45;
+        ctx.fillStyle = '#ff0033';
+        ctx.beginPath(); ctx.arc(0, 0, 36 + coreFlash * 14, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, 26 + coreFlash * 8, 0, Math.PI*2); ctx.stroke();
+    }
+
+    ctx.globalAlpha = isBreached ? 0.6 : 0.25; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, 21, 0, Math.PI*2); ctx.fill();
     ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#000'; ctx.font = "bold 12px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(lives, 0, 1); ctx.restore();
+    ctx.fillStyle = isBreached ? '#fff' : '#000'; ctx.font = "bold 12px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(lives, 0, 1); ctx.restore();
 }
 function drawEntities() {
     ctx.globalCompositeOperation = 'lighter';
@@ -2299,6 +2584,8 @@ document.getElementById('pauseBtn').onclick = () => {
 document.getElementById('btnResume').onclick = () => setPaused(false);
 
 document.getElementById('btnRestartLevel').onclick = () => {
+    if (nextLevelTimer) { clearTimeout(nextLevelTimer); nextLevelTimer = null; }
+    isLevelTransitioning = false;
     const diffData = DIFFICULTY[currentDiff];
     setPaused(false);
     gameActive = true;
@@ -2346,6 +2633,8 @@ document.getElementById('btnResetHiScore').onclick = (e) => {
 };
 
 document.getElementById('btnExitGame').onclick = () => {
+    if (nextLevelTimer) { clearTimeout(nextLevelTimer); nextLevelTimer = null; }
+    isLevelTransitioning = false;
     setPaused(false);
     gameActive = false;
     while (particles.length > 0) {
@@ -2479,6 +2768,8 @@ function captureFullScreenSnapshot() {
     return { dataUrl, blob, filename };
 }
 function gameOver() {
+    if (nextLevelTimer) { clearTimeout(nextLevelTimer); nextLevelTimer = null; }
+    isLevelTransitioning = false;
     const snap = captureFullScreenSnapshot();
     setPaused(false);
     gameActive = false;
