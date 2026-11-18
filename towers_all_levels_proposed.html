@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全 7 款防禦塔造型提案（Lv 1 - 6 全等級預覽）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #05070d;
+    color: #e0f0ff;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  h1 {
+    color: #00ffcc;
+    font-size: 22px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+  }
+  p.subtitle {
+    color: #6688aa;
+    font-size: 13px;
+    letter-spacing: 1px;
+    max-width: 860px;
+    line-height: 1.6;
+  }
+  .toolbar {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn {
+    background: #0e1526;
+    color: #00e5ff;
+    border: 1px solid #1c325c;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover {
+    background: #172647;
+    border-color: #00e5ff;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+  }
+  .btn-cyan {
+    border-color: #00f5ff;
+    color: #00f5ff;
+    background: rgba(0, 245, 255, 0.12);
+  }
+  .btn-cyan:hover {
+    box-shadow: 0 0 12px rgba(0, 245, 255, 0.5);
+  }
+  .btn-rainbow {
+    border-color: #ff0077;
+    color: #ffdd00;
+    background: linear-gradient(135deg, rgba(255,0,100,0.15), rgba(0,229,255,0.15));
+  }
+  .btn-rainbow:hover {
+    box-shadow: 0 0 12px rgba(255, 0, 150, 0.5);
+    border-color: #00ffcc;
+  }
+  .container {
+    max-width: 1380px;
+    width: 100%;
+    background: #080c16;
+    border: 1px solid #1a2844;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+    overflow-x: auto;
+  }
+  .svg-wrapper {
+    display: flex;
+    justify-content: center;
+    min-width: 1340px;
+  }
+  object, img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  .notes {
+    max-width: 1380px;
+    width: 100%;
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 14px;
+  }
+  .note-card {
+    background: #0a0f1d;
+    border: 1px solid #1a263f;
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .note-card h3 {
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-slow {
+    border: 1px solid #00f5ff;
+    background: linear-gradient(135deg, rgba(0,35,45,0.85), rgba(10,20,35,0.85));
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
+  }
+  .card-collector {
+    border: 1px solid #ff0077;
+    background: linear-gradient(135deg, rgba(30,10,25,0.85), rgba(10,20,35,0.85));
+    box-shadow: 0 0 15px rgba(255, 0, 120, 0.2);
+  }
+  .rainbow-text {
+    background: linear-gradient(90deg, #ff0055, #ffaa00, #ffff00, #00ff66, #00e5ff, #b84dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+  }
+  .badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+  }
+  .badge-cyan {
+    background: #00f5ff;
+    color: #000;
+  }
+  .badge-rainbow {
+    background: linear-gradient(90deg, #ff0055, #ffaa00, #00ff66, #00e5ff);
+    color: #000;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>COMPLETE 7-TOWER REDESIGN MATRIX (LVL 1 - 6)</h1>
+  <p class="subtitle">
+    經典 geoDefense 原型防禦塔群 + <strong>第 5 座減速電弧塔 (Slow Tower)</strong> + 彩虹自轉 Collector 共 7 種防禦塔；<br>
+    <strong>新增：第 5 座 Slow Tower 發射電弧鎖定敵人並降低航速，升級增加電弧條數 (1~7 條) 與覆蓋半徑 (110~200)！</strong>
+  </p>
+</header>
+
+<div class="toolbar">
+  <a class="btn" href="towers_all_levels_proposed.svg" target="_blank">🔍 開啟獨立 SVG 向量原始檔</a>
+  <a class="btn btn-cyan" href="#slow-section">⚡ 查看第 5 座 Slow Tower (電弧減速)</a>
+  <a class="btn btn-rainbow" href="#collector-section">🌈 查看 Collector 彩虹自轉特徵</a>
+  <button class="btn" onclick="window.print()">🖨️ 列印 / 另存 PDF</button>
+</div>
+
+<div class="container">
+  <div class="svg-wrapper">
+    <object data="towers_all_levels_proposed.svg" type="image/svg+xml" width="1340" height="1440">
+      <img src="towers_all_levels_proposed.svg" alt="Tower Shapes Proposed Matrix" width="1340" height="1440">
+    </object>
+  </div>
+</div>
+
+<div class="notes">
+  <!-- Card 5: Slow Tower -->
+  <div class="note-card card-slow" id="slow-section">
+    <h3 style="color:#00f5ff">
+      <span>⚡</span> [第5座] SLOW TOWER 減速電弧塔 (Electric Arc Tether)
+      <span class="badge badge-cyan">NEW 5TH TOWER</span>
+    </h3>
+    <p>
+      • <strong>核心機制</strong>：鎖定射程內的敵方單位，拉出高頻劈啪跳動的電弧光鏈，使敵人受到強烈減速（移動速度降至 45%）。<br>
+      • <strong>電弧條數與射程進化</strong>：<br>
+      &nbsp;&nbsp;Lv 1: 1 條電弧 · 射程 110 (單發特斯拉感應圈)<br>
+      &nbsp;&nbsp;Lv 2: 2 條電弧 · 射程 125 (雙重環形電極)<br>
+      &nbsp;&nbsp;Lv 3: 3 條電弧 · 射程 140 (三相降壓放電台)<br>
+      &nbsp;&nbsp;Lv 4: 4 條電弧 · 射程 155 (六邊形高壓共振室)<br>
+      &nbsp;&nbsp;Lv 5: 5 條電弧 · 射程 175 (馬克思多階衝擊電弧網)<br>
+      &nbsp;&nbsp;Lv 6: 7 條電弧 · 射程 200 (時空電弧泰坦 Chrono-Arc Titan)
+    </p>
+  </div>
+
+  <!-- Card 1: Blaster -->
+  <div class="note-card">
+    <h3 style="color:#00ff88"><span>🟢</span> [第1座] BLASTER 脈衝機砲 (單管 $\to$ 四管加特林)</h3>
+    <p>
+      • <strong>Lv 1</strong>：geoDefense 經典圓形砲塔身 + 圓心加農 + 前端單管。<br>
+      • <strong>進階</strong>：Lv 2 加裝喇叭口制退器；Lv 3 雙聯並行；Lv 4 雙聯防盾板；Lv 5 三管加特林；Lv 6 四管泰坦速射陣列。
+    </p>
+  </div>
+
+  <!-- Card 2: Laser -->
+  <div class="note-card">
+    <h3 style="color:#00d9ff"><span>🔵</span> [第2座] LASER 聚焦雷射 (三稜鏡針 $\to$ 快子光束矩陣)</h3>
+    <p>
+      • <strong>Lv 1</strong>：geoDefense 正三角晶體座 + 核心透鏡 + 前向聚焦針與卡鉗。<br>
+      • <strong>進階</strong>：Lv 2 雙層卡鉗；Lv 3 雙針諧振透鏡；Lv 4 三聯多稜鏡；Lv 5 四段加速電磁透鏡；Lv 6 太赫茲快子矩陣。
+    </p>
+  </div>
+
+  <!-- Card 3: Missile -->
+  <div class="note-card">
+    <h3 style="color:#ff3366"><span>🔴</span> [第3座] MISSILE 巡航導彈 (菱形發射箱 $\to$ 八聯裝巡航要塞)</h3>
+    <p>
+      • <strong>Lv 1</strong>：geoDefense 傾斜菱形發射艙 + 雙聯發射槽與安定尾翼。<br>
+      • <strong>進階</strong>：Lv 2 外露彈尖；Lv 3 四聯裝矩陣；Lv 4 四聯裝 + 相位導引雷達；Lv 5 六聯蜂巢；Lv 6 八聯超飽和平台。
+    </p>
+  </div>
+
+  <!-- Card 4: Sniper -->
+  <div class="note-card">
+    <h3 style="color:#c040ff"><span>🟣</span> [第4座] SNIPER 軌道狙擊 (平行雙軌 $\to$ 高斯天罰巨矛)</h3>
+    <p>
+      • <strong>Lv 1</strong>：幾何平行超導雙軌 + 十字瞄準光心 + 閉鎖機匣。<br>
+      • <strong>進階</strong>：Lv 2 加長導軌與光學鏡；Lv 3 三節感應線圈；Lv 4 抗後座雙腳架；Lv 5 四軌超導陣列；Lv 6 高斯天罰泰坦巨砲。
+    </p>
+  </div>
+
+  <!-- Card 6: Shock -->
+  <div class="note-card">
+    <h3 style="color:#ffdd00"><span>🟡</span> [第6座] SHOCK 震波脈衝 (四向電極 $\to$ 十二芒星 EMP 核)</h3>
+    <p>
+      • <strong>Lv 1</strong>：geoDefense 雙同心圓環 + 四正交方向放電電極。<br>
+      • <strong>進階</strong>：Lv 2 方形諧振板；Lv 3 六邊形電極網；Lv 4 八角星芒環；Lv 5 特斯拉電弧籠；Lv 6 十二芒星 EMP 超新星反應爐。
+    </p>
+  </div>
+
+  <!-- Card 7: Collector -->
+  <div class="note-card card-collector" id="collector-section">
+    <h3 class="rainbow-text">
+      <span>🌈</span> [第7座] COLLECTOR 資源漩渦塔 (彩虹飾紋 + 緩慢旋轉)
+      <span class="badge badge-rainbow">RAINBOW SPIN</span>
+    </h3>
+    <p>
+      • <strong>動態效果</strong>：漩渦核心與幾何引力臂具備柔和順時針緩慢旋轉動畫（16s～7s 依等級漸進加速），外圍浮游衛星則採反向差速巡弋。<br>
+      • <strong>色彩光譜</strong>：每條引力臂與外環分別賦予紅橙黃綠青紫光譜霓虹漸變，呈現璀璨宇宙奇點視覺！<br>
+      • <strong>等級進化</strong>：Lv 1 (三色臂) $\to$ Lv 2 (雙層視界環) $\to$ Lv 3 (四色臂 + 雙衛星) $\to$ Lv 4 (四向稜鏡約束塔) $\to$ Lv 5 (六色全光譜阱 + 3 衛星) $\to$ Lv 6 (戴森彩虹大漩渦)。
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
