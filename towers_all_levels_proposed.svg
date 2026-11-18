@@ -1,0 +1,1249 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1340 1440" width="1340" height="1440" style="background:#05070d; font-family:'Courier New', Courier, monospace;">
+  <defs>
+    <!-- Glow Filters for each tower color -->
+    <filter id="p-glow-green" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="p-glow-blue" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="p-glow-red" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="p-glow-purple" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="p-glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="p-glow-yellow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="p-glow-orange" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Rainbow Gradients & Filter for Collector -->
+    <linearGradient id="p-rainbow-linear" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff0055"/>
+      <stop offset="18%" stop-color="#ff7700"/>
+      <stop offset="36%" stop-color="#ffea00"/>
+      <stop offset="54%" stop-color="#00ff66"/>
+      <stop offset="72%" stop-color="#00e5ff"/>
+      <stop offset="90%" stop-color="#9933ff"/>
+      <stop offset="100%" stop-color="#ff0088"/>
+    </linearGradient>
+    <radialGradient id="p-rainbow-radial" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#ffdd00"/>
+      <stop offset="60%" stop-color="#00ffcc"/>
+      <stop offset="85%" stop-color="#9933ff"/>
+      <stop offset="100%" stop-color="#ff0055"/>
+    </radialGradient>
+    <filter id="p-glow-rainbow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Animation Styles for Collector Slow Spin -->
+    <style>
+      @keyframes spin-cw-16 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes spin-cw-14 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes spin-cw-12 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes spin-cw-10 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes spin-cw-8 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes spin-cw-6 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes spin-ccw-16 { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+      .collector-spin-1 { animation: spin-cw-16 16s linear infinite; transform-origin: 87px 80px; }
+      .collector-spin-2 { animation: spin-cw-14 14s linear infinite; transform-origin: 87px 80px; }
+      .collector-spin-3 { animation: spin-cw-12 12s linear infinite; transform-origin: 87px 80px; }
+      .collector-spin-4 { animation: spin-cw-10 10s linear infinite; transform-origin: 87px 80px; }
+      .collector-spin-5 { animation: spin-cw-8 8.5s linear infinite; transform-origin: 87px 80px; }
+      .collector-spin-6 { animation: spin-cw-6 7s linear infinite; transform-origin: 87px 80px; }
+      .collector-sat-spin { animation: spin-ccw-16 16s linear infinite; transform-origin: 87px 80px; }
+    </style>
+    
+    <!-- Background Grid Pattern -->
+    <pattern id="p-grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.022)" stroke-width="1"/>
+      <circle cx="30" cy="0" r="1" fill="rgba(0,255,200,0.08)"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#05070d"/>
+  <rect width="100%" height="100%" fill="url(#p-grid)"/>
+
+  <!-- Top Title Header -->
+  <text x="670" y="32" text-anchor="middle" fill="#00ffcc" font-size="18" font-weight="bold" letter-spacing="3">COMPLETE 7-TOWER REDESIGN MATRIX (LVL 1 - 6)</text>
+  <text x="670" y="50" text-anchor="middle" fill="#5588aa" font-size="11" letter-spacing="1">GEODEFENSE CLASSICS + 5TH SLOW TOWER (ELECTRIC ARC) + RAINBOW COLLECTOR SPIN</text>
+
+  <!-- Column Headers (Levels 1 to 6) -->
+  <g font-size="13" font-weight="bold" text-anchor="middle" letter-spacing="2">
+    <rect x="180" y="65" width="175" height="26" rx="4" fill="#0d1424" stroke="#00ffcc" stroke-width="1.2"/>
+    <text x="267" y="82" fill="#00ffcc">LVL 1 [GEODEFENSE]</text>
+    
+    <rect x="370" y="65" width="175" height="26" rx="4" fill="#0d1424" stroke="#1d2e52" stroke-width="1"/>
+    <text x="457" y="82" fill="#88b5ff">LEVEL 2</text>
+    
+    <rect x="560" y="65" width="175" height="26" rx="4" fill="#0d1424" stroke="#1d2e52" stroke-width="1"/>
+    <text x="647" y="82" fill="#88b5ff">LEVEL 3</text>
+    
+    <rect x="750" y="65" width="175" height="26" rx="4" fill="#0d1424" stroke="#1d2e52" stroke-width="1"/>
+    <text x="837" y="82" fill="#88b5ff">LEVEL 4</text>
+    
+    <rect x="940" y="65" width="175" height="26" rx="4" fill="#0d1424" stroke="#1d2e52" stroke-width="1"/>
+    <text x="1027" y="82" fill="#88b5ff">LEVEL 5</text>
+    
+    <rect x="1130" y="65" width="175" height="26" rx="4" fill="#18233c" stroke="#ffdd00" stroke-width="1.2"/>
+    <text x="1217" y="82" fill="#ffdd00">LVL 6 [OVERLORD]</text>
+  </g>
+
+  <!-- ==================== ROW 1: BLASTER (GREEN / BOLT) ==================== -->
+  <g id="row-blaster">
+    <rect x="20" y="100" width="145" height="170" rx="6" fill="#09140e" stroke="#00ff66" stroke-width="1" stroke-opacity="0.5"/>
+    <circle cx="36" cy="120" r="5" fill="#00ff66"/>
+    <text x="48" y="124" fill="#00ff66" font-size="13" font-weight="bold" letter-spacing="1">BLASTER</text>
+    <text x="48" y="139" fill="#00bb55" font-size="10">TYPE: bolt</text>
+    <text x="48" y="153" fill="#669977" font-size="9">COLOR: #0f0</text>
+    <text x="28" y="200" fill="#77cc99" font-size="9">L1: Single barrel</text>
+    <text x="28" y="214" fill="#77cc99" font-size="9">L2: Flared muzzle</text>
+    <text x="28" y="228" fill="#77cc99" font-size="9">L3: Twin-gun</text>
+    <text x="28" y="242" fill="#77cc99" font-size="9">L4: Heavy twin+fins</text>
+    <text x="28" y="256" fill="#77cc99" font-size="9">L5: Triple vulcan</text>
+    <text x="28" y="270" fill="#77cc99" font-size="9">L6: Quad vulcan</text>
+
+    <!-- Cell L1: GeoDefense Classic Single-Barrel Turret -->
+    <g transform="translate(180, 100)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00ff66" fill-opacity="0.16" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.45"/>
+      <g filter="url(#p-glow-green)" stroke="#00ff66" fill="none" stroke-width="2">
+        <circle cx="87" cy="80" r="15"/>
+        <circle cx="87" cy="80" r="8"/>
+        <circle cx="87" cy="80" r="3" fill="#00ff66"/>
+        <path d="M 99,75 L 115,75 L 115,85 L 99,85"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Single Barrel (geoD)</text>
+    </g>
+
+    <!-- Cell L2: Flared Muzzle + Rear Recoil Shroud -->
+    <g transform="translate(370, 100)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00ff66" fill-opacity="0.20" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-green)" stroke="#00ff66" fill="none" stroke-width="2">
+        <circle cx="87" cy="80" r="15"/>
+        <circle cx="87" cy="80" r="8"/>
+        <circle cx="87" cy="80" r="3" fill="#00ff66"/>
+        <path d="M 99,75 L 117,75 L 119,73 L 119,87 L 117,85 L 99,85"/>
+        <!-- Rear recoil dampeners -->
+        <line x1="79" y1="70" x2="73" y2="70"/>
+        <line x1="79" y1="90" x2="73" y2="90"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Muzzle Brake + Recoil</text>
+    </g>
+
+    <!-- Cell L3: Twin Parallel Barrels -->
+    <g transform="translate(560, 100)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00ff66" fill-opacity="0.24" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-green)" stroke="#00ff66" fill="none" stroke-width="2">
+        <circle cx="87" cy="80" r="15"/>
+        <circle cx="87" cy="80" r="8"/>
+        <circle cx="87" cy="80" r="3" fill="#00ff66"/>
+        <!-- Twin Barrels -->
+        <path d="M 97,73 L 118,73 L 118,77 L 97,77"/>
+        <path d="M 97,83 L 118,83 L 118,87 L 97,87"/>
+        <!-- Side mini fins -->
+        <line x1="93" y1="68" x2="105" y2="65"/>
+        <line x1="93" y1="92" x2="105" y2="95"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Twin Gun + Side Fins</text>
+    </g>
+
+    <!-- Cell L4: Heavy Twin Cannon + Double Armored Wings -->
+    <g transform="translate(750, 100)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00ff66" fill-opacity="0.28" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00ff66" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-green)" stroke="#00ff66" fill="none" stroke-width="2">
+        <circle cx="87" cy="80" r="15"/>
+        <circle cx="87" cy="80" r="8"/>
+        <circle cx="87" cy="80" r="3" fill="#00ff66"/>
+        <!-- Heavy Twin Barrels -->
+        <path d="M 97,72 L 121,72 L 121,77 L 97,77"/>
+        <path d="M 97,83 L 121,83 L 121,88 L 97,88"/>
+        <!-- Armored mantlet plate -->
+        <line x1="97" y1="67" x2="97" y2="93" stroke-width="2.5"/>
+        <!-- Double angular side wings -->
+        <path d="M 87,65 L 102,62 L 108,66"/>
+        <path d="M 87,95 L 102,98 L 108,94"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Heavy Twin + Mantlet</text>
+    </g>
+
+    <!-- Cell L5: Triple Rotary Vulcan Cluster -->
+    <g transform="translate(940, 100)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00ff66" fill-opacity="0.32" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00ff66" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-green)" stroke="#00ff66" fill="none" stroke-width="2">
+        <circle cx="87" cy="80" r="16"/>
+        <circle cx="87" cy="80" r="9"/>
+        <circle cx="87" cy="80" r="3" fill="#00ff66"/>
+        <!-- Triple Barrels (Top, Center, Bottom) -->
+        <path d="M 97,71 L 118,71 L 118,74.5 L 97,74.5"/>
+        <path d="M 99,78 L 124,78 L 124,82 L 99,82"/>
+        <path d="M 97,85.5 L 118,85.5 L 118,89 L 97,89"/>
+        <!-- Rotary barrel clamp ring -->
+        <line x1="112" y1="69" x2="112" y2="91" stroke-width="2"/>
+        <!-- Aerodynamic swept stabilizer wings -->
+        <path d="M 82,64 L 98,60 L 110,63"/>
+        <path d="M 82,96 L 98,100 L 110,97"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Triple Vulcan + Clamp</text>
+    </g>
+
+    <!-- Cell L6: Quad Vulcan Overlord Array -->
+    <g transform="translate(1130, 100)">
+      <rect width="175" height="170" rx="6" fill="#0e1713" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.7"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00ff66" fill-opacity="0.38" stroke="#00ff66" stroke-width="1.5" stroke-opacity="0.7"/>
+      <circle cx="87" cy="80" r="22" stroke="#00ff66" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00ff66" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <circle cx="87" cy="80" r="32.8" stroke="#00ff66" stroke-width="2.2" stroke-opacity="0.9" fill="none"/>
+      <g filter="url(#p-glow-green)" stroke="#00ff66" fill="none" stroke-width="2.2">
+        <circle cx="87" cy="80" r="16"/>
+        <circle cx="87" cy="80" r="9"/>
+        <circle cx="87" cy="80" r="4" fill="#00ff66"/>
+        <!-- Quad Barrels (2 upper, 2 lower) -->
+        <path d="M 97,69 L 122,69 L 122,72.5 L 97,72.5"/>
+        <path d="M 99,74.5 L 126,74.5 L 126,78 L 99,78"/>
+        <path d="M 99,82 L 126,82 L 126,85.5 L 99,85.5"/>
+        <path d="M 97,87.5 L 122,87.5 L 122,91 L 97,91"/>
+        <!-- Dual barrel muzzle clamps -->
+        <line x1="110" y1="67" x2="110" y2="93" stroke-width="2"/>
+        <line x1="120" y1="67" x2="120" y2="93" stroke-width="2"/>
+        <!-- Rear heavy exhaust manifold -->
+        <path d="M 72,70 L 65,68 L 65,74 L 72,74"/>
+        <path d="M 72,86 L 65,86 L 65,92 L 72,90"/>
+        <!-- Armored flank carapaces -->
+        <path d="M 79,64 L 98,58 L 112,62 L 105,68"/>
+        <path d="M 79,96 L 98,102 L 112,98 L 105,92"/>
+      </g>
+      <text x="87" y="157" fill="#00ffcc" font-size="10" font-weight="bold" text-anchor="middle">QUAD VULCAN OVERLORD</text>
+    </g>
+  </g>
+
+  <!-- ==================== ROW 2: LASER (BLUE / LASER) ==================== -->
+  <g id="row-laser">
+    <rect x="20" y="285" width="145" height="170" rx="6" fill="#09121a" stroke="#00aaff" stroke-width="1" stroke-opacity="0.5"/>
+    <circle cx="36" cy="305" r="5" fill="#00aaff"/>
+    <text x="48" y="309" fill="#00aaff" font-size="13" font-weight="bold" letter-spacing="1">LASER</text>
+    <text x="48" y="324" fill="#0088cc" font-size="10">TYPE: laser</text>
+    <text x="48" y="338" fill="#6688aa" font-size="9">COLOR: #0af</text>
+    <text x="28" y="385" fill="#66aacc" font-size="9">L1: Prism emitter</text>
+    <text x="28" y="399" fill="#66aacc" font-size="9">L2: Dual calipers</text>
+    <text x="28" y="413" fill="#66aacc" font-size="9">L3: Twin guides</text>
+    <text x="28" y="427" fill="#66aacc" font-size="9">L4: Triple collimator</text>
+    <text x="28" y="441" fill="#66aacc" font-size="9">L5: Accelerator body</text>
+    <text x="28" y="455" fill="#66aacc" font-size="9">L6: Tachyon matrix</text>
+
+    <!-- Cell L1: GeoDefense Classic Prism + Needle + Caliper -->
+    <g transform="translate(180, 285)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00aaff" fill-opacity="0.16" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <g filter="url(#p-glow-blue)" stroke="#00aaff" fill="none" stroke-width="1.8">
+        <!-- Prism Emitter Body -->
+        <path d="M 107,80 L 73,96 L 79,80 L 73,64 Z"/>
+        <!-- Core optical lens -->
+        <circle cx="87" cy="80" r="6"/>
+        <!-- Collimator needle -->
+        <line x1="99" y1="80" x2="114" y2="80"/>
+        <!-- Focus caliper brackets -->
+        <path d="M 107,73 L 113,80 L 107,87"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Prism Needle (geoD)</text>
+    </g>
+
+    <!-- Cell L2: Dual-Stage Calipers + Rear Heat Fins -->
+    <g transform="translate(370, 285)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00aaff" fill-opacity="0.20" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-blue)" stroke="#00aaff" fill="none" stroke-width="1.8">
+        <path d="M 107,80 L 73,96 L 79,80 L 73,64 Z"/>
+        <circle cx="87" cy="80" r="6"/>
+        <line x1="99" y1="80" x2="118" y2="80"/>
+        <!-- Dual calipers: primary & secondary -->
+        <path d="M 105,72 L 111,80 L 105,88"/>
+        <path d="M 112,74 L 117,80 L 112,86"/>
+        <!-- Rear heatsink radiator lines -->
+        <line x1="73" y1="67" x2="68" y2="65"/>
+        <line x1="73" y1="93" x2="68" y2="95"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Dual Calipers + Heatsink</text>
+    </g>
+
+    <!-- Cell L3: Twin Laser Guidance Needles -->
+    <g transform="translate(560, 285)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00aaff" fill-opacity="0.24" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-blue)" stroke="#00aaff" fill="none" stroke-width="1.8">
+        <path d="M 108,80 L 72,97 L 78,80 L 72,63 Z"/>
+        <circle cx="87" cy="80" r="6"/>
+        <!-- Twin guidance needles -->
+        <line x1="99" y1="76" x2="120" y2="76"/>
+        <line x1="99" y1="84" x2="120" y2="84"/>
+        <path d="M 106,71 L 114,76 L 106,81"/>
+        <path d="M 106,79 L 114,84 L 106,89"/>
+        <!-- Side crystal capacitor wings -->
+        <path d="M 87,68 L 96,62 L 104,64"/>
+        <path d="M 87,92 L 96,98 L 104,96"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Twin Guides + Cap Wings</text>
+    </g>
+
+    <!-- Cell L4: Triple Collimator + Hex Resonance Core -->
+    <g transform="translate(750, 285)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00aaff" fill-opacity="0.28" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00aaff" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-blue)" stroke="#00aaff" fill="none" stroke-width="1.8">
+        <!-- Double-layered prism body -->
+        <path d="M 109,80 L 71,98 L 78,80 L 71,62 Z"/>
+        <path d="M 99,80 L 77,91 L 82,80 L 77,69 Z"/>
+        <polygon points="87,74 92,77 92,83 87,86 82,83 82,77" fill="none" stroke-width="1.4"/>
+        <!-- Triple needle array -->
+        <line x1="99" y1="80" x2="123" y2="80" stroke-width="2.2"/>
+        <line x1="102" y1="74" x2="117" y2="74"/>
+        <line x1="102" y1="86" x2="117" y2="86"/>
+        <path d="M 111,72 L 118,80 L 111,88"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Triple Collimator + Hex Core</text>
+    </g>
+
+    <!-- Cell L5: Heavy Multi-Stage Beam Accelerator -->
+    <g transform="translate(940, 285)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00aaff" fill-opacity="0.32" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00aaff" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-blue)" stroke="#00aaff" fill="none" stroke-width="2">
+        <path d="M 111,80 L 70,99 L 77,80 L 70,61 Z"/>
+        <!-- Triple series optical lenses -->
+        <circle cx="82" cy="80" r="4"/>
+        <circle cx="90" cy="80" r="5"/>
+        <circle cx="98" cy="80" r="4"/>
+        <!-- Central heavy needle -->
+        <line x1="102" y1="80" x2="126" y2="80" stroke-width="2.5"/>
+        <!-- High-energy forward caliper prongs -->
+        <path d="M 103,69 L 115,67 L 122,76"/>
+        <path d="M 103,91 L 115,93 L 122,84"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Heavy Accelerator + Lenses</text>
+    </g>
+
+    <!-- Cell L6: Tachyon Matrix Emitter -->
+    <g transform="translate(1130, 285)">
+      <rect width="175" height="170" rx="6" fill="#0e151e" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.7"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00aaff" fill-opacity="0.38" stroke="#00aaff" stroke-width="1.5" stroke-opacity="0.7"/>
+      <circle cx="87" cy="80" r="22" stroke="#00aaff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00aaff" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <circle cx="87" cy="80" r="32.8" stroke="#00aaff" stroke-width="2.2" stroke-opacity="0.9" fill="none"/>
+      <g filter="url(#p-glow-blue)" stroke="#00aaff" fill="none" stroke-width="2.2">
+        <path d="M 112,80 L 69,101 L 76,80 L 69,59 Z"/>
+        <polygon points="87,70 96,80 87,90 78,80"/>
+        <!-- Central Tachyon Needle -->
+        <line x1="100" y1="80" x2="129" y2="80" stroke-width="3"/>
+        <circle cx="129" cy="80" r="2" fill="#fff"/>
+        <!-- Quad surrounding collimator calipers -->
+        <path d="M 103,66 L 118,63 L 124,74"/>
+        <path d="M 103,94 L 118,97 L 124,86"/>
+        <line x1="102" y1="74" x2="121" y2="74"/>
+        <line x1="102" y1="86" x2="121" y2="86"/>
+      </g>
+      <text x="87" y="157" fill="#00ffcc" font-size="10" font-weight="bold" text-anchor="middle">TACHYON BEAM MATRIX</text>
+    </g>
+  </g>
+
+  <!-- ==================== ROW 3: MISSILE (RED / MISSILE) ==================== -->
+  <g id="row-missile">
+    <rect x="20" y="470" width="145" height="170" rx="6" fill="#180a0d" stroke="#ff3344" stroke-width="1" stroke-opacity="0.5"/>
+    <circle cx="36" cy="490" r="5" fill="#ff3344"/>
+    <text x="48" y="494" fill="#ff3344" font-size="13" font-weight="bold" letter-spacing="1">MISSILE</text>
+    <text x="48" y="509" fill="#cc2233" font-size="10">TYPE: missile</text>
+    <text x="48" y="523" fill="#aa6677" font-size="9">COLOR: #f00</text>
+    <text x="28" y="570" fill="#cc6677" font-size="9">L1: 2 Launch tubes</text>
+    <text x="28" y="584" fill="#cc6677" font-size="9">L2: Reinforced pod</text>
+    <text x="28" y="598" fill="#cc6677" font-size="9">L3: Quad 4-pod</text>
+    <text x="28" y="612" fill="#cc6677" font-size="9">L4: Quad + radar</text>
+    <text x="28" y="626" fill="#cc6677" font-size="9">L5: 6-Pack battery</text>
+    <text x="28" y="640" fill="#cc6677" font-size="9">L6: 8-Silo swarm</text>
+
+    <!-- Cell L1: GeoDefense Classic Diamond Launcher + 2 Tubes -->
+    <g transform="translate(180, 470)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff3344" fill-opacity="0.16" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.45"/>
+      <g filter="url(#p-glow-red)" stroke="#ff3344" fill="none" stroke-width="1.8">
+        <!-- Diamond pod body -->
+        <path d="M 107,80 L 87,100 L 67,80 L 87,60 Z"/>
+        <!-- Inner core diamond -->
+        <path d="M 97,80 L 87,90 L 77,80 L 87,70 Z"/>
+        <!-- 2 Forward launch tubes -->
+        <line x1="93" y1="72" x2="113" y2="72"/>
+        <line x1="93" y1="88" x2="113" y2="88"/>
+        <!-- Swept exhaust fins -->
+        <line x1="75" y1="68" x2="65" y2="64"/>
+        <line x1="75" y1="92" x2="65" y2="96"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Twin Launcher (geoD)</text>
+    </g>
+
+    <!-- Cell L2: 2 Heavy Tubes + Rocket Cones + Side Skirts -->
+    <g transform="translate(370, 470)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff3344" fill-opacity="0.20" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-red)" stroke="#ff3344" fill="none" stroke-width="1.8">
+        <path d="M 107,80 L 87,100 L 67,80 L 87,60 Z"/>
+        <path d="M 97,80 L 87,90 L 77,80 L 87,70 Z"/>
+        <!-- 2 Launch tubes with rocket tips -->
+        <path d="M 93,70 L 115,70 L 118,72 L 115,74 L 93,74 Z"/>
+        <path d="M 93,86 L 115,86 L 118,88 L 115,90 L 93,90 Z"/>
+        <!-- Side armor skirts -->
+        <line x1="87" y1="58" x2="95" y2="58"/>
+        <line x1="87" y1="102" x2="95" y2="102"/>
+        <line x1="75" y1="68" x2="63" y2="63"/>
+        <line x1="75" y1="92" x2="63" y2="97"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Rocket Cones + Skirts</text>
+    </g>
+
+    <!-- Cell L3: Quad 4-Cell Missile Pod -->
+    <g transform="translate(560, 470)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff3344" fill-opacity="0.24" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-red)" stroke="#ff3344" fill="none" stroke-width="1.8">
+        <path d="M 108,80 L 87,101 L 66,80 L 87,59 Z"/>
+        <circle cx="87" cy="80" r="5"/>
+        <!-- 4 Rocket Tubes (2 Upper, 2 Lower) -->
+        <line x1="93" y1="67" x2="116" y2="67"/>
+        <line x1="95" y1="73" x2="119" y2="73"/>
+        <line x1="95" y1="87" x2="119" y2="87"/>
+        <line x1="93" y1="93" x2="116" y2="93"/>
+        <!-- 4 Exhaust fins -->
+        <line x1="74" y1="67" x2="62" y2="61"/>
+        <line x1="74" y1="93" x2="62" y2="99"/>
+        <line x1="70" y1="75" x2="58" y2="75"/>
+        <line x1="70" y1="85" x2="58" y2="85"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Quad Pod (4 Rockets)</text>
+    </g>
+
+    <!-- Cell L4: Quad Heavy Pod + Targeting Radar Dish -->
+    <g transform="translate(750, 470)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff3344" fill-opacity="0.28" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#ff3344" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-red)" stroke="#ff3344" fill="none" stroke-width="1.8">
+        <path d="M 109,80 L 87,102 L 65,80 L 87,58 Z"/>
+        <!-- 4 Tubes with Warheads -->
+        <path d="M 93,67 L 117,67 L 120,68.5 L 117,70 L 93,70 Z"/>
+        <path d="M 96,73 L 120,73 L 123,74.5 L 120,76 L 96,76 Z"/>
+        <path d="M 96,84 L 120,84 L 123,85.5 L 120,87 L 96,87 Z"/>
+        <path d="M 93,90 L 117,90 L 120,91.5 L 117,93 L 93,93 Z"/>
+        <!-- Top Target Radar Dish -->
+        <path d="M 81,74 A 8 8 0 0 1 81,86" stroke-width="2"/>
+        <line x1="81" y1="80" x2="86" y2="80"/>
+        <!-- Heavy fins -->
+        <path d="M 73,66 L 60,59 L 66,70"/>
+        <path d="M 73,94 L 60,101 L 66,90"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Quad Pod + Seeker Radar</text>
+    </g>
+
+    <!-- Cell L5: 6-Pack Heavy Missile Battery -->
+    <g transform="translate(940, 470)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff3344" fill-opacity="0.32" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#ff3344" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-red)" stroke="#ff3344" fill="none" stroke-width="2">
+        <!-- Widened heavy missile chassis -->
+        <polygon points="110,80 87,103 64,80 87,57"/>
+        <polygon points="98,80 87,91 76,80 87,69"/>
+        <!-- 6 Launch Tubes (3 Upper, 3 Lower) -->
+        <line x1="91" y1="65" x2="117" y2="65"/>
+        <line x1="94" y1="70" x2="121" y2="70"/>
+        <line x1="97" y1="75" x2="125" y2="75"/>
+        <line x1="97" y1="85" x2="125" y2="85"/>
+        <line x1="94" y1="90" x2="121" y2="90"/>
+        <line x1="91" y1="95" x2="117" y2="95"/>
+        <!-- Triple rear exhaust manifolds -->
+        <line x1="72" y1="65" x2="60" y2="58"/>
+        <line x1="68" y1="80" x2="56" y2="80"/>
+        <line x1="72" y1="95" x2="60" y2="102"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">6-Pack Missile Battery</text>
+    </g>
+
+    <!-- Cell L6: 8-Silo Apocalyptic Swarm Silo -->
+    <g transform="translate(1130, 470)">
+      <rect width="175" height="170" rx="6" fill="#180c10" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.7"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff3344" fill-opacity="0.38" stroke="#ff3344" stroke-width="1.5" stroke-opacity="0.7"/>
+      <circle cx="87" cy="80" r="22" stroke="#ff3344" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#ff3344" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <circle cx="87" cy="80" r="32.8" stroke="#ff3344" stroke-width="2.2" stroke-opacity="0.9" fill="none"/>
+      <g filter="url(#p-glow-red)" stroke="#ff3344" fill="none" stroke-width="2.2">
+        <polygon points="112,80 87,105 62,80 87,55"/>
+        <circle cx="87" cy="80" r="6"/>
+        <!-- 8 Launch Tubes (Dual Quad Banks) -->
+        <line x1="90" y1="63" x2="119" y2="63"/>
+        <line x1="93" y1="68" x2="123" y2="68"/>
+        <line x1="96" y1="73" x2="127" y2="73"/>
+        <line x1="99" y1="78" x2="130" y2="78"/>
+        <line x1="99" y1="82" x2="130" y2="82"/>
+        <line x1="96" y1="87" x2="127" y2="87"/>
+        <line x1="93" y1="92" x2="123" y2="92"/>
+        <line x1="90" y1="97" x2="119" y2="97"/>
+        <!-- Swept heavy blast shields & rear thrusters -->
+        <path d="M 72,64 L 58,56 L 66,72"/>
+        <path d="M 72,96 L 58,104 L 66,88"/>
+        <line x1="66" y1="78" x2="52" y2="78"/>
+        <line x1="66" y1="82" x2="52" y2="82"/>
+      </g>
+      <text x="87" y="157" fill="#00ffcc" font-size="10" font-weight="bold" text-anchor="middle">8-SILO SWARM SILO</text>
+    </g>
+  </g>
+
+  <!-- ==================== ROW 4: SNIPER (PURPLE / SNIPER) ==================== -->
+  <g id="row-sniper">
+    <rect x="20" y="655" width="145" height="170" rx="6" fill="#140a18" stroke="#e024c3" stroke-width="1" stroke-opacity="0.5"/>
+    <circle cx="36" cy="675" r="5" fill="#e024c3"/>
+    <text x="48" y="679" fill="#e024c3" font-size="13" font-weight="bold" letter-spacing="1">SNIPER</text>
+    <text x="48" y="694" fill="#bb1db0" font-size="10">TYPE: sniper</text>
+    <text x="48" y="708" fill="#996699" font-size="9">COLOR: #d0f</text>
+    <text x="28" y="755" fill="#cc66bb" font-size="9">L1: Twin railgun</text>
+    <text x="28" y="769" fill="#cc66bb" font-size="9">L2: Optical scope</text>
+    <text x="28" y="783" fill="#cc66bb" font-size="9">L3: 3 Magnetic coils</text>
+    <text x="28" y="797" fill="#cc66bb" font-size="9">L4: Bipod &amp; brake</text>
+    <text x="28" y="811" fill="#cc66bb" font-size="9">L5: Quad hyper-rails</text>
+    <text x="28" y="825" fill="#cc66bb" font-size="9">L6: Kinetic lance</text>
+
+    <!-- Cell L1: Precision Twin-Rail Railgun -->
+    <g transform="translate(180, 655)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#e024c3" fill-opacity="0.16" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.45"/>
+      <g filter="url(#p-glow-purple)" stroke="#e024c3" fill="none" stroke-width="1.8">
+        <!-- Receiver box -->
+        <rect x="73" y="73" width="14" height="14"/>
+        <!-- Twin guide rails -->
+        <line x1="87" y1="76" x2="117" y2="76"/>
+        <line x1="87" y1="84" x2="117" y2="84"/>
+        <!-- Rail braces -->
+        <line x1="103" y1="73" x2="103" y2="87"/>
+        <line x1="112" y1="73" x2="112" y2="87"/>
+        <!-- Reticle rear mark -->
+        <line x1="79" y1="68" x2="79" y2="92"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Twin Guide Rails</text>
+    </g>
+
+    <!-- Cell L2: Lengthened Rails + Optical Scope -->
+    <g transform="translate(370, 655)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#e024c3" fill-opacity="0.20" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-purple)" stroke="#e024c3" fill="none" stroke-width="1.8">
+        <rect x="73" y="73" width="14" height="14"/>
+        <line x1="87" y1="76" x2="120" y2="76"/>
+        <line x1="87" y1="84" x2="120" y2="84"/>
+        <line x1="103" y1="73" x2="103" y2="87"/>
+        <line x1="115" y1="73" x2="115" y2="87"/>
+        <line x1="79" y1="68" x2="79" y2="92"/>
+        <!-- Optical Scope mounted on top -->
+        <rect x="75" y="67" width="16" height="4" stroke-width="1.2"/>
+        <line x1="91" y1="69" x2="94" y2="69"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Longer Rails + Scope</text>
+    </g>
+
+    <!-- Cell L3: 3 Magnetic Accelerator Coils -->
+    <g transform="translate(560, 655)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#e024c3" fill-opacity="0.24" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-purple)" stroke="#e024c3" fill="none" stroke-width="1.8">
+        <rect x="73" y="73" width="14" height="14"/>
+        <line x1="87" y1="76" x2="123" y2="76"/>
+        <line x1="87" y1="84" x2="123" y2="84"/>
+        <!-- 3 Accelerator Coils -->
+        <rect x="94" y="72" width="4" height="16" fill="rgba(224,36,195,0.2)"/>
+        <rect x="104" y="72" width="4" height="16" fill="rgba(224,36,195,0.2)"/>
+        <rect x="114" y="72" width="4" height="16" fill="rgba(224,36,195,0.2)"/>
+        <!-- Reticle with diagonal cross ticks -->
+        <line x1="79" y1="67" x2="79" y2="93"/>
+        <line x1="75" y1="76" x2="71" y2="72"/>
+        <line x1="75" y1="84" x2="71" y2="88"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">3 Induction Coils</text>
+    </g>
+
+    <!-- Cell L4: Anti-Materiel Heavy Railgun + Bipod Outriggers -->
+    <g transform="translate(750, 655)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#e024c3" fill-opacity="0.28" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#e024c3" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-purple)" stroke="#e024c3" fill="none" stroke-width="2">
+        <rect x="72" y="72" width="15" height="16"/>
+        <line x1="87" y1="76" x2="125" y2="76" stroke-width="2.2"/>
+        <line x1="87" y1="84" x2="125" y2="84" stroke-width="2.2"/>
+        <!-- Muzzle Compensator Fork -->
+        <path d="M 125,73 L 130,73 L 130,77"/>
+        <path d="M 125,87 L 130,87 L 130,83"/>
+        <!-- 3 Accelerator Coils -->
+        <rect x="96" y="72" width="4" height="16"/>
+        <rect x="107" y="72" width="4" height="16"/>
+        <rect x="118" y="72" width="4" height="16"/>
+        <!-- Outrigger Bipod Braces -->
+        <line x1="85" y1="73" x2="93" y2="62"/>
+        <line x1="85" y1="87" x2="93" y2="98"/>
+        <!-- Sniper Sensor Scope -->
+        <rect x="74" y="65" width="18" height="5"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Bipod + Muzzle Fork</text>
+    </g>
+
+    <!-- Cell L5: Quad-Rail Hyper-Velocity Rifle -->
+    <g transform="translate(940, 655)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#e024c3" fill-opacity="0.32" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#e024c3" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-purple)" stroke="#e024c3" fill="none" stroke-width="2">
+        <rect x="71" y="71" width="16" height="18"/>
+        <!-- Quad Rails (2 inner, 2 outer) -->
+        <line x1="87" y1="74" x2="128" y2="74"/>
+        <line x1="87" y1="77.5" x2="128" y2="77.5" stroke-width="2.5"/>
+        <line x1="87" y1="82.5" x2="128" y2="82.5" stroke-width="2.5"/>
+        <line x1="87" y1="86" x2="128" y2="86"/>
+        <!-- 4 Magnetic Coils -->
+        <rect x="94" y="70" width="4" height="20"/>
+        <rect x="103" y="70" width="4" height="20"/>
+        <rect x="112" y="70" width="4" height="20"/>
+        <rect x="121" y="70" width="4" height="20"/>
+        <!-- Heavy recoil buffer cylinders -->
+        <rect x="63" y="73" width="8" height="4"/>
+        <rect x="63" y="83" width="8" height="4"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Quad-Rail + 4 Coils</text>
+    </g>
+
+    <!-- Cell L6: Kinetic Lance Titan -->
+    <g transform="translate(1130, 655)">
+      <rect width="175" height="170" rx="6" fill="#140a18" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.7"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#e024c3" fill-opacity="0.38" stroke="#e024c3" stroke-width="1.5" stroke-opacity="0.7"/>
+      <circle cx="87" cy="80" r="22" stroke="#e024c3" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#e024c3" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <circle cx="87" cy="80" r="32.8" stroke="#e024c3" stroke-width="2.2" stroke-opacity="0.9" fill="none"/>
+      <g filter="url(#p-glow-purple)" stroke="#e024c3" fill="none" stroke-width="2.2">
+        <rect x="70" y="70" width="17" height="20"/>
+        <!-- Hyper-Kinetic Guide Rails (len 131) -->
+        <line x1="87" y1="74" x2="131" y2="74"/>
+        <line x1="87" y1="77.5" x2="131" y2="77.5" stroke-width="2.8"/>
+        <line x1="87" y1="82.5" x2="131" y2="82.5" stroke-width="2.8"/>
+        <line x1="87" y1="86" x2="131" y2="86"/>
+        <!-- Supersonic muzzle lance prongs -->
+        <path d="M 131,72 L 137,70 L 137,76"/>
+        <path d="M 131,88 L 137,90 L 137,84"/>
+        <!-- 4 Magnetic Coils -->
+        <rect x="94" y="69" width="4" height="22"/>
+        <rect x="103" y="69" width="4" height="22"/>
+        <rect x="112" y="69" width="4" height="22"/>
+        <rect x="121" y="69" width="4" height="22"/>
+        <!-- Dual optical targeting scopes -->
+        <rect x="71" y="63" width="20" height="5"/>
+        <!-- Hydraulic recoil spade chassis -->
+        <path d="M 70,69 L 57,60 L 59,71"/>
+        <path d="M 70,91 L 57,100 L 59,89"/>
+      </g>
+      <text x="87" y="157" fill="#00ffcc" font-size="10" font-weight="bold" text-anchor="middle">GAUSS TITAN LANCE</text>
+    </g>
+  </g>
+
+  <!-- ==================== ROW 5: SLOW TOWER (ELECTRIC CYAN / SLOW - ELECTRIC ARC) ==================== -->
+  <g id="row-slow">
+    <rect x="20" y="840" width="145" height="170" rx="6" fill="#06181d" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.6"/>
+    <circle cx="36" cy="860" r="5" fill="#00f5ff"/>
+    <text x="48" y="864" fill="#00f5ff" font-size="13" font-weight="bold" letter-spacing="1">SLOW TOWER</text>
+    <text x="48" y="879" fill="#00bbdd" font-size="10">TYPE: slow (5TH)</text>
+    <text x="48" y="893" fill="#0088aa" font-size="9">COLOR: #00f5ff</text>
+    <text x="28" y="925" fill="#55ffff" font-size="9" font-weight="bold">⚡ ELECTRIC ARC TETHER</text>
+    <text x="28" y="940" fill="#77ccdd" font-size="9">L1: 1 Arc · Rng 110</text>
+    <text x="28" y="954" fill="#77ccdd" font-size="9">L2: 2 Arcs · Rng 125</text>
+    <text x="28" y="968" fill="#77ccdd" font-size="9">L3: 3 Arcs · Rng 140</text>
+    <text x="28" y="982" fill="#77ccdd" font-size="9">L4: 4 Arcs · Rng 155</text>
+    <text x="28" y="996" fill="#77ccdd" font-size="9">L5: 5 Arcs · Rng 175</text>
+    <text x="28" y="1010" fill="#77ccdd" font-size="9">L6: 7 Arcs · Rng 200</text>
+
+    <!-- Cell L1: Tesla Induction Coil (1 Arc, Range 110) -->
+    <g transform="translate(180, 840)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00f5ff" fill-opacity="0.16" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <g filter="url(#p-glow-cyan)" stroke="#00f5ff" fill="none" stroke-width="1.8">
+        <circle cx="87" cy="80" r="6" stroke="#00f5ff" stroke-width="1.8" fill="#031620"/>
+        <circle cx="87" cy="80" r="2.5" fill="#ffffff"/>
+        <ellipse cx="87" cy="80" rx="10" ry="7" stroke="#00f5ff" stroke-width="1.5"/>
+        <path d="M 87,73 L 102,73 L 107,77" stroke-width="2"/>
+        <path d="M 87,87 L 102,87 L 107,83" stroke-width="2"/>
+        <circle cx="107" cy="77" r="1.5" fill="#ffffff"/>
+        <circle cx="107" cy="83" r="1.5" fill="#ffffff"/>
+        <!-- 1 Active Crackling Electric Arc Tether -->
+        <path d="M 107,80 L 115,76 L 121,83 L 129,77 L 138,80" stroke="#ffffff" stroke-width="2.0" stroke-linecap="round"/>
+        <path d="M 107,80 L 115,76 L 121,83 L 129,77 L 138,80" stroke="#00f5ff" stroke-width="3.6" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="138" cy="80" r="3" fill="#00f5ff"/>
+        <circle cx="138" cy="80" r="1.5" fill="#ffffff"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">1 Arc · Range 110</text>
+    </g>
+
+    <!-- Cell L2: Dual Toroid Rings (2 Arcs, Range 125) -->
+    <g transform="translate(370, 840)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00f5ff" fill-opacity="0.20" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-cyan)" stroke="#00f5ff" fill="none" stroke-width="1.8">
+        <ellipse cx="87" cy="76" rx="9" ry="5" stroke-width="1.5"/>
+        <ellipse cx="87" cy="84" rx="12" ry="6" stroke-width="1.5"/>
+        <circle cx="87" cy="80" r="3" fill="#ffffff"/>
+        <path d="M 87,74 L 103,71 L 108,74"/>
+        <path d="M 87,80 L 107,80" stroke-width="2.2"/>
+        <path d="M 87,86 L 103,89 L 108,86"/>
+        <path d="M 108,74 L 116,68 L 123,75 L 134,71" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M 108,86 L 117,91 L 123,84 L 134,89" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M 108,74 L 116,68 L 123,75 L 134,71" stroke="#00f5ff" stroke-width="3.2" stroke-linecap="round" opacity="0.5"/>
+        <path d="M 108,86 L 117,91 L 123,84 L 134,89" stroke="#00f5ff" stroke-width="3.2" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="134" cy="71" r="2.5" fill="#00f5ff"/>
+        <circle cx="134" cy="89" r="2.5" fill="#00f5ff"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">2 Arcs · Range 125</text>
+    </g>
+
+    <!-- Cell L3: Tri-Induction Transformer (3 Arcs, Range 140) -->
+    <g transform="translate(560, 840)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00f5ff" fill-opacity="0.24" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-cyan)" stroke="#00f5ff" fill="none" stroke-width="1.8">
+        <circle cx="87" cy="80" r="6"/>
+        <circle cx="87" cy="80" r="14"/>
+        <circle cx="87" cy="80" r="3.2" fill="#ffffff"/>
+        <path d="M 97,80 L 110,80 L 110,84"/>
+        <path d="M 87,90 L 87,103 L 83,103"/>
+        <path d="M 77,80 L 64,80 L 64,76"/>
+        <path d="M 87,70 L 87,57 L 91,57"/>
+        <path d="M 110,80 L 118,76 L 126,83 L 135,79" stroke="#fff" stroke-width="1.8"/>
+        <path d="M 103,72 L 111,63 L 119,69 L 128,58" stroke="#fff" stroke-width="1.8"/>
+        <path d="M 103,88 L 112,96 L 120,90 L 129,101" stroke="#fff" stroke-width="1.8"/>
+        <circle cx="135" cy="79" r="2.5" fill="#00f5ff"/>
+        <circle cx="128" cy="58" r="2.5" fill="#00f5ff"/>
+        <circle cx="129" cy="101" r="2.5" fill="#00f5ff"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">3 Arcs · Range 140</text>
+    </g>
+
+    <!-- Cell L4: Hex Resonator Chamber (4 Arcs, Range 155) -->
+    <g transform="translate(750, 840)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00f5ff" fill-opacity="0.28" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00f5ff" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-cyan)" stroke="#00f5ff" fill="none" stroke-width="2">
+        <polygon points="95,80 91,87 83,87 79,80 83,73 91,73"/>
+        <circle cx="87" cy="80" r="4" fill="#ffffff"/>
+        <line x1="95" y1="80" x2="112" y2="80" stroke-width="2.5"/>
+        <line x1="79" y1="80" x2="62" y2="80" stroke-width="2.5"/>
+        <line x1="87" y1="88" x2="87" y2="105" stroke-width="2.5"/>
+        <line x1="87" y1="72" x2="87" y2="55" stroke-width="2.5"/>
+        <path d="M 112,80 L 120,74 L 127,82 L 136,78" stroke="#fff" stroke-width="2"/>
+        <path d="M 103,66 L 112,58 L 121,65 L 130,55" stroke="#fff" stroke-width="2"/>
+        <path d="M 103,94 L 112,102 L 120,95 L 130,105" stroke="#fff" stroke-width="2"/>
+        <path d="M 87,55 L 82,46 L 91,42 L 87,33" stroke="#fff" stroke-width="2"/>
+        <circle cx="136" cy="78" r="2.8" fill="#00f5ff"/>
+        <circle cx="130" cy="55" r="2.8" fill="#00f5ff"/>
+        <circle cx="130" cy="105" r="2.8" fill="#00f5ff"/>
+        <circle cx="87" cy="33" r="2.8" fill="#00f5ff"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">4 Arcs · Range 155</text>
+    </g>
+
+    <!-- Cell L5: Marx Generator Substation (5 Arcs, Range 175) -->
+    <g transform="translate(940, 840)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00f5ff" fill-opacity="0.32" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00f5ff" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-cyan)" stroke="#00f5ff" fill="none" stroke-width="2">
+        <rect x="83" y="74" width="8" height="12" fill="#031a26"/>
+        <circle cx="87" cy="80" r="3" fill="#ffffff"/>
+        <circle cx="106" cy="80" r="2.8" fill="#00f5ff"/>
+        <circle cx="68" cy="80" r="2.8" fill="#00f5ff"/>
+        <circle cx="96" cy="95" r="2.8" fill="#00f5ff"/>
+        <circle cx="78" cy="95" r="2.8" fill="#00f5ff"/>
+        <circle cx="96" cy="65" r="2.8" fill="#00f5ff"/>
+        <circle cx="78" cy="65" r="2.8" fill="#00f5ff"/>
+        <path d="M 106,80 L 116,75 L 124,82 L 135,78" stroke="#fff" stroke-width="2.2"/>
+        <path d="M 96,65 L 105,56 L 115,62 L 126,51" stroke="#fff" stroke-width="2.2"/>
+        <path d="M 96,95 L 106,104 L 114,97 L 126,108" stroke="#fff" stroke-width="2.2"/>
+        <path d="M 78,65 L 70,54 L 62,59 L 52,48" stroke="#fff" stroke-width="2.2"/>
+        <path d="M 78,95 L 70,105 L 61,100 L 52,111" stroke="#fff" stroke-width="2.2"/>
+        <circle cx="135" cy="78" r="3" fill="#00f5ff"/>
+        <circle cx="126" cy="51" r="3" fill="#00f5ff"/>
+        <circle cx="126" cy="108" r="3" fill="#00f5ff"/>
+        <circle cx="52" cy="48" r="3" fill="#00f5ff"/>
+        <circle cx="52" cy="111" r="3" fill="#00f5ff"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">5 Arcs · Range 175</text>
+    </g>
+
+    <!-- Cell L6: Chrono-Arc Titan (7 Arcs, Range 200) -->
+    <g transform="translate(1130, 840)">
+      <rect width="175" height="170" rx="6" fill="#071b26" stroke="#00f5ff" stroke-width="1.3" stroke-opacity="0.8"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00f5ff" fill-opacity="0.38" stroke="#00f5ff" stroke-width="1.5" stroke-opacity="0.7"/>
+      <circle cx="87" cy="80" r="22" stroke="#00f5ff" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#00f5ff" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <circle cx="87" cy="80" r="32.8" stroke="#00f5ff" stroke-width="2.2" stroke-opacity="0.9" fill="none"/>
+      <g filter="url(#p-glow-cyan)" stroke="#00f5ff" fill="none" stroke-width="2.2">
+        <circle cx="87" cy="80" r="7" stroke="#fff" stroke-width="2" fill="#021420"/>
+        <circle cx="87" cy="80" r="3.5" fill="#ffffff"/>
+        <polygon points="107,80 101,94 87,100 73,94 67,80 73,66 87,60 101,66" stroke-width="1.6"/>
+        <path d="M 107,80 L 118,74 L 126,82 L 138,77" stroke="#fff" stroke-width="2.4"/>
+        <path d="M 101,66 L 112,56 L 122,63 L 132,50" stroke="#fff" stroke-width="2.4"/>
+        <path d="M 101,94 L 112,104 L 121,97 L 132,109" stroke="#fff" stroke-width="2.4"/>
+        <path d="M 87,60 L 82,49 L 92,44 L 87,32" stroke="#fff" stroke-width="2.4"/>
+        <path d="M 87,100 L 92,111 L 82,116 L 87,128" stroke="#fff" stroke-width="2.4"/>
+        <path d="M 73,66 L 63,55 L 53,62 L 42,50" stroke="#fff" stroke-width="2.4"/>
+        <path d="M 73,94 L 62,105 L 52,98 L 42,109" stroke="#fff" stroke-width="2.4"/>
+        <circle cx="138" cy="77" r="3.2" fill="#00f5ff"/>
+        <circle cx="132" cy="50" r="3.2" fill="#00f5ff"/>
+        <circle cx="132" cy="109" r="3.2" fill="#00f5ff"/>
+        <circle cx="87" cy="32" r="3.2" fill="#00f5ff"/>
+        <circle cx="87" cy="128" r="3.2" fill="#00f5ff"/>
+        <circle cx="42" cy="50" r="3.2" fill="#00f5ff"/>
+        <circle cx="42" cy="109" r="3.2" fill="#00f5ff"/>
+      </g>
+      <text x="87" y="157" fill="#00ffcc" font-size="10" font-weight="bold" text-anchor="middle">CHRONO-ARC TITAN (7 ARCS)</text>
+    </g>
+  </g>
+
+  <!-- ==================== ROW 6: SHOCK (YELLOW / SHOCK - 6TH) ==================== -->
+  <g id="row-shock">
+    <rect x="20" y="1025" width="145" height="170" rx="6" fill="#18180a" stroke="#ffee00" stroke-width="1" stroke-opacity="0.5"/>
+    <circle cx="36" cy="1045" r="5" fill="#ffee00"/>
+    <text x="48" y="1049" fill="#ffee00" font-size="13" font-weight="bold" letter-spacing="1">SHOCK</text>
+    <text x="48" y="1064" fill="#ccbb00" font-size="10">TYPE: shock (6TH)</text>
+    <text x="48" y="1078" fill="#999966" font-size="9">COLOR: #ff0</text>
+    <text x="28" y="1125" fill="#ccbb55" font-size="9">L1: 4 Electrodes</text>
+    <text x="28" y="1139" fill="#ccbb55" font-size="9">L2: 4 Electrodes+ring</text>
+    <text x="28" y="1153" fill="#ccbb55" font-size="9">L3: 6 Hex electrodes</text>
+    <text x="28" y="1167" fill="#ccbb55" font-size="9">L4: 8 Octa electrodes</text>
+    <text x="28" y="1181" fill="#ccbb55" font-size="9">L5: Tesla arc cage</text>
+    <text x="28" y="1195" fill="#ccbb55" font-size="9">L6: 12-Star nova</text>
+
+    <!-- Cell L1: GeoDefense Classic Dual-Ring + 4 Cardinal Electrodes -->
+    <g transform="translate(180, 1025)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ffee00" fill-opacity="0.16" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.45"/>
+      <g filter="url(#p-glow-yellow)" stroke="#ffee00" fill="none" stroke-width="1.8">
+        <circle cx="87" cy="80" r="10"/>
+        <circle cx="87" cy="80" r="17"/>
+        <path d="M 97,80 L 109,80 L 109,85"/>
+        <path d="M 87,90 L 87,102 L 82,102"/>
+        <path d="M 77,80 L 65,80 L 65,75"/>
+        <path d="M 87,70 L 87,58 L 92,58"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">4 Electrodes (geoD)</text>
+    </g>
+
+    <!-- Cell L2: 4 Electrodes + Spark Node Core + Step Ring -->
+    <g transform="translate(370, 1025)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ffee00" fill-opacity="0.20" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-yellow)" stroke="#ffee00" fill="none" stroke-width="1.8">
+        <circle cx="87" cy="80" r="10"/>
+        <circle cx="87" cy="80" r="17"/>
+        <circle cx="87" cy="80" r="4" fill="#ffee00"/>
+        <path d="M 97,80 L 112,80 L 112,86"/>
+        <path d="M 87,90 L 87,105 L 81,105"/>
+        <path d="M 77,80 L 62,80 L 62,74"/>
+        <path d="M 87,70 L 87,55 L 93,55"/>
+        <circle cx="87" cy="80" r="13" stroke-dasharray="2,4" stroke-opacity="0.6"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Step Plates + Spark Node</text>
+    </g>
+
+    <!-- Cell L3: Hexagonal 6-Electrode Array -->
+    <g transform="translate(560, 1025)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ffee00" fill-opacity="0.24" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <g filter="url(#p-glow-yellow)" stroke="#ffee00" fill="none" stroke-width="1.8">
+        <polygon points="97,80 92,88.7 82,88.7 77,80 82,71.3 92,71.3"/>
+        <circle cx="87" cy="80" r="17"/>
+        <path d="M 97,80 L 111,80 L 111,84"/>
+        <path d="M 92,88.7 L 99,101 L 95,103"/>
+        <path d="M 82,88.7 L 75,101 L 71,99"/>
+        <path d="M 77,80 L 63,80 L 63,76"/>
+        <path d="M 82,71.3 L 75,59 L 79,57"/>
+        <path d="M 92,71.3 L 99,59 L 103,61"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Hexagonal 6-Electrode</text>
+    </g>
+
+    <!-- Cell L4: Octagonal 8-Electrode Array -->
+    <g transform="translate(750, 1025)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ffee00" fill-opacity="0.28" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#ffee00" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-yellow)" stroke="#ffee00" fill="none" stroke-width="1.8">
+        <circle cx="87" cy="80" r="9"/>
+        <circle cx="87" cy="80" r="17"/>
+        <line x1="96" y1="80" x2="112" y2="80"/>
+        <line x1="78" y1="80" x2="62" y2="80"/>
+        <line x1="87" y1="89" x2="87" y2="105"/>
+        <line x1="87" y1="71" x2="87" y2="55"/>
+        <line x1="93.4" y1="86.4" x2="104.7" y2="97.7"/>
+        <line x1="80.6" y1="73.6" x2="69.3" y2="62.3"/>
+        <line x1="80.6" y1="86.4" x2="69.3" y2="97.7"/>
+        <line x1="93.4" y1="73.6" x2="104.7" y2="62.3"/>
+        <circle cx="87" cy="80" r="3" fill="#ffee00"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Octagonal 8-Electrode</text>
+    </g>
+
+    <!-- Cell L5: Tesla Arc Cage Array -->
+    <g transform="translate(940, 1025)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ffee00" fill-opacity="0.32" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.45"/>
+      <circle cx="87" cy="80" r="22" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#ffee00" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <g filter="url(#p-glow-yellow)" stroke="#ffee00" fill="none" stroke-width="2">
+        <circle cx="87" cy="80" r="9"/>
+        <circle cx="87" cy="80" r="17"/>
+        <circle cx="87" cy="80" r="4" fill="#ffee00"/>
+        <line x1="96" y1="80" x2="114" y2="80" stroke-width="2.2"/>
+        <line x1="78" y1="80" x2="60" y2="80" stroke-width="2.2"/>
+        <line x1="87" y1="89" x2="87" y2="107" stroke-width="2.2"/>
+        <line x1="87" y1="71" x2="87" y2="53" stroke-width="2.2"/>
+        <line x1="93.4" y1="86.4" x2="106" y2="99"/>
+        <line x1="80.6" y1="73.6" x2="68" y2="61"/>
+        <line x1="80.6" y1="86.4" x2="68" y2="99"/>
+        <line x1="93.4" y1="73.6" x2="106" y2="61"/>
+        <polygon points="114,80 106,99 87,107 68,99 60,80 68,61 87,53 106,61" stroke-dasharray="3,2" stroke-width="1.4"/>
+      </g>
+      <text x="87" y="157" fill="#7799aa" font-size="10" text-anchor="middle">Tesla Arc Cage (8-Way)</text>
+    </g>
+
+    <!-- Cell L6: Dodecagonal 12-Star Nova Reactor -->
+    <g transform="translate(1130, 1025)">
+      <rect width="175" height="170" rx="6" fill="#18180a" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.7"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ffee00" fill-opacity="0.38" stroke="#ffee00" stroke-width="1.5" stroke-opacity="0.7"/>
+      <circle cx="87" cy="80" r="22" stroke="#ffee00" stroke-width="1.2" stroke-opacity="0.7" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#ffee00" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.8" fill="none"/>
+      <circle cx="87" cy="80" r="32.8" stroke="#ffee00" stroke-width="2.2" stroke-opacity="0.9" fill="none"/>
+      <g filter="url(#p-glow-yellow)" stroke="#ffee00" fill="none" stroke-width="2.2">
+        <circle cx="87" cy="80" r="6"/>
+        <circle cx="87" cy="80" r="12"/>
+        <circle cx="87" cy="80" r="18"/>
+        <circle cx="87" cy="80" r="3" fill="#ffee00"/>
+        <line x1="99" y1="80" x2="117" y2="80" stroke-width="2.5"/>
+        <line x1="75" y1="80" x2="57" y2="80" stroke-width="2.5"/>
+        <line x1="87" y1="92" x2="87" y2="110" stroke-width="2.5"/>
+        <line x1="87" y1="68" x2="87" y2="50" stroke-width="2.5"/>
+        <line x1="97.4" y1="86" x2="113" y2="95"/>
+        <line x1="76.6" y1="74" x2="61" y2="65"/>
+        <line x1="76.6" y1="86" x2="61" y2="95"/>
+        <line x1="97.4" y1="74" x2="113" y2="65"/>
+        <line x1="93" y1="90.4" x2="102" y2="106"/>
+        <line x1="81" y1="69.6" x2="72" y2="54"/>
+        <line x1="81" y1="90.4" x2="72" y2="106"/>
+        <line x1="93" y1="69.6" x2="102" y2="54"/>
+        <circle cx="87" cy="80" r="20" stroke-dasharray="3,3" stroke-width="1.2"/>
+      </g>
+      <text x="87" y="157" fill="#00ffcc" font-size="10" font-weight="bold" text-anchor="middle">12-STAR EMP NOVA</text>
+    </g>
+  </g>
+
+  <!-- ==================== ROW 7: COLLECTOR (RAINBOW / BUFF - 7TH - SLOW SPIN) ==================== -->
+  <g id="row-collector">
+    <rect x="20" y="1210" width="145" height="170" rx="6" fill="#140a16" stroke="url(#p-rainbow-linear)" stroke-width="1.4"/>
+    <circle cx="36" cy="1230" r="5" fill="url(#p-rainbow-radial)"/>
+    <text x="48" y="1234" fill="#ff77aa" font-size="13" font-weight="bold" letter-spacing="1">COLLECTOR</text>
+    <text x="48" y="1249" fill="#00e5ff" font-size="10">TYPE: buff (7TH)</text>
+    <text x="48" y="1263" fill="#ffea00" font-size="9">COLOR: Rainbow Spectrum</text>
+    <text x="28" y="1293" fill="#00ff88" font-size="9" font-weight="bold">★ SLOW SPIN ACTIVE</text>
+    <text x="28" y="1310" fill="#e0a0ff" font-size="9">L1: 3 Rainbow Arms</text>
+    <text x="28" y="1324" fill="#e0a0ff" font-size="9">L2: Dual Horizon Rings</text>
+    <text x="28" y="1338" fill="#e0a0ff" font-size="9">L3: 4 Arms + 2 Sats</text>
+    <text x="28" y="1352" fill="#e0a0ff" font-size="9">L4: 4 Arms + 4 Pylons</text>
+    <text x="28" y="1366" fill="#e0a0ff" font-size="9">L5: 6 Spectral + 3 Sats</text>
+    <text x="28" y="1380" fill="#e0a0ff" font-size="9">L6: Dyson Singularity</text>
+
+    <!-- Cell L1: GeoDefense Classic 3-Arm Vortex Singularity with Rainbow Colors & Slow Spin -->
+    <g transform="translate(180, 1210)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff0077" fill-opacity="0.14" stroke="url(#p-rainbow-linear)" stroke-width="1.2" stroke-opacity="0.5"/>
+      <circle cx="87" cy="80" r="20" stroke="url(#p-rainbow-linear)" stroke-width="1.2" stroke-dasharray="3,2" fill="none" opacity="0.8"/>
+      <!-- Slowly Spinning Vortex Core & Arms -->
+      <g class="collector-spin-1" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="360 87 80" dur="16s" repeatCount="indefinite"/>
+        <circle cx="87" cy="80" r="6" stroke="#ffffff" stroke-width="1.5" fill="#000000"/>
+        <circle cx="87" cy="80" r="2.8" fill="url(#p-rainbow-radial)"/>
+        <!-- 3 Rainbow Spectral Vortex Arms -->
+        <path d="M 95,80 Q 102.5,95.8 90.1,97.8" stroke="#ff0055" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <circle cx="90.1" cy="97.8" r="1.5" fill="#ff0055"/>
+        <path d="M 83,86.9 Q 67.7,88.2 69.9,75.8" stroke="#00ff66" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <circle cx="69.9" cy="75.8" r="1.5" fill="#00ff66"/>
+        <path d="M 83,73.1 Q 90.9,56.1 101,66.4" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <circle cx="101" cy="66.4" r="1.5" fill="#00e5ff"/>
+      </g>
+      <text x="87" y="157" fill="#ff88cc" font-size="10" text-anchor="middle">3-Arm Rainbow (geoD)</text>
+    </g>
+
+    <!-- Cell L2: 3 Extended Arms + Dual Rainbow Horizon Rings -->
+    <g transform="translate(370, 1210)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff7700" fill-opacity="0.16" stroke="url(#p-rainbow-linear)" stroke-width="1.2" stroke-opacity="0.6"/>
+      <!-- Dual Static/Pulsing Horizon Rings -->
+      <circle cx="87" cy="80" r="16" stroke="#ffdd00" stroke-width="1.3" stroke-dasharray="5,2" fill="none" opacity="0.8"/>
+      <circle cx="87" cy="80" r="21" stroke="url(#p-rainbow-linear)" stroke-width="1.4" fill="none" opacity="0.9"/>
+      <!-- Slowly Spinning Vortex Arms & Core -->
+      <g class="collector-spin-2" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="360 87 80" dur="14s" repeatCount="indefinite"/>
+        <circle cx="87" cy="80" r="6.5" stroke="#ffffff" stroke-width="1.5" fill="#000000"/>
+        <circle cx="87" cy="80" r="3.2" fill="#ffea00"/>
+        <path d="M 95,80 Q 103,96 90.1,98" stroke="#ff0066" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+        <circle cx="90.1" cy="98" r="1.8" fill="#ff0066"/>
+        <path d="M 83,86.9 Q 67.7,88.2 69.9,75.8" stroke="#ffaa00" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+        <circle cx="69.9" cy="75.8" r="1.8" fill="#ffaa00"/>
+        <path d="M 83,73.1 Q 90.9,56.1 101,66.4" stroke="#00e5ff" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+        <circle cx="101" cy="66.4" r="1.8" fill="#00e5ff"/>
+      </g>
+      <text x="87" y="157" fill="#ffaa44" font-size="10" text-anchor="middle">Dual Rainbow Horizon</text>
+    </g>
+
+    <!-- Cell L3: Quad-Spiral Vortex + 2 Orbiting Satellites -->
+    <g transform="translate(560, 1210)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00ff66" fill-opacity="0.16" stroke="url(#p-rainbow-linear)" stroke-width="1.3" stroke-opacity="0.6"/>
+      <circle cx="87" cy="80" r="22" stroke="url(#p-rainbow-linear)" stroke-width="1.3" stroke-dasharray="4,3" fill="none" opacity="0.85"/>
+      <!-- Slowly Spinning 4 Spiral Arms (Red, Yellow, Green, Cyan) -->
+      <g class="collector-spin-3" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="360 87 80" dur="12s" repeatCount="indefinite"/>
+        <circle cx="87" cy="80" r="6" stroke="#ffffff" stroke-width="1.4" fill="#000"/>
+        <circle cx="87" cy="80" r="2.8" fill="url(#p-rainbow-radial)"/>
+        <path d="M 93,80 Q 102,93 90,98" stroke="#ff0055" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+        <path d="M 87,86 Q 74,95 69,83" stroke="#ffee00" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+        <path d="M 81,80 Q 72,67 84,62" stroke="#00ff66" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+        <path d="M 87,74 Q 100,65 105,77" stroke="#00e5ff" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+      </g>
+      <!-- Counter-Spinning Satellites -->
+      <g class="collector-sat-spin" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="-360 87 80" dur="16s" repeatCount="indefinite"/>
+        <circle cx="65" cy="80" r="3" fill="#b84dff" stroke="#fff" stroke-width="0.8"/>
+        <circle cx="109" cy="80" r="3" fill="#ff00aa" stroke="#fff" stroke-width="0.8"/>
+      </g>
+      <text x="87" y="157" fill="#ffff55" font-size="10" text-anchor="middle">4 Spectral + 2 Orbit Sats</text>
+    </g>
+
+    <!-- Cell L4: 4 Spiral Arms + 4 Rainbow Containment Pylons -->
+    <g transform="translate(750, 1210)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#00e5ff" fill-opacity="0.16" stroke="url(#p-rainbow-linear)" stroke-width="1.3"/>
+      <circle cx="87" cy="80" r="21" stroke="#00e5ff" stroke-width="1.2" stroke-opacity="0.6" fill="none"/>
+      <circle cx="87" cy="80" r="27" stroke="url(#p-rainbow-linear)" stroke-width="1.5" stroke-dasharray="4,3" fill="none"/>
+      <g filter="url(#p-glow-rainbow)">
+        <line x1="107" y1="80" x2="114" y2="80" stroke="#ff0055" stroke-width="3" stroke-linecap="round"/>
+        <line x1="67" y1="80" x2="60" y2="80" stroke="#00ff66" stroke-width="3" stroke-linecap="round"/>
+        <line x1="87" y1="100" x2="87" y2="107" stroke="#ffea00" stroke-width="3" stroke-linecap="round"/>
+        <line x1="87" y1="60" x2="87" y2="53" stroke="#00e5ff" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <!-- Slowly Spinning 4 Spiral Arms -->
+      <g class="collector-spin-4" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="360 87 80" dur="10s" repeatCount="indefinite"/>
+        <circle cx="87" cy="80" r="6" stroke="#fff" stroke-width="1.5" fill="#000"/>
+        <polygon points="87,76 91,80 87,84 83,80" fill="url(#p-rainbow-linear)"/>
+        <path d="M 93,80 Q 103,94 90,99" stroke="#ff0055" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <path d="M 87,86 Q 73,96 68,83" stroke="#ffaa00" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <path d="M 81,80 Q 71,66 84,61" stroke="#00ff66" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <path d="M 87,74 Q 101,64 106,77" stroke="#00e5ff" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      </g>
+      <text x="87" y="157" fill="#55ffaa" font-size="10" text-anchor="middle">4 Spectral + 4 Pylon Prism</text>
+    </g>
+
+    <!-- Cell L5: 6-Arm Spectral Well + 3 Relay Satellites -->
+    <g transform="translate(940, 1210)">
+      <rect width="175" height="170" rx="6" fill="#090d16" stroke="#172238" stroke-width="1"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#b84dff" fill-opacity="0.18" stroke="url(#p-rainbow-linear)" stroke-width="1.4"/>
+      <circle cx="87" cy="80" r="22" stroke="url(#p-rainbow-linear)" stroke-width="1.3" opacity="0.75" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="url(#p-rainbow-linear)" stroke-width="1.5" stroke-dasharray="4,3" fill="none"/>
+      <g class="collector-spin-5" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="360 87 80" dur="8.5s" repeatCount="indefinite"/>
+        <circle cx="87" cy="80" r="6" stroke="#fff" stroke-width="1.5" fill="#000"/>
+        <circle cx="87" cy="80" r="3" fill="url(#p-rainbow-radial)"/>
+        <path d="M 93,80 Q 102,90 92,96" stroke="#ff0055" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <path d="M 90,85.2 Q 87,97 78,94" stroke="#ff7700" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <path d="M 84,85.2 Q 72,87 72,78" stroke="#ffee00" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <path d="M 81,80 Q 72,70 82,64" stroke="#00ff66" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <path d="M 84,74.8 Q 87,63 96,66" stroke="#00e5ff" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <path d="M 90,74.8 Q 102,73 102,82" stroke="#b84dff" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      </g>
+      <g class="collector-sat-spin" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="-360 87 80" dur="14s" repeatCount="indefinite"/>
+        <circle cx="109" cy="80" r="3.2" fill="#ff0077" stroke="#fff" stroke-width="0.8"/>
+        <circle cx="76" cy="99" r="3.2" fill="#ffea00" stroke="#fff" stroke-width="0.8"/>
+        <circle cx="76" cy="61" r="3.2" fill="#00ffea" stroke="#fff" stroke-width="0.8"/>
+      </g>
+      <text x="87" y="157" fill="#55d4ff" font-size="10" text-anchor="middle">6-Arm Rainbow + 3 Sats</text>
+    </g>
+
+    <!-- Cell L6: Dyson Singularity / Cosmic Rainbow Maelstrom -->
+    <g transform="translate(1130, 1210)">
+      <rect width="175" height="170" rx="6" fill="#150a1c" stroke="url(#p-rainbow-linear)" stroke-width="1.6"/>
+      <line x1="87" y1="20" x2="87" y2="140" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <line x1="20" y1="80" x2="155" y2="80" stroke="#141a29" stroke-width="1" stroke-dasharray="2,2"/>
+      <polygon points="116.4,63 116.4,97 87,114 57.6,97 57.6,63 87,46" fill="#ff00aa" fill-opacity="0.22" stroke="url(#p-rainbow-linear)" stroke-width="1.8"/>
+      <circle cx="87" cy="80" r="22" stroke="#00e5ff" stroke-width="1.2" stroke-opacity="0.8" fill="none"/>
+      <circle cx="87" cy="80" r="28" stroke="#ffea00" stroke-width="1.3" stroke-dasharray="4,3" fill="none"/>
+      <circle cx="87" cy="80" r="33" stroke="url(#p-rainbow-linear)" stroke-width="2.4" fill="none"/>
+      <g class="collector-spin-6" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="360 87 80" dur="7s" repeatCount="indefinite"/>
+        <polygon points="111,80 99,101 75,101 63,80 75,59 99,59" stroke="url(#p-rainbow-linear)" stroke-width="1.8" fill="none"/>
+        <circle cx="87" cy="80" r="6" stroke="#fff" stroke-width="1.6" fill="#000"/>
+        <circle cx="87" cy="80" r="3.2" fill="url(#p-rainbow-radial)"/>
+        <path d="M 93,80 Q 102,90 92,96" stroke="#ff0055" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M 90,85.2 Q 87,97 78,94" stroke="#ff7700" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M 84,85.2 Q 72,87 72,78" stroke="#ffee00" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M 81,80 Q 72,70 82,64" stroke="#00ff66" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M 84,74.8 Q 87,63 96,66" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M 90,74.8 Q 102,73 102,82" stroke="#b84dff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </g>
+      <g class="collector-sat-spin" filter="url(#p-glow-rainbow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 87 80" to="-360 87 80" dur="12s" repeatCount="indefinite"/>
+        <circle cx="111" cy="80" r="3.5" fill="#ff0055" stroke="#fff" stroke-width="1"/>
+        <circle cx="63" cy="80" r="3.5" fill="#00ff66" stroke="#fff" stroke-width="1"/>
+        <circle cx="87" cy="104" r="3.5" fill="#ffea00" stroke="#fff" stroke-width="1"/>
+        <circle cx="87" cy="56" r="3.5" fill="#00e5ff" stroke="#fff" stroke-width="1"/>
+      </g>
+      <text x="87" y="157" fill="#ff88ff" font-size="10" font-weight="bold" text-anchor="middle">DYSON RAINBOW MAELSTROM</text>
+    </g>
+  </g>
+
+  <!-- Bottom Legend / Notes -->
+  <g transform="translate(20, 1395)">
+    <rect width="1300" height="32" rx="5" fill="#0a101d" stroke="#1d2d4c" stroke-width="1"/>
+    <text x="20" y="21" fill="#88b5dd" font-size="11">
+      <tspan font-weight="bold" fill="#00ffcc">COMPLETE 7-TOWER REDESIGN:</tspan> 
+      <tspan fill="#a0bad6">Blaster, Laser, Missile, Sniper, Slow Tower (5th: 1~7 electric arcs to slow enemies), Shock (6th), Rainbow Collector (7th: spinning vortex).</tspan>
+    </text>
+  </g>
+</svg>
